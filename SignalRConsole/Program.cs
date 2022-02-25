@@ -18,24 +18,37 @@ namespace SignalRConsole
 
 			HubConnection hubConnection = new HubConnectionBuilder().WithUrl(c_chatHubUrl).Build();
 			
-			_ = hubConnection.On<string>("JoinChat", (user) => Console.WriteLine($"{user} has joined the chat."));
-			hubConnection.StartAsync().Wait();
-			_ = hubConnection.On<string, string>("ReceiveMessage", (user, receivedMessage) =>
-				Console.WriteLine($"{user} said: {receivedMessage}"));
-			_ = hubConnection.On<string>("LeaveChat", (user) => Console.WriteLine($"{user} has left the chat."));
+			_ = hubConnection.On<string, string>("JoinGroupMessage", (g, u) =>
+				Console.WriteLine($"{u} has joined the {g} chat."));
+			_ = hubConnection.On<string, string>("ReceiveGroupMessage", (u, m) =>
+				Console.WriteLine($"{u} said: {m}"));
+			_ = hubConnection.On<string, string>("LeaveGroupMessage", (g, u) =>
+				Console.WriteLine($"{u} has left the {g} chat."));
 			
-			await hubConnection.SendAsync("JoinChat", name);
-
-			Console.WriteLine("\nType messages, type 'goodbye' to leave the chat.");
-			string message;
-			do
+			string group;
+			await hubConnection.StartAsync();
+			while (true)
 			{
-				message = Console.ReadLine();
-				hubConnection.SendAsync("SendMessage", name, message).Wait();
-			}
-			while (message != "goodbye");
+				Console.WriteLine("\nWhat group would you like to join? Enter to quit...");
+				group = Console.ReadLine();
+				if (group.Length == 0)
+					break;
 
-			hubConnection.SendAsync("LeaveChat", name).Wait();
+				string message;
+				await hubConnection.SendAsync("JoinGroupChat", group, name);
+				Console.WriteLine("\nType messages, type 'goodbye' to leave the chat.");
+				while (true)
+				{
+					message = Console.ReadLine();
+					if (message == "goodbye")
+					{
+						await hubConnection.SendAsync("LeaveGroupChat", group, name);
+						break;
+					}
+
+					await hubConnection.SendAsync("SendGroupMessage", group, name, message);
+				}
+			}
 		}
 
 
