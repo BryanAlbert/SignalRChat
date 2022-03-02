@@ -5,6 +5,11 @@ namespace SignalRChat.Hubs
 {
 	public class ChatHub : Hub
 	{
+		public async Task Register(string email)
+		{
+			await Clients.Caller.SendAsync("Register", email);
+		}
+
 		public async Task JoinChat(string user)
 		{
 			await Clients.All.SendAsync("JoinChat", user);
