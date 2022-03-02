@@ -29,7 +29,7 @@ namespace SignalRChat
 				options.MinimumSameSitePolicy = SameSiteMode.None;
 			});
 
-			services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
+			services.AddMvc(options => options.EnableEndpointRouting = false);
 			services.AddSignalR();
 		}
 
