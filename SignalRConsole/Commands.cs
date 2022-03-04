@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using Text.Json;
-using Text.Json.Serialization;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace SignalRConsole
 {
@@ -14,7 +14,7 @@ namespace SignalRConsole
 			try
 			{
 				commands = JsonSerializer.Deserialize<Commands>(json);
-
+				return commands;
 			}
 			catch (Exception)
 			{
