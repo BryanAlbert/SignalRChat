@@ -45,23 +45,11 @@ namespace SignalRChat.Hubs
 			Console.WriteLine($"{user} joined the group: {group.Replace('\n', ' ')}");
 		}
 
-		public async Task JoinGroupMessage(string group, string user)
-		{
-			await Clients.Group(group).SendAsync("JoinGroupMessage", user);
-			Console.WriteLine($"JoinGroupMessage sent for group {group}, user {user}");
-		}
-
 		public async Task LeaveGroupChat(string group, string user)
 		{
 			await Groups.RemoveFromGroupAsync(Context.ConnectionId, group);
 			await Clients.Group(group).SendAsync("LeaveGroupMessage", group, user);
 			Console.WriteLine($"{user} left the group: {group.Replace('\n', ' ')}");
-		}
-
-		public async Task LeaveGroupMessage(string group, string user)
-		{
-			await Clients.Group(group).SendAsync("LeaveGroupMessage", user);
-			Console.WriteLine($"LeaveGroupMessage sent for group {group}, user {user}");
 		}
 
 		public async Task SendGroupMessage(string group, string user, string message)

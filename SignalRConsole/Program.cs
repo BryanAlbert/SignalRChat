@@ -23,7 +23,7 @@ namespace SignalRConsole
 
 			while (true)
 			{
-				Console.Write("To connect to a friend, enter your friend's email,");
+				Console.WriteLine("To connect to a friend, enter your friend's email,");
 				Console.Write("or just Enter to listen for a connection: ");
 				string friendEmail = Console.ReadLine();
 				while (true)
@@ -32,7 +32,7 @@ namespace SignalRConsole
 						break;
 
 					Console.WriteLine("Is your friend connected? Enter your friend's email again or");
-					Console.WriteLine("Enter to listen for a connection or exit to quit:");
+					Console.Write("Enter to listen for a connection or exit to quit: ");
 					friendEmail = Console.ReadLine();
 					if (friendEmail == "exit")
 						return;
@@ -74,12 +74,6 @@ namespace SignalRConsole
 			}
 		}
 
-		private static void OnGroupJoin(string user)
-		{
-			lock (m_lock)
-				ConsoleWriteWhileWaiting($"{user.Replace('\n', ' ')} has joined the group.");
-		}
-
 		private static void OnGroupMessage(string user, string message)
 		{
 			lock (m_lock)
@@ -100,13 +94,7 @@ namespace SignalRConsole
 		private static void OnGroupLeave(string group, string user)
 		{
 			lock (m_lock)
-				Console.WriteLine($"{user} has left the {group} chat.");
-		}
-
-		private static void OnGroupLeave(string user)
-		{
-			lock (m_lock)
-				Console.WriteLine($"{user} has left the group.");
+				Console.WriteLine($"{user} has left the {group.Replace('\n', ' ')} chat.");
 		}
 
 		private static async Task<bool> StartServer()
@@ -117,11 +105,9 @@ namespace SignalRConsole
 
 			_ = m_hubConnection.On<string>(c_register, (e) => OnRegister(e));
 			_ = m_hubConnection.On(c_joinGroupMessage, (Action<string, string>) ((g, u) => OnGroupJoin(g, u)));
-			_ = m_hubConnection.On(c_joinGroupMessage, (Action<string>) ((u) => OnGroupJoin(u)));
 			_ = m_hubConnection.On(c_receiveGroupMessage, (Action<string, string>) ((u, m) => OnGroupMessage(u, m)));
 			_ = m_hubConnection.On(c_receiveGroupCommand, (Action<string, string>) ((u, c) => OnGroupCommand(u, c)));
 			_ = m_hubConnection.On(c_leaveGroupMessage, (Action<string, string>) ((g, u) => OnGroupLeave(g, u)));
-			_ = m_hubConnection.On(c_leaveGroupMessage, (Action<string>) ((u) => OnGroupLeave(u)));
 
 			try
 			{
@@ -194,14 +180,15 @@ namespace SignalRConsole
 			while (true)
 			{
 				string message = Console.ReadLine();
-				if (message == "goodbye")
-				{
-					await m_hubConnection.SendAsync(c_leaveGroupChat, GroupName, Name);
-					return true;
-				}
-
+				
 				try
 				{
+					if (message == "goodbye")
+					{
+						await m_hubConnection.SendAsync(c_leaveGroupChat, GroupName, Name);
+						return true;
+					}
+
 					await m_hubConnection.SendAsync(c_sendGroupMessage, GroupName, Name, message);
 				}
 				catch (Exception exception)
