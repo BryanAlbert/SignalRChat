@@ -21,11 +21,18 @@ namespace SignalRConsole
 			Console.Write("What is your name? ");
 			Name = Console.ReadLine();
 
+			// TODO: remove testing hacks
+			if (string.IsNullOrEmpty(Name))
+				Name = "Bruce";
+
 			while (true)
 			{
-				Console.WriteLine("To connect to a friend, enter your friend's email,");
-				Console.Write("or just Enter to listen for a connection: ");
+				Console.WriteLine("\nTo connect to a friend, enter your friend's email,");
+				Console.Write("or Enter to listen for a connection, or exit to quit: ");
 				string friendEmail = Console.ReadLine();
+				if (friendEmail == "exit")
+					return;
+
 				while (true)
 				{
 					if (string.IsNullOrEmpty(friendEmail) ? await ListenAsync() : await ConnectAsync(friendEmail))
@@ -38,12 +45,13 @@ namespace SignalRConsole
 						return;
 				}
 
-				if (await MessageLoopAsync())
+				// TODO: recover from error?
+				if (!await MessageLoopAsync())
 					break;
 			}
 
 			await m_hubConnection.StopAsync();
-			Console.WriteLine("Finished.");
+			Console.WriteLine("\nFinished.");
 		 }
 
 
@@ -58,7 +66,10 @@ namespace SignalRConsole
 		{
 			lock (m_lock)
 			{
+				ConsoleColor color = Console.ForegroundColor;
+				Console.ForegroundColor = ConsoleColor.Yellow;
 				ConsoleWriteWhileWaiting($"Registration token from server: {token}");
+				Console.ForegroundColor = color;
 				RegistrationToken = token;
 				State = States.Changing;
 			}
@@ -80,6 +91,10 @@ namespace SignalRConsole
 			{
 				if (State == States.Connecting)
 					State = States.Changing;
+				else if (message == c_handshake)
+					return;
+				else if (user == Name)
+					Console.WriteLine($"You said: {message}");
 				else
 					Console.WriteLine($"{user} said: {message}");
 			}
@@ -93,6 +108,7 @@ namespace SignalRConsole
 
 		private static void OnGroupLeave(string group, string user)
 		{
+			State = States.Leaving;
 			lock (m_lock)
 				Console.WriteLine($"{user} has left the {group.Replace('\n', ' ')} chat.");
 		}
@@ -128,6 +144,11 @@ namespace SignalRConsole
 			State = States.Registering;
 			Console.Write("Enter your email address to register with the server: ");
 			Email = Console.ReadLine();
+
+			// TODO: remove testing hacks
+			if (string.IsNullOrEmpty(Email))
+				Email = "bruce@hotmail.com";
+
 			await m_hubConnection.SendAsync(c_register, Email);
 			if (!await WaitAsync("Waiting for the server"))
 			{
@@ -142,6 +163,11 @@ namespace SignalRConsole
 				token = Console.ReadLine();
 				if (token == RegistrationToken)
 					return true;
+
+				// TODO: remove testing hacks
+				if (token == ".")
+					return true;
+
 				if (token == string.Empty)
 					return false;
 
@@ -180,6 +206,10 @@ namespace SignalRConsole
 			while (true)
 			{
 				string message = Console.ReadLine();
+				if (State != States.Chatting)
+					return true;
+
+				Console.CursorTop--;
 				
 				try
 				{
@@ -253,7 +283,8 @@ namespace SignalRConsole
 			Registering,
 			Listening,
 			Connecting,
-			Chatting
+			Chatting,
+			Leaving
 		}
 
 		private const string c_register = "Register";
