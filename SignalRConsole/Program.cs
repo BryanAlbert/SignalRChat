@@ -130,6 +130,10 @@ namespace SignalRConsole
 				else if (group == ChatGroupName)
 				{
 				}
+				else
+				{
+					CheckFriendshipPending(user);
+				}
 
 				lock (m_lock)
 					State = States.Changing;
@@ -367,13 +371,16 @@ namespace SignalRConsole
 		private static void Hello(string sender, ConnectionCommand command)
 		{
 			if (command.Data == Name)
-			{
-				User friend = m_user.Friends.FirstOrDefault(x => x.Name == sender);
-				ConsoleWriteLineWhileWaiting($"{sender} is online, friend status:" +
-					$" {(friend.Verified.HasValue ? (friend.Verified.Value ? "yes" : "no") : "pending")}.");
-				if (!friend.Verified.HasValue)
-					SendCommand(CommandNames.Verify, MakeGroupName(friend), GroupName, true);
-			}
+				CheckFriendshipPending(sender);
+		}
+
+		private static void CheckFriendshipPending(string sender)
+		{
+			User friend = m_user.Friends.FirstOrDefault(x => x.Name == sender);
+			ConsoleWriteLineWhileWaiting($"{sender} is online, friend status:" +
+				$" {(friend.Verified.HasValue ? (friend.Verified.Value ? "yes" : "no") : "pending")}.");
+			if (!friend.Verified.HasValue)
+				SendCommand(CommandNames.Verify, MakeGroupName(friend), GroupName, true);
 		}
 
 		private static void VerifyFriend(User friend, bool? verified)
@@ -382,7 +389,7 @@ namespace SignalRConsole
 			if (user == null)
 			{
 				Point cursor = ConsoleWriteWhileWaiting($"Accept friend request from {friend.Name}, email address {friend.InternetId}? [y/n] ");
-				ConsoleKeyInfo confirm = Console.ReadKey();
+				ConsoleKeyInfo confirm = Console.ReadKey(intercept: true);
 				friend.Verified = confirm.Key == ConsoleKey.Y;
 				m_user.AddFriend(friend);
 				SaveUser();
