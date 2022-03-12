@@ -16,22 +16,25 @@ namespace SignalRConsole
 			}
 
 
-			public static void Initialize(Action<string> sendCommand)
+			public static void Initialize(Action<string, string> sendCommand)
 			{
 				m_sendCommand = sendCommand;
 			}
 
-			public static void SendCommand(CommandNames name, bool flag)
+			public static void SendCommand(CommandNames name, string group, bool? flag)
 			{
 				ConnectionCommand command = new ConnectionCommand()
 				{
+					Command = name.ToString(),
+					Group = group,
+					Data = group,
 					Flag = flag
 				};
 
 				if (name != CommandNames.Echo)
 				{
-					Debug.WriteLine($"Error: SendCommand called with bool is only valid" +
-						$" for the {CommandNames.Echo} command, called with: {name}");
+					Debug.WriteLine($"Error: SendCommand called with bool is only valid for the" +
+						$" {CommandNames.Echo} command, called with: {name}");
 				}
 				else
 				{
@@ -39,18 +42,19 @@ namespace SignalRConsole
 				}
 			}
 
-			public static void SendCommand(CommandNames name, string data)
+			public static void SendCommand(CommandNames name, string group, string data)
 			{
 				ConnectionCommand command = new ConnectionCommand()
 				{
 					Command = name.ToString(),
+					Group = group,
 					Data = data
 				};
 
-				if (name != CommandNames.Handle && name != CommandNames.Hello)
+				if (name != CommandNames.Handle)
 				{
-					Debug.WriteLine($"Error: SendCommand called with string is only valid for the {CommandNames.Handle}" +
-						$" and {CommandNames.Hello} commands, called with: {name}");
+					Debug.WriteLine($"Error: SendCommand called with string is only valid for the" +
+						$" {CommandNames.Handle} command, called with: {name}");
 				}
 				else
 				{
@@ -58,19 +62,20 @@ namespace SignalRConsole
 				}
 			}
 
-			public static void SendCommand(CommandNames name, string data, bool flag)
+			public static void SendCommand(CommandNames name, string group, string data, bool? flag)
 			{
 				ConnectionCommand command = new ConnectionCommand()
 				{
 					Command = name.ToString(),
+					Group = group,
 					Data = data,
 					Flag = flag
 				};
 
-				if (name != CommandNames.Verify)
+				if (name != CommandNames.Hello && name != CommandNames.Verify)
 				{
 					Debug.WriteLine($"Error: SendCommand called with string  and bool is only valid for the" +
-						$" {CommandNames.Handle} command, called with: {name}");
+						$" {CommandNames.Hello} and {CommandNames.Verify} commands, called with: {name}");
 				}
 				else
 				{
@@ -81,10 +86,12 @@ namespace SignalRConsole
 
 			public string Command { get; set; }
 			public string Data { get; set; }
-			public bool Flag { get; set; }
+			public bool? Flag { get; set; }
 
 			[JsonIgnore]
 			public CommandNames CommandName { get; set; }
+			[JsonIgnore]
+			public string Group { get; set; }
 
 			public static ConnectionCommand DeserializeCommand(string json)
 			{
@@ -134,11 +141,11 @@ namespace SignalRConsole
 
 			private void SendCommand()
 			{
-				m_sendCommand(JsonSerializer.Serialize(this));
+				m_sendCommand(Group, JsonSerializer.Serialize(this));
 			}
 		}
 
 
-		private static Action<string> m_sendCommand;
+		private static Action<string, string> m_sendCommand;
 	}
 }

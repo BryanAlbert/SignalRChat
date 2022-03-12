@@ -18,6 +18,19 @@ namespace SignalRConsole
 			Friends = new List<User>();
 		}
 
+		public User(string name, string email) : this(name, email, null)
+		{
+		}
+
+		public User(User user, bool? verified) : this(user.Name, user.InternetId, verified)
+		{
+		}
+
+		public User(string groupName, bool? verified)
+		{
+
+		}
+
 
 		public void AddFriend(User user)
 		{

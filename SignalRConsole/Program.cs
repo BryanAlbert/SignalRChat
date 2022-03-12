@@ -99,7 +99,7 @@ namespace SignalRConsole
 		private static string RegistrationToken { get; set; }
 		private static string Name => m_user?.Name;
 		private static string Email => m_user?.InternetId;
-		private static string GroupName => $"{Email}\n{Name}";
+		private static string GroupName => MakeGroupName(Name, Email);
 		public static string ChatGroupName { get; private set; }
 		private static int? NextLine { get; set; }
 
@@ -109,7 +109,7 @@ namespace SignalRConsole
 			{
 				ConsoleColor color = Console.ForegroundColor;
 				Console.ForegroundColor = ConsoleColor.Yellow;
-				ConsoleWriteWhileWaiting($"Registration token from server: {token}");
+				ConsoleWriteLineWhileWaiting($"Registration token from server: {token}");
 				Console.ForegroundColor = color;
 				RegistrationToken = token;
 				State = States.Changing;
@@ -122,12 +122,10 @@ namespace SignalRConsole
 			{
 				if (group == GroupName)
 				{
-					ConsoleWriteWhileWaiting($"{user} has joined your {group.Replace('\n', ' ')} group.");
-					User friend = m_user.Friends.FirstOrDefault(x => x.Name == user);
-					if (friend?.Verified ?? false)
-						SendCommand(CommandNames.Hello, GroupName);
-					else
-						SendCommand(CommandNames.Verify, GroupName, true);
+					User render = GetUserFromGroupName(group);
+					ConsoleWriteLineWhileWaiting($"{user} has joined your {render.InternetId}-{render.Name} group.");
+					SendCommand(CommandNames.Hello, group, user,
+						m_user.Friends.FirstOrDefault(x => x.Name == user)?.Verified);
 				}
 				else if (group == ChatGroupName)
 				{
@@ -153,29 +151,29 @@ namespace SignalRConsole
 			}
 		}
 
-		private static void OnGroupCommand(string user, string json)
+		private static void OnGroupCommand(string sender, string json)
 		{
-			Debug.WriteLine($"Command from {user}: {json}");
-			if (user != Name)
+			if (sender == Name)
+				return;
+
+			Debug.WriteLine($"Command from {sender}: {json}");
+			ConnectionCommand command = DeserializeCommand(json);
+			switch (command.CommandName)
 			{
-				ConnectionCommand command = DeserializeCommand(json);
-				switch (command.CommandName)
-				{
-					case CommandNames.Verify:
-						VerifyFriend(command.Data.Split('\n'), command.Flag);
-						break;
-					case CommandNames.Hello:
-						ConsoleWriteWhileWaiting($"{user} has joined your {command.Data.Replace('\n', ' ')} group.");
-						break;
-					case CommandNames.Handle:
-					case CommandNames.Echo:
-						Debug.WriteLine($"OnGroupCommandAsync not processing command: {command.CommandName}");
-						break;
-					case CommandNames.Unrecognized:
-					default:
-						Debug.WriteLine($"Error in OnGroupCommandAsync, unrecognized command: {command.CommandName}");
-						break;
-				}
+				case CommandNames.Hello:
+					Hello(sender, command);
+					break;
+				case CommandNames.Verify:
+					VerifyFriend(GetUserFromGroupName(command.Data), command.Flag);
+					break;
+				case CommandNames.Handle:
+				case CommandNames.Echo:
+					Debug.WriteLine($"OnGroupCommandAsync not processing command: {command.CommandName}");
+					break;
+				case CommandNames.Unrecognized:
+				default:
+					Debug.WriteLine($"Error in OnGroupCommandAsync, unrecognized command: {command.CommandName}");
+					break;
 			}
 		}
 
@@ -191,9 +189,9 @@ namespace SignalRConsole
 			State = States.Initializing;
 			Console.WriteLine($"Initializing server and connecting to URL: {c_chatHubUrl}");
 			m_hubConnection = new HubConnectionBuilder().WithUrl(c_chatHubUrl).Build();
-			Initialize(async (x) => await m_hubConnection.SendAsync(c_sendGroupCommand, GroupName, Name, x));
+			Initialize(async (g, j) => await m_hubConnection.SendAsync(c_sendGroupCommand, g, Name, j));
 
-			_ = m_hubConnection.On<string>(c_register, (e) => OnRegister(e));
+			_ = m_hubConnection.On<string>(c_register, (t) => OnRegister(t));
 			_ = m_hubConnection.On(c_joinGroupMessage, (Action<string, string>) ((g, u) => OnGroupJoin(g, u)));
 			_ = m_hubConnection.On(c_receiveGroupMessage, (Action<string, string>) ((u, m) => OnGroupMessage(u, m)));
 			_ = m_hubConnection.On(c_receiveGroupCommand, (Action<string, string>) ((u, c) => OnGroupCommand(u, c)));
@@ -238,17 +236,16 @@ namespace SignalRConsole
 
 		private static async Task AddFriendAsync()
 		{
-			Point cursor = MoveCursorToLog();
-			Console.Write("What is your friend's name? ");
+			Point cursor = ConsoleWriteWhileWaiting("What is your friend's name? ");
 			string name = Console.ReadLine();
-			Console.Write("What is your friend's email? ");
+			ConsoleWriteWhileWaiting("What is your friend's email? ");
 			string email = Console.ReadLine();
+			Console.SetCursorPosition(cursor.X, cursor.Y);
 
-			User friend = new User(name, email, null);
+			User friend = new User(name, email);
 			m_user.AddFriend(friend);
 			SaveUser();
 			await MonitorUserAsync(friend);
-			Console.SetCursorPosition(cursor.X, cursor.Y);
 		}
 
 		private static async Task MonitorFriendsAsync()
@@ -288,7 +285,7 @@ namespace SignalRConsole
 		private static async Task<bool> ListenAsync()
 		{
 			State = States.Listening;
-			ChatGroupName = $"{GroupName}\n{c_chatGroupName}";
+			ChatGroupName = MakeGroupName(GroupName, c_chatGroupName);
 			await m_hubConnection.SendAsync(c_joinGroupChat, ChatGroupName, Name);
 			if (await WaitAsync("Listening for a connection", 100, 600))
 			{
@@ -321,7 +318,7 @@ namespace SignalRConsole
 					continue;
 				}
 
-				ChatGroupName = $"{friend.InternetId}\n{friend.Name}\n{c_chatGroupName}";
+				ChatGroupName = MakeChatGroupName(friend.Name, friend.InternetId);
 				await m_hubConnection.SendAsync(c_joinGroupChat, ChatGroupName, Name);
 				return await WaitAsync($"Connecting to {name}");
 			}
@@ -364,33 +361,42 @@ namespace SignalRConsole
 
 		private static async Task MonitorUserAsync(User user)
 		{
-			string groupName = $"{user.InternetId}\n{user.Name}";
-			await m_hubConnection.SendAsync(c_joinGroupChat, groupName, Name);
+			await m_hubConnection.SendAsync(c_joinGroupChat, MakeGroupName(user), Name);
 		}
 
-		private static void VerifyFriend(string[] data, bool verified)
+		private static void Hello(string sender, ConnectionCommand command)
 		{
-			Point cursor = MoveCursorToLog();
-			User friend = m_user.Friends.FirstOrDefault(x => x.InternetId == data[0] && x.Name == data[1]);
-			if (friend == null)
+			if (command.Data == Name)
 			{
-				Console.Write($"Accept friend request from {data[1]}, email address {data[0]}? [y/n] ");
+				User friend = m_user.Friends.FirstOrDefault(x => x.Name == sender);
+				ConsoleWriteLineWhileWaiting($"{sender} is online, friend status:" +
+					$" {(friend.Verified.HasValue ? (friend.Verified.Value ? "yes" : "no") : "pending")}.");
+				if (!friend.Verified.HasValue)
+					SendCommand(CommandNames.Verify, MakeGroupName(friend), GroupName, true);
+			}
+		}
+
+		private static void VerifyFriend(User friend, bool? verified)
+		{
+			User user = m_user.Friends.FirstOrDefault(u => u.Name == friend.Name);
+			if (user == null)
+			{
+				Point cursor = ConsoleWriteWhileWaiting($"Accept friend request from {friend.Name}, email address {friend.InternetId}? [y/n] ");
 				ConsoleKeyInfo confirm = Console.ReadKey();
-				if (confirm.Key == ConsoleKey.Y)
-				{
-					friend = new User(data[1], data[0], true);
-					m_user.AddFriend(friend);
-					SaveUser();
-					SendCommand(CommandNames.Verify, GroupName);
-				}
+				friend.Verified = confirm.Key == ConsoleKey.Y;
+				m_user.AddFriend(friend);
+				SaveUser();
+				SendCommand(CommandNames.Verify, GroupName, GroupName, friend.Verified);
+				Console.SetCursorPosition(cursor.X, cursor.Y);
+				user = friend;
 			}
 			else
 			{
-				friend.Verified = verified;
+				user.Verified = verified;
 				SaveUser();
 			}
-
-			Console.SetCursorPosition(cursor.X, cursor.Y);
+			
+			ConsoleWriteLineWhileWaiting($"You and {user.Name} are {(user.Verified.Value ? "now" : "not")} friends!");
 		}
 
 		private static async Task<bool> WaitAsync(string message, int intervalms = 100, int timeouts = 10)
@@ -428,11 +434,18 @@ namespace SignalRConsole
 			return DateTime.Now < timeout;
 		}
 
-		private static void ConsoleWriteWhileWaiting(string line)
+		private static void ConsoleWriteLineWhileWaiting(string line)
 		{
 			Point cursor = MoveCursorToLog();
 			Console.WriteLine(line);
 			Console.SetCursorPosition(cursor.X, cursor.Y);
+		}
+
+		private static Point ConsoleWriteWhileWaiting(string line)
+		{
+			Point cursor = MoveCursorToLog();
+			Console.Write(line);
+			return cursor;
 		}
 
 		private static Point MoveCursorToLog()
@@ -445,6 +458,27 @@ namespace SignalRConsole
 			}
 
 			return cursor;
+		}
+
+		private static string MakeGroupName(User user)
+		{
+			return $"{user.InternetId}\n{user.Name}";
+		}
+
+		private static string MakeGroupName(string name, string email)
+		{
+			return $"{email}\n{name}";
+		}
+
+		private static string MakeChatGroupName(string name, string email)
+		{
+			return $"{MakeGroupName(email, name)}\n{c_chatGroupName}";
+		}
+
+		private static User GetUserFromGroupName(string groupName)
+		{
+			string[] parts = groupName.Split('\n');
+			return new User(parts[1], parts[0]);
 		}
 
 
