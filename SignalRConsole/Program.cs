@@ -314,9 +314,9 @@ namespace SignalRConsole
 			}
 
 			ConsoleWriteLogLine("Friends:");
-			int index = 1;
+			int index = 0;
 			foreach (User friend in m_online)
-				ConsoleWriteLogLine($"{index}: {friend.Name}");
+				ConsoleWriteLogLine($"{++index}: {friend.Name}");
 
 			Point cursor = ConsoleWriteLog("Which friend would you like to chat with? (number or name, Enter to abort): ");
 			
@@ -365,7 +365,7 @@ namespace SignalRConsole
 						break;
 					}
 
-					await m_hubConnection.SendAsync(c_sendGroupMessage, GroupName, Name, message);
+					await m_hubConnection.SendAsync(c_sendGroupMessage, ActiveChatGroupName, Name, message);
 				}
 				catch (Exception exception)
 				{
@@ -423,7 +423,11 @@ namespace SignalRConsole
 		private static void CheckFriendshipPending(string sender)
 		{
 			User friend = m_user.Friends.FirstOrDefault(x => x.Name == sender);
-			if (!friend.Verified.HasValue)
+			if (friend == null)
+			{
+				return;
+			}
+			else if (!friend.Verified.HasValue)
 			{
 				ConsoleWriteLogLine($"Your pending friend {sender} is online.");
 				SendCommand(CommandNames.Verify, MakeGroupName(friend), GroupName, true);
