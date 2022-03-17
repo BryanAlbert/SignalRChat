@@ -21,6 +21,25 @@ namespace SignalRConsole
 				m_sendCommand = sendCommand;
 			}
 
+			public static void SendCommand(CommandNames name, string group)
+			{
+				ConnectionCommand command = new ConnectionCommand()
+				{
+					Command = name.ToString(),
+					Group = group
+				};
+
+				if (name != CommandNames.Disonnect)
+				{
+					Debug.WriteLine($"Error: SendCommand called with no arguments is only valid for the" +
+						$" {CommandNames.Disonnect} command, called with: {name}");
+				}
+				else
+				{
+					command.SendCommand();
+				}
+			}
+
 			public static void SendCommand(CommandNames name, string group, bool? flag)
 			{
 				ConnectionCommand command = new ConnectionCommand()
@@ -134,6 +153,7 @@ namespace SignalRConsole
 				Unrecognized,
 				Hello,
 				Verify,
+				Disonnect,
 				Handle,
 				Echo
 			}

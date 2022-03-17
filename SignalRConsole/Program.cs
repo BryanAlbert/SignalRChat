@@ -32,6 +32,9 @@ namespace SignalRConsole
 
 			while (true)
 			{
+				PromptLine = Console.CursorTop;
+				Console.CursorLeft = 0;
+				Console.Write($"{State}> ");
 				while (!Console.KeyAvailable || State != States.Listening)
 					await Task.Delay(10);
 
@@ -44,8 +47,14 @@ namespace SignalRConsole
 					case ConsoleKey.L:
 						ListFriends();
 						continue;
+					case ConsoleKey.U:
+						await UnfriendFriendAsync();
+						continue;
+					case ConsoleKey.D:
+						await DeleteFriendAsync();
+						continue;
 					case ConsoleKey.C:
-						await ConnectAsync();
+						await ConnectFriendAsync();
 						continue;
 					case ConsoleKey.X:
 						break;
@@ -78,7 +87,34 @@ namespace SignalRConsole
 		public const string c_chatGroupName = "Chat";
 
 
-		private static States State { get; set; }
+		private static States State
+		{
+			get => m_state;
+			set
+			{
+				if (value != States.Initializing)
+				{
+					Point cursor = new Point(Console.CursorLeft, Console.CursorTop);
+					Console.SetCursorPosition(0, PromptLine);
+					int padding = m_state == States.Initializing ? 0 : (m_state.ToString().Length) - value.ToString().Length + 2;
+					if (value == States.Listening)
+					{
+						Console.Write(padding > 0 ? $"{value}> {(padding > 0 ? new string(' ', padding) : "")}" : $"{value}> ");
+						while (padding-- > 0)
+							Console.CursorLeft--;
+					}
+					else
+					{
+						Console.Write($"{value}...{(padding > 0 ? new string(' ', padding) : "")}");
+						Console.SetCursorPosition(cursor.X, cursor.Y);
+					}
+				}
+
+				m_state = value;
+			}
+		}
+
+
 		private static string RegistrationToken { get; set; }
 		private static string Name => m_user?.Name;
 		private static string Email => m_user?.InternetId;
@@ -86,6 +122,7 @@ namespace SignalRConsole
 		public static string ChatGroupName => MakeChatGroupName(m_user);
 		public static string ActiveChatGroupName { get; set; }
 		private static int NextLine { get; set; }
+		private static int PromptLine { get; set; }
 
 		private static void OnRegister(string token)
 		{
@@ -139,6 +176,7 @@ namespace SignalRConsole
 			{
 				Console.SetCursorPosition(0, cursor.Y + 1);
 				Console.WriteLine($"{user} said: {message}");
+				NextLine = Console.CursorTop;
 				Console.SetCursorPosition(cursor.X, cursor.Y);
 			}
 		}
@@ -158,6 +196,10 @@ namespace SignalRConsole
 				case CommandNames.Verify:
 					VerifyFriend(GetUserFromGroupName(command.Data), command.Flag);
 					break;
+				case CommandNames.Disonnect:
+					await m_hubConnection.SendAsync(c_leaveGroupChat, ActiveChatGroupName, Name);
+					DisplayMenu();
+					break;
 				case CommandNames.Handle:
 				case CommandNames.Echo:
 					Debug.WriteLine($"OnGroupCommandAsync not processing command: {command.CommandName}");
@@ -176,13 +218,12 @@ namespace SignalRConsole
 			if (group == ActiveChatGroupName)
 			{
 				Console.Write($"{(Console.CursorLeft > 0 ? "\n" : "")}{user} has left the chat. (Hit Enter)");
-				State = States.Listening;
 				DisplayMenu();
 			}
 			else if (group == GroupName)
 			{
-				ConsoleWriteLogLine($"Your friend {user} is offline.");
 				User friend = m_user.Friends.FirstOrDefault(u => u.Name == user);
+				ConsoleWriteLogLine($"Your {(friend.Verified.HasValue ? "(pending) " : " ")}friend {user} is offline.");
 				m_online.Remove(friend);
 			}
 		}
@@ -218,6 +259,8 @@ namespace SignalRConsole
 		{
 			Console.Write("What is your name? ");
 			string name = Console.ReadLine();
+			if (string.IsNullOrEmpty(name))
+				return false;
 
 			foreach (string fileName in Directory.EnumerateFiles(".").Where(x => x.EndsWith(".qkr.json")))
 				m_users.Add(JsonSerializer.Deserialize<User>(File.ReadAllText(fileName)));
@@ -242,6 +285,8 @@ namespace SignalRConsole
 			State = States.Registering;
 			Console.Write("What is your email address? ");
 			string email = Console.ReadLine();
+			if (string.IsNullOrEmpty(email))
+				return null;
 
 			await m_hubConnection.SendAsync(c_register, email);
 			if (!await WaitAsync("Waiting for the server"))
@@ -268,44 +313,91 @@ namespace SignalRConsole
 
 		private static async Task AddFriendAsync()
 		{
-			Point cursor = ConsoleWriteLog("What is your friend's name? ");
-			string name = Console.ReadLine();
-			if (string.IsNullOrEmpty(name))
+			State = States.Busy;
+			Point cursor;
+			do
 			{
-				Console.SetCursorPosition(cursor.X, cursor.Y);
-				return;
-			}
+				cursor = ConsoleWriteLog("What is your friend's name? ");
+				string name = Console.ReadLine();
+				if (string.IsNullOrEmpty(name))
+					break;
 
-			ConsoleWriteLog("What is your friend's email? ");
-			string email = Console.ReadLine();
-			if (string.IsNullOrEmpty(email))
-			{
-				Console.SetCursorPosition(cursor.X, cursor.Y);
-				return;
-			}
+				User friend = m_user.Friends.FirstOrDefault(x => x.Name == name);
+				if (friend != null)
+				{
+					if (!friend.Verified.HasValue)
+						Console.WriteLine($"You already asked {name} to be your friend and we're waiting for a response.");
+					else if (!friend.Verified.Value)
+						Console.WriteLine($"{name} has denied your friend request.");
+					else
+						Console.WriteLine($"{name} is already your friend!");
 
+					break;
+				}
+
+				ConsoleWriteLog("What is your friend's email? ");
+				string email = Console.ReadLine();
+				if (string.IsNullOrEmpty(email))
+					break;
+
+				friend = new User(name, email);
+				m_user.AddFriend(friend);
+				SaveUser();
+				ConsoleWriteLogLine($"A friend request has been sent to {name}.");
+				await MonitorUserAsync(friend);
+			}
+			while (false);
+
+			State = States.Listening;
 			Console.SetCursorPosition(cursor.X, cursor.Y);
-
-			User friend = new User(name, email);
-			m_user.AddFriend(friend);
-			SaveUser();
-			await MonitorUserAsync(friend);
-		}
-
-		private static async Task MonitorFriendsAsync()
-		{
-			foreach (User user in m_user.Friends)
-				await MonitorUserAsync(user);
 		}
 
 		private static void ListFriends()
 		{
 			ConsoleWriteLogLine("Friends:");
 			foreach (User friend in m_user.Friends)
-				ConsoleWriteLogLine($"{friend.Name}");
+			{
+				string verified = friend.Verified.HasValue ? (friend.Verified.Value ? "" : " (blocked)") : " (pending)";
+				string online = m_online.Any(x => x.Name == friend.Name) ? " (online)" : "";
+				ConsoleWriteLogLine($"{friend.Name}{verified}{online}");
+			}
 		}
 
-		private static async Task ConnectAsync()
+		private static async Task UnfriendFriendAsync()
+		{
+			await DeleteFriendAsync(false);
+		}
+
+		private static async Task DeleteFriendAsync(bool delete = true)
+		{
+			State = States.Busy;
+			Point cursor = default;
+			User friend = ChooseFriend($"Which friend would you like to {(delete ? "delete" : "unfriend")}" +
+				$" (number, Enter to abort): ", m_user.Friends, ref cursor);
+		
+			if (friend != null)
+			{
+				if (delete)
+				{
+					_ = ConsoleWriteLog($"Are you sure you want to delete {friend.Name}? ");
+					if (Console.ReadKey(intercept: true).Key != ConsoleKey.Y)
+						return;
+
+					_ = m_users.Remove(friend);
+					File.Delete($"{friend.Name}.qkr.json");
+				}
+
+				await m_hubConnection.SendAsync(c_leaveGroupChat, MakeGroupName(friend), Name);
+				_ = m_user.Friends.Remove(friend);
+				SaveUser();
+				ConsoleWriteLogLine($"User {friend.Name} has been {(delete ? "deleted." : "unfriended")}");
+			}
+
+			Console.SetCursorPosition(cursor.X, cursor.Y);
+			State = States.Listening;
+		}
+
+		private static async Task ConnectFriendAsync()
 		{
 			if (m_online.Count == 0)
 			{
@@ -313,34 +405,20 @@ namespace SignalRConsole
 				return;
 			}
 
-			ConsoleWriteLogLine("Friends:");
-			int index = 0;
-			foreach (User friend in m_online)
-				ConsoleWriteLogLine($"{++index}: {friend.Name}");
-
-			Point cursor = ConsoleWriteLog("Which friend would you like to chat with? (number or name, Enter to abort): ");
-			
-			while (true)
+			State = States.Busy;
+			Point cursor = default;
+			User friend = ChooseFriend("Which friend would you like to chat with? (number, Enter to abort): ", m_online, ref cursor);
+			Console.SetCursorPosition(cursor.X, cursor.Y);
+			if (friend != null)
 			{
-				string name = Console.ReadLine();
-				if (string.IsNullOrEmpty(name))
-					break;
-
-				User friend = int.TryParse(name, out index) && index > 0 && index <= m_online.Count ?
-					m_online[index - 1] : m_user.Friends.FirstOrDefault(x => x.Name == name);
-				if (friend == null)
-				{
-					Console.Write($"Friend {name} not found, please try again: ");
-					continue;
-				}
-
 				State = States.Connecting;
 				ActiveChatGroupName = MakeChatGroupName(friend);
 				await m_hubConnection.SendAsync(c_joinGroupChat, ActiveChatGroupName, Name);
-				break;
 			}
-
-			Console.SetCursorPosition(cursor.X, cursor.Y);
+			else
+			{
+				State = States.Listening;
+			}
 		}
 
 		private static async Task<bool> MessageLoopAsync()
@@ -351,17 +429,33 @@ namespace SignalRConsole
 			bool success = true;
 			while (true)
 			{
+				while (true)
+				{
+					if (State == States.Listening)
+						return true;
+
+					if (Console.KeyAvailable)
+						break;
+					
+					await Task.Delay(100);
+				}
+
+				NextLine = Console.CursorTop;
 				string message = Console.ReadLine();
 				if (State != States.Chatting)
 					return true;
 
-				Console.CursorTop--;
+				Console.CursorTop = NextLine;
 
 				try
 				{
 					if (message == "goodbye")
 					{
-						await m_hubConnection.SendAsync(c_leaveGroupChat, ActiveChatGroupName, Name);
+						if (ActiveChatGroupName == ChatGroupName)
+							SendCommand(CommandNames.Disonnect, ActiveChatGroupName);
+						else
+							await m_hubConnection.SendAsync(c_leaveGroupChat, ActiveChatGroupName, Name);
+
 						break;
 					}
 
@@ -375,7 +469,6 @@ namespace SignalRConsole
 				}
 			}
 
-			State = States.Listening;
 			DisplayMenu();
 			return success;
 		}
@@ -387,14 +480,48 @@ namespace SignalRConsole
 
 		private static async Task MonitorChannels()
 		{
-			State = States.Listening;
 			await m_hubConnection.SendAsync(c_joinGroupChat, GroupName, Name);
 			await m_hubConnection.SendAsync(c_joinGroupChat, ChatGroupName, Name);
+		}
+
+		private static async Task MonitorFriendsAsync()
+		{
+			foreach (User user in m_user.Friends.Where(u => u.Verified.Value == true))
+				await MonitorUserAsync(user);
 		}
 
 		private static async Task MonitorUserAsync(User user)
 		{
 			await m_hubConnection.SendAsync(c_joinGroupChat, MakeGroupName(user), Name);
+		}
+
+		private static User ChooseFriend(string prompt, List<User> friends, ref Point cursor)
+		{
+			ConsoleWriteLogLine("Friends:");
+			int index;
+			for (index = 0; index < friends.Count; index++)
+			{
+				User friend = friends[index];
+				ConsoleWriteLogLine($"{index + 1}: {friend.Name}");
+			}
+
+			_ = ConsoleWriteLog(prompt);
+
+			while (true)
+			{
+				ConsoleKeyInfo selection = Console.ReadKey();
+				if (selection.Key == ConsoleKey.Enter)
+					return null;
+
+				User friend = int.TryParse(selection.KeyChar.ToString(), out index) &&
+					index > 0 && index <= friends.Count ? friends[index - 1] : null;
+
+				if (friend != null)
+					return friend;
+
+				cursor = ConsoleWriteLog($"\n{selection.KeyChar} not valid, enter a number between 1 and" +
+					$" {Math.Min(friends.Count, 9)}, please try again: ");
+			}
 		}
 
 		private static async Task HelloAsync(string sender, ConnectionCommand command)
@@ -495,8 +622,11 @@ namespace SignalRConsole
 
 		private static void DisplayMenu()
 		{
-			Console.WriteLine("\nPick a command: a to add a friend, l to list friends, c to chat, or x to exit");
+			Console.WriteLine("\nPick a command: a to add a friend, l to list friends, u to unfriend a friend,");
+			Console.WriteLine("d to delete a friend, c to chat, or x to exit");
+			PromptLine = Console.CursorTop;
 			NextLine = Console.CursorTop;
+			State = States.Listening;
 		}
 
 		private static void ConsoleWriteLogLine(string line)
@@ -552,6 +682,7 @@ namespace SignalRConsole
 			Initializing,
 			Changing,
 			Registering,
+			Busy,
 			Listening,
 			Connecting,
 			Chatting
@@ -566,6 +697,7 @@ namespace SignalRConsole
 #endif
 
 		private static User m_user;
+		private static States m_state;
 		private static readonly List<User> m_users = new List<User>();
 		private static readonly List<User> m_online = new List<User>();
 		private static readonly JsonSerializerOptions m_serializerOptions = new JsonSerializerOptions()
