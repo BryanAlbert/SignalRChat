@@ -19,13 +19,13 @@ namespace SignalRConsole
 			if (args is null)
 				throw new ArgumentNullException(nameof(args));
 
-			if (!await StartServer())
+			if (!await StartServerAsync())
 				return;
 
 			if (!await LoadUsersAsync())
 				return;
 
-			await MonitorChannels();
+			await MonitorChannelsAsync();
 			await MonitorFriendsAsync();
 
 			DisplayMenu();
@@ -65,7 +65,7 @@ namespace SignalRConsole
 				break;
 			}
 
-			foreach (User friend in m_user.Friends)
+			foreach (User friend in m_user.Friends.Where(x => x.Verified != false))
 				await m_hubConnection.SendAsync(c_leaveGroupChat, MakeGroupName(friend), Name);
 
 			await m_hubConnection.SendAsync(c_leaveGroupChat, GroupName, Name);
@@ -144,8 +144,11 @@ namespace SignalRConsole
 				{
 					User friend = m_user.Friends.FirstOrDefault(x => x.Name == user);
 					SendCommand(CommandNames.Hello, group, user, friend?.Verified);
-					if (friend != null && !m_online.Contains(friend))
+					if (friend != null && (friend.Verified ?? true) && !m_online.Contains(friend))
+					{
+						ConsoleWriteLogLine($"Your {(friend.Verified.HasValue ? "" : "(pending) ")}friend {friend.Name} is online.");
 						m_online.Add(friend);
+					}
 				}
 				else if (group == ChatGroupName)
 				{
@@ -156,7 +159,7 @@ namespace SignalRConsole
 				}
 				else
 				{
-					CheckFriendshipPending(user);
+					await MonitorUserAsync(group);
 				}
 			}
 		}
@@ -194,7 +197,7 @@ namespace SignalRConsole
 					await HelloAsync(sender, command);
 					break;
 				case CommandNames.Verify:
-					VerifyFriend(GetUserFromGroupName(command.Data), command.Flag);
+					await VerifyFriendAsync(command);
 					break;
 				case CommandNames.Disonnect:
 					await m_hubConnection.SendAsync(c_leaveGroupChat, ActiveChatGroupName, Name);
@@ -223,12 +226,15 @@ namespace SignalRConsole
 			else if (group == GroupName)
 			{
 				User friend = m_user.Friends.FirstOrDefault(u => u.Name == user);
-				ConsoleWriteLogLine($"Your {(friend.Verified.HasValue ? "(pending) " : " ")}friend {user} is offline.");
-				m_online.Remove(friend);
+				if (friend != null && (friend.Verified ?? true))
+				{
+					ConsoleWriteLogLine($"Your {(friend.Verified.HasValue ? "" : "(pending) ")}friend {user} is offline.");
+					m_online.Remove(friend);
+				}
 			}
 		}
 
-		private static async Task<bool> StartServer()
+		private static async Task<bool> StartServerAsync()
 		{
 			State = States.Initializing;
 			Console.WriteLine($"Initializing server and connecting to URL: {c_chatHubUrl}");
@@ -328,7 +334,7 @@ namespace SignalRConsole
 					if (!friend.Verified.HasValue)
 						Console.WriteLine($"You already asked {name} to be your friend and we're waiting for a response.");
 					else if (!friend.Verified.Value)
-						Console.WriteLine($"{name} has denied your friend request.");
+						Console.WriteLine($"{name} previously denied your friend request.");
 					else
 						Console.WriteLine($"{name} is already your friend!");
 
@@ -354,6 +360,12 @@ namespace SignalRConsole
 
 		private static void ListFriends()
 		{
+			if (m_user.Friends.Count == 0)
+			{
+				ConsoleWriteLogLine("You have no friends.");
+				return;
+			}
+
 			ConsoleWriteLogLine("Friends:");
 			foreach (User friend in m_user.Friends)
 			{
@@ -374,24 +386,25 @@ namespace SignalRConsole
 			Point cursor = default;
 			User friend = ChooseFriend($"Which friend would you like to {(delete ? "delete" : "unfriend")}" +
 				$" (number, Enter to abort): ", m_user.Friends, ref cursor);
-		
-			if (friend != null)
+
+			do
 			{
-				if (delete)
+				if (friend != null)
 				{
-					_ = ConsoleWriteLog($"Are you sure you want to delete {friend.Name}? ");
-					if (Console.ReadKey(intercept: true).Key != ConsoleKey.Y)
-						return;
+					if (delete)
+					{
+						_ = ConsoleWriteLog($"Are you sure you want to delete {friend.Name}? ");
+						if (Console.ReadKey(intercept: true).Key != ConsoleKey.Y)
+							break;
 
-					_ = m_users.Remove(friend);
-					File.Delete($"{friend.Name}.qkr.json");
+						File.Delete($"{friend.Name}.qkr.json");
+					}
+
+					await UnfriendAsync(friend);
+					ConsoleWriteLogLine($"User {friend.Name} has been {(delete ? "deleted." : "unfriended")}");
 				}
-
-				await m_hubConnection.SendAsync(c_leaveGroupChat, MakeGroupName(friend), Name);
-				_ = m_user.Friends.Remove(friend);
-				SaveUser();
-				ConsoleWriteLogLine($"User {friend.Name} has been {(delete ? "deleted." : "unfriended")}");
 			}
+			while (false);
 
 			Console.SetCursorPosition(cursor.X, cursor.Y);
 			State = States.Listening;
@@ -478,7 +491,7 @@ namespace SignalRConsole
 			File.WriteAllText($"{Name}.qkr.json", JsonSerializer.Serialize(m_user, m_serializerOptions));
 		}
 
-		private static async Task MonitorChannels()
+		private static async Task MonitorChannelsAsync()
 		{
 			await m_hubConnection.SendAsync(c_joinGroupChat, GroupName, Name);
 			await m_hubConnection.SendAsync(c_joinGroupChat, ChatGroupName, Name);
@@ -486,13 +499,18 @@ namespace SignalRConsole
 
 		private static async Task MonitorFriendsAsync()
 		{
-			foreach (User user in m_user.Friends.Where(u => u.Verified.Value == true))
+			foreach (User user in m_user.Friends.Where(u => u.Verified != false))
 				await MonitorUserAsync(user);
 		}
 
 		private static async Task MonitorUserAsync(User user)
 		{
-			await m_hubConnection.SendAsync(c_joinGroupChat, MakeGroupName(user), Name);
+			await MonitorUserAsync(MakeGroupName(user));
+		}
+
+		private static async Task MonitorUserAsync(string groupName)
+		{
+			await m_hubConnection.SendAsync(c_joinGroupChat, groupName, Name);
 		}
 
 		private static User ChooseFriend(string prompt, List<User> friends, ref Point cursor)
@@ -542,55 +560,83 @@ namespace SignalRConsole
 				}
 				else
 				{
-					CheckFriendshipPending(sender);
+					await CheckFriendshipAsync(sender, command);
 				}
 			}
 		}
 
-		private static void CheckFriendshipPending(string sender)
+		private static async Task CheckFriendshipAsync(string sender, ConnectionCommand command)
 		{
 			User friend = m_user.Friends.FirstOrDefault(x => x.Name == sender);
-			if (friend == null)
+			if (command.Flag == false)
 			{
+				await UnfriendAsync(friend);
 				return;
+			}
+			else if (friend == null)
+			{
+				SendCommand(CommandNames.Verify, GroupName, GroupName, null);
 			}
 			else if (!friend.Verified.HasValue)
 			{
-				ConsoleWriteLogLine($"Your pending friend {sender} is online.");
-				SendCommand(CommandNames.Verify, MakeGroupName(friend), GroupName, true);
+				SendCommand(CommandNames.Verify, MakeGroupName(friend), GroupName, null);
 			}
-			else if (friend.Verified.Value == true)
+			else if (friend.Verified.Value == true && command.Flag == false)
 			{
-				ConsoleWriteLogLine($"Your friend {sender} is online.");
+				await UnfriendAsync(friend);
 			}
 
 			if (!m_online.Contains(friend))
 				m_online.Add(friend);
 		}
 
-		private static void VerifyFriend(User friend, bool? verified)
+		private static async Task VerifyFriendAsync(ConnectionCommand command)
 		{
+			User friend = GetUserFromGroupName(command.Data);
 			User user = m_user.Friends.FirstOrDefault(u => u.Name == friend.Name);
-			if (user == null)
+			if (!command.Flag.HasValue)
 			{
 				Point cursor = ConsoleWriteLog($"Accept friend request from {friend.Name}," +
 					$" email address {friend.InternetId}? [y/n] ");
 				ConsoleKeyInfo confirm = Console.ReadKey(intercept: true);
 				friend.Verified = confirm.Key == ConsoleKey.Y;
+				if (user != null)
+					m_user.Friends.Remove(user);
+
 				m_user.AddFriend(friend);
 				SaveUser();
 				SendCommand(CommandNames.Verify, GroupName, GroupName, friend.Verified);
-				m_online.Add(friend);
+				if (friend.Verified ?? false)
+				{
+					m_online.Add(friend);
+					await m_hubConnection.SendAsync(c_joinGroupChat, command.Data);
+				}
+
 				Console.SetCursorPosition(cursor.X, cursor.Y);
 				user = friend;
 			}
 			else
 			{
-				user.Verified = verified;
+				user.Verified = command.Flag;
 				SaveUser();
+				if (command.Flag == false)
+				{
+					await m_hubConnection.SendAsync(c_leaveGroupChat, command.Data, Name);
+					_ = m_online.Remove(user);
+				}
 			}
 			
 			ConsoleWriteLogLine($"You and {user.Name} are {(user.Verified.Value ? "now" : "not")} friends!");
+		}
+
+		private static async Task UnfriendAsync(User friend)
+		{
+			SendCommand(CommandNames.Hello, GroupName, friend.Name, false);
+			if (friend.Verified ?? true)
+				await m_hubConnection.SendAsync(c_leaveGroupChat, MakeGroupName(friend), Name);
+
+			_ = m_user.Friends.Remove(friend);
+			SaveUser();
 		}
 
 		private static async Task<bool> WaitAsync(string message, int intervalms = 100, int timeouts = 10)
@@ -689,7 +735,6 @@ namespace SignalRConsole
 		}
 
 		private static HubConnection m_hubConnection;
-		private static readonly object m_lock = new object();
 #if true
 		private static readonly string c_chatHubUrl = "https://localhost:5001/chathub";
 #else
