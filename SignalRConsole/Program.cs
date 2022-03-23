@@ -16,13 +16,10 @@ namespace SignalRConsole
 	{
 		private static async Task Main(string[] args)
 		{
-			if (args is null)
-				throw new ArgumentNullException(nameof(args));
-
 			if (!await StartServerAsync())
 				return;
 
-			if (!await LoadUsersAsync())
+			if (!await LoadUsersAsync(args.Length > 0 ? args[0] : null))
 				return;
 
 			await MonitorChannelsAsync();
@@ -261,12 +258,15 @@ namespace SignalRConsole
 			return true;
 		}
 
-		private static async Task<bool> LoadUsersAsync()
+		private static async Task<bool> LoadUsersAsync(string name)
 		{
-			Console.Write("What is your name? ");
-			string name = Console.ReadLine();
 			if (string.IsNullOrEmpty(name))
-				return false;
+			{
+				Console.Write("What is your name? ");
+				name = Console.ReadLine();
+				if (string.IsNullOrEmpty(name))
+					return false;
+			}
 
 			foreach (string fileName in Directory.EnumerateFiles(".").Where(x => x.EndsWith(".qkr.json")))
 				m_users.Add(JsonSerializer.Deserialize<User>(File.ReadAllText(fileName)));
@@ -334,7 +334,7 @@ namespace SignalRConsole
 					if (!friend.Verified.HasValue)
 						Console.WriteLine($"You already asked {name} to be your friend and we're waiting for a response.");
 					else if (!friend.Verified.Value)
-						Console.WriteLine($"{name} previously denied your friend request.");
+						Console.WriteLine($"You and {name} are blocked. Both you and {name} must unfriend to try again.");
 					else
 						Console.WriteLine($"{name} is already your friend!");
 
@@ -568,8 +568,14 @@ namespace SignalRConsole
 		private static async Task CheckFriendshipAsync(string sender, ConnectionCommand command)
 		{
 			User friend = m_user.Friends.FirstOrDefault(x => x.Name == sender);
-			if (command.Flag == false)
+			if (command.Flag == false || (friend?.Verified ?? false))
 			{
+				if (!friend.Verified.HasValue)
+				{
+					ConsoleWriteLogLine($"You and {friend.Name} are blocked. {friend.Name} must unfriend you" +
+						$" before you can become friends.");
+				}
+
 				await UnfriendAsync(friend);
 				return;
 			}
@@ -580,10 +586,6 @@ namespace SignalRConsole
 			else if (!friend.Verified.HasValue)
 			{
 				SendCommand(CommandNames.Verify, MakeGroupName(friend), GroupName, null);
-			}
-			else if (friend.Verified.Value == true && command.Flag == false)
-			{
-				await UnfriendAsync(friend);
 			}
 
 			if (!m_online.Contains(friend))
@@ -635,6 +637,7 @@ namespace SignalRConsole
 			if (friend.Verified ?? true)
 				await m_hubConnection.SendAsync(c_leaveGroupChat, MakeGroupName(friend), Name);
 
+			_ = m_online.Remove(friend);
 			_ = m_user.Friends.Remove(friend);
 			SaveUser();
 		}
