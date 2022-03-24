@@ -14,13 +14,13 @@ namespace SignalRConsole
 {
 	public class Program
 	{
-		private static async Task Main(string[] args)
+		private static async Task<int> Main(string[] args)
 		{
 			if (!await StartServerAsync())
-				return;
+				return -1;
 
 			if (!await LoadUsersAsync(args.Length > 0 ? args[0] : null))
-				return;
+				return -2;
 
 			await MonitorChannelsAsync();
 			await MonitorFriendsAsync();
@@ -29,34 +29,49 @@ namespace SignalRConsole
 
 			while (true)
 			{
-				PromptLine = Console.CursorTop;
 				Console.CursorLeft = 0;
 				Console.Write($"{State}> ");
 				while (!Console.KeyAvailable || State != States.Listening)
 					await Task.Delay(10);
 
 				ConsoleKeyInfo menu = Console.ReadKey(intercept: true);
-				switch (menu.Key)
+				try
 				{
-					case ConsoleKey.A:
-						await AddFriendAsync();
-						continue;
-					case ConsoleKey.L:
-						ListFriends();
-						continue;
-					case ConsoleKey.U:
-						await UnfriendFriendAsync();
-						continue;
-					case ConsoleKey.D:
-						await DeleteFriendAsync();
-						continue;
-					case ConsoleKey.C:
-						await ConnectFriendAsync();
-						continue;
-					case ConsoleKey.X:
-						break;
-					default:
-						continue;
+					switch (menu.Key)
+					{
+						case ConsoleKey.A:
+							await AddFriendAsync();
+							continue;
+						case ConsoleKey.L:
+							ListFriends();
+							continue;
+						case ConsoleKey.U:
+							await UnfriendFriendAsync();
+							continue;
+						case ConsoleKey.D:
+							await DeleteFriendAsync();
+							continue;
+						case ConsoleKey.C:
+							await ConnectFriendAsync();
+							continue;
+						case ConsoleKey.X:
+							break;
+						default:
+							continue;
+					}
+				}
+				catch (InvalidOperationException invalid)
+				{
+					Console.WriteLine("Disconnected from the server, reconnecting...");
+					await StartServerAsync();
+					continue;
+				}
+				catch (Exception exception)
+				{
+					State = States.Broken;
+					ConsoleWriteLogLine($"Unfortunately, something broke. {exception.Message}");
+					ConsoleWriteLogLine("\nFinished.");
+					return -3;
 				}
 
 				break;
@@ -69,6 +84,7 @@ namespace SignalRConsole
 			await m_hubConnection.StopAsync();
 			_ = MoveCursorToLog();
 			Console.WriteLine("\nFinished.");
+			return 0;
 		}
 
 
@@ -319,30 +335,38 @@ namespace SignalRConsole
 
 		private static async Task AddFriendAsync()
 		{
+			EraseLog();
 			State = States.Busy;
-			Point cursor;
-			do
+			Point cursor = Point.Empty;
+			while (true)
 			{
-				cursor = ConsoleWriteLog("What is your friend's name? ");
-				string name = Console.ReadLine();
+				Point temp = ConsoleWriteLogRead("What is your friend's name? ", out string name);
+				if (cursor.IsEmpty)
+					cursor = temp;
+
 				if (string.IsNullOrEmpty(name))
 					break;
+
+				if (name == Name)
+				{
+					ConsoleWriteLogLine($"That's your name, try again!");
+					continue;
+				}
 
 				User friend = m_user.Friends.FirstOrDefault(x => x.Name == name);
 				if (friend != null)
 				{
 					if (!friend.Verified.HasValue)
-						Console.WriteLine($"You already asked {name} to be your friend and we're waiting for a response.");
+						ConsoleWriteLogLine($"You already asked {name} to be your friend and we're waiting for a response.");
 					else if (!friend.Verified.Value)
-						Console.WriteLine($"You and {name} are blocked. Both you and {name} must unfriend to try again.");
+						ConsoleWriteLogLine($"You and {name} are blocked. Both you and {name} must unfriend to try again.");
 					else
-						Console.WriteLine($"{name} is already your friend!");
+						ConsoleWriteLogLine($"{name} is already your friend!");
 
 					break;
 				}
 
-				ConsoleWriteLog("What is your friend's email? ");
-				string email = Console.ReadLine();
+				_ = ConsoleWriteLogRead("What is your friend's email? ", out string email);
 				if (string.IsNullOrEmpty(email))
 					break;
 
@@ -351,8 +375,8 @@ namespace SignalRConsole
 				SaveUser();
 				ConsoleWriteLogLine($"A friend request has been sent to {name}.");
 				await MonitorUserAsync(friend);
+				break;
 			}
-			while (false);
 
 			State = States.Listening;
 			Console.SetCursorPosition(cursor.X, cursor.Y);
@@ -360,6 +384,7 @@ namespace SignalRConsole
 
 		private static void ListFriends()
 		{
+			EraseLog();
 			if (m_user.Friends.Count == 0)
 			{
 				ConsoleWriteLogLine("You have no friends.");
@@ -382,6 +407,7 @@ namespace SignalRConsole
 
 		private static async Task DeleteFriendAsync(bool delete = true)
 		{
+			EraseLog();
 			State = States.Busy;
 			Point cursor = default;
 			User friend = ChooseFriend($"Which friend would you like to {(delete ? "delete" : "unfriend")}" +
@@ -393,8 +419,8 @@ namespace SignalRConsole
 				{
 					if (delete)
 					{
-						_ = ConsoleWriteLog($"Are you sure you want to delete {friend.Name}? ");
-						if (Console.ReadKey(intercept: true).Key != ConsoleKey.Y)
+						_ = ConsoleWriteLogRead($"Are you sure you want to delete {friend.Name}? ", out ConsoleKeyInfo confirm);
+						if (confirm.Key != ConsoleKey.Y)
 							break;
 
 						File.Delete($"{friend.Name}.qkr.json");
@@ -412,6 +438,7 @@ namespace SignalRConsole
 
 		private static async Task ConnectFriendAsync()
 		{
+			EraseLog();
 			if (m_online.Count == 0)
 			{
 				ConsoleWriteLogLine("None of your friends is online.");
@@ -523,11 +550,10 @@ namespace SignalRConsole
 				ConsoleWriteLogLine($"{index + 1}: {friend.Name}");
 			}
 
-			_ = ConsoleWriteLog(prompt);
+			_ = ConsoleWriteLogRead(prompt, out ConsoleKeyInfo selection);
 
 			while (true)
 			{
-				ConsoleKeyInfo selection = Console.ReadKey();
 				if (selection.Key == ConsoleKey.Enter)
 					return null;
 
@@ -537,8 +563,8 @@ namespace SignalRConsole
 				if (friend != null)
 					return friend;
 
-				cursor = ConsoleWriteLog($"\n{selection.KeyChar} not valid, enter a number between 1 and" +
-					$" {Math.Min(friends.Count, 9)}, please try again: ");
+				cursor = ConsoleWriteLogRead($"{selection.KeyChar} not valid, enter a number between 1 and" +
+					$" {Math.Min(friends.Count, 9)}, please try again: ", out selection);
 			}
 		}
 
@@ -568,7 +594,7 @@ namespace SignalRConsole
 		private static async Task CheckFriendshipAsync(string sender, ConnectionCommand command)
 		{
 			User friend = m_user.Friends.FirstOrDefault(x => x.Name == sender);
-			if (command.Flag == false || (friend?.Verified ?? false))
+			if (command.Flag == false || friend == null)
 			{
 				if (!friend.Verified.HasValue)
 				{
@@ -598,9 +624,8 @@ namespace SignalRConsole
 			User user = m_user.Friends.FirstOrDefault(u => u.Name == friend.Name);
 			if (!command.Flag.HasValue)
 			{
-				Point cursor = ConsoleWriteLog($"Accept friend request from {friend.Name}," +
-					$" email address {friend.InternetId}? [y/n] ");
-				ConsoleKeyInfo confirm = Console.ReadKey(intercept: true);
+				Point cursor = ConsoleWriteLogRead($"Accept friend request from {friend.Name}," +
+					$" email address {friend.InternetId}? [y/n] ", out ConsoleKeyInfo confirm);
 				friend.Verified = confirm.Key == ConsoleKey.Y;
 				if (user != null)
 					m_user.Friends.Remove(user);
@@ -674,14 +699,30 @@ namespace SignalRConsole
 			Console.WriteLine("\nPick a command: a to add a friend, l to list friends, u to unfriend a friend,");
 			Console.WriteLine("d to delete a friend, c to chat, or x to exit");
 			PromptLine = Console.CursorTop;
-			NextLine = Console.CursorTop;
+			NextLine = PromptLine + 2;
 			State = States.Listening;
+		}
+
+		private static void EraseLog()
+		{
+			Point cursor = new Point(Console.CursorLeft, Console.CursorTop);
+			NextLine = PromptLine + 2;
+			Console.SetCursorPosition(0, NextLine);
+			ConsoleColor color = Console.ForegroundColor;
+			Console.ForegroundColor = Console.BackgroundColor;
+			foreach (string line in m_log)
+				Console.WriteLine(line);
+
+			m_log.Clear();
+			Console.ForegroundColor = color;
+			Console.SetCursorPosition(cursor.X, cursor.Y);
 		}
 
 		private static void ConsoleWriteLogLine(string line)
 		{
 			Point cursor = MoveCursorToLog();
 			Console.WriteLine(line);
+			m_log.Add(line);
 			Console.SetCursorPosition(cursor.X, cursor.Y);
 		}
 
@@ -689,13 +730,32 @@ namespace SignalRConsole
 		{
 			Point cursor = MoveCursorToLog();
 			Console.Write(line);
+			m_log.Add(line);
+			return cursor;
+		}
+
+		private static Point ConsoleWriteLogRead(string line, out string value)
+		{
+			Point cursor = MoveCursorToLog();
+			Console.Write(line);
+			value = Console.ReadLine();
+			m_log.Add(line + value);
+			return cursor;
+		}
+
+		private static Point ConsoleWriteLogRead(string line, out ConsoleKeyInfo confirm)
+		{
+			Point cursor = MoveCursorToLog();
+			Console.Write(line);
+			confirm = Console.ReadKey();
+			m_log.Add(line + confirm.KeyChar);
 			return cursor;
 		}
 
 		private static Point MoveCursorToLog()
 		{
 			Point cursor = new Point(Console.CursorLeft, Console.CursorTop);
-			Console.SetCursorPosition(0, ++NextLine);
+			Console.SetCursorPosition(0, NextLine++);
 			return cursor;
 		}
 
@@ -734,7 +794,8 @@ namespace SignalRConsole
 			Busy,
 			Listening,
 			Connecting,
-			Chatting
+			Chatting,
+			Broken
 		}
 
 		private static HubConnection m_hubConnection;
@@ -748,6 +809,7 @@ namespace SignalRConsole
 		private static States m_state;
 		private static readonly List<User> m_users = new List<User>();
 		private static readonly List<User> m_online = new List<User>();
+		private static readonly List<string> m_log = new List<string>();
 		private static readonly JsonSerializerOptions m_serializerOptions = new JsonSerializerOptions()
 		{
 			WriteIndented = true
