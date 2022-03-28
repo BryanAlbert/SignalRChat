@@ -60,7 +60,7 @@ namespace SignalRConsole
 							continue;
 					}
 				}
-				catch (InvalidOperationException invalid)
+				catch (InvalidOperationException)
 				{
 					Console.WriteLine("Disconnected from the server, reconnecting...");
 					await StartServerAsync();
@@ -594,9 +594,9 @@ namespace SignalRConsole
 		private static async Task CheckFriendshipAsync(string sender, ConnectionCommand command)
 		{
 			User friend = m_user.Friends.FirstOrDefault(x => x.Name == sender);
-			if (command.Flag == false || friend == null)
+			if (command.Flag == false || friend == null || (!command.Flag.HasValue && friend.Verified == true))
 			{
-				if (!friend.Verified.HasValue)
+				if (friend != null && !friend.Verified.HasValue)
 				{
 					ConsoleWriteLogLine($"You and {friend.Name} are blocked. {friend.Name} must unfriend you" +
 						$" before you can become friends.");
