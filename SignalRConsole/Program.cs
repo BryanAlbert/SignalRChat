@@ -52,7 +52,7 @@ namespace SignalRConsole
 							await DeleteFriendAsync();
 							continue;
 						case ConsoleKey.C:
-							await ConnectFriendAsync();
+							await ChatFriendAsync();
 							continue;
 						case ConsoleKey.X:
 							break;
@@ -64,6 +64,7 @@ namespace SignalRConsole
 				{
 					Console.WriteLine("Disconnected from the server, reconnecting...");
 					await StartServerAsync();
+					DisplayMenu();
 					continue;
 				}
 				catch (Exception exception)
@@ -127,7 +128,6 @@ namespace SignalRConsole
 			}
 		}
 
-
 		private static string RegistrationToken { get; set; }
 		private static string Name => m_user?.Name;
 		private static string Email => m_user?.InternetId;
@@ -136,6 +136,7 @@ namespace SignalRConsole
 		public static string ActiveChatGroupName { get; set; }
 		private static int NextLine { get; set; }
 		private static int PromptLine { get; set; }
+
 
 		private static void OnRegister(string token)
 		{
@@ -169,10 +170,6 @@ namespace SignalRConsole
 					ActiveChatGroupName = group;
 					if (State == States.Listening)
 						_ = await MessageLoopAsync();
-				}
-				else
-				{
-					await MonitorUserAsync(group);
 				}
 			}
 		}
@@ -436,7 +433,7 @@ namespace SignalRConsole
 			State = States.Listening;
 		}
 
-		private static async Task ConnectFriendAsync()
+		private static async Task ChatFriendAsync()
 		{
 			EraseLog();
 			if (m_online.Count == 0)
@@ -449,6 +446,7 @@ namespace SignalRConsole
 			Point cursor = default;
 			User friend = ChooseFriend("Which friend would you like to chat with? (number, Enter to abort): ", m_online, ref cursor);
 			Console.SetCursorPosition(cursor.X, cursor.Y);
+
 			if (friend != null)
 			{
 				State = States.Connecting;
