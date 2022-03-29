@@ -10,11 +10,11 @@ namespace SignalRConsole
 		{
 		}
 
-		public User(string name, string email, bool? verified)
+		public User(string name, string email, bool? blocked)
 		{
 			Name = name;
 			InternetId = email;
-			Verified = verified;
+			Blocked = blocked;
 			Friends = new List<User>();
 		}
 
@@ -22,13 +22,12 @@ namespace SignalRConsole
 		{
 		}
 
-		public User(User user, bool? verified) : this(user.Name, user.InternetId, verified)
+		public User(User user, bool? blocked) : this(user.Name, user.InternetId, blocked)
 		{
 		}
 
-		public User(string groupName, bool? verified)
+		public User(string groupName, bool? blocked)
 		{
-
 		}
 
 
@@ -56,7 +55,7 @@ namespace SignalRConsole
 
 		public string Name { get; set; }
 		public string InternetId { get; set; }
-		public bool? Verified { get; set; }
+		public bool? Blocked { get; set; }
 		public List<User> Friends { get; set; }
 	}
 }

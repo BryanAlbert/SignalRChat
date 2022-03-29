@@ -77,7 +77,7 @@ namespace SignalRConsole
 				break;
 			}
 
-			foreach (User friend in m_user.Friends.Where(x => x.Verified != false))
+			foreach (User friend in m_user.Friends.Where(x => x.Blocked != true))
 				await m_hubConnection.SendAsync(c_leaveGroupChat, MakeGroupName(friend), Name);
 
 			await m_hubConnection.SendAsync(c_leaveGroupChat, GroupName, Name);
@@ -156,10 +156,10 @@ namespace SignalRConsole
 				if (group == GroupName)
 				{
 					User friend = m_user.Friends.FirstOrDefault(x => x.Name == user);
-					SendCommand(CommandNames.Hello, group, user, friend?.Verified);
-					if (friend != null && (friend.Verified ?? true) && !m_online.Contains(friend))
+					SendCommand(CommandNames.Hello, group, user, !friend?.Blocked);
+					if (friend != null && (!friend.Blocked ?? true) && !m_online.Contains(friend))
 					{
-						ConsoleWriteLogLine($"Your {(friend.Verified.HasValue ? "" : "(pending) ")}friend {friend.Name} is online.");
+						ConsoleWriteLogLine($"Your {(friend.Blocked.HasValue ? "" : "(pending) ")}friend {friend.Name} is online.");
 						m_online.Add(friend);
 					}
 				}
@@ -239,9 +239,9 @@ namespace SignalRConsole
 			else if (group == GroupName)
 			{
 				User friend = m_user.Friends.FirstOrDefault(u => u.Name == user);
-				if (friend != null && (friend.Verified ?? true))
+				if (friend != null && (!friend.Blocked ?? true))
 				{
-					ConsoleWriteLogLine($"Your {(friend.Verified.HasValue ? "" : "(pending) ")}friend {user} is offline.");
+					ConsoleWriteLogLine($"Your {(friend.Blocked.HasValue ? "" : "(pending) ")}friend {user} is offline.");
 					m_online.Remove(friend);
 				}
 			}
@@ -294,7 +294,7 @@ namespace SignalRConsole
 				if (email == null)
 					return false;
 
-				m_user = new User(name, email, true);
+				m_user = new User(name, email, null);
 				m_users.Add(m_user);
 				SaveUser();
 			}
@@ -356,9 +356,9 @@ namespace SignalRConsole
 				User friend = m_user.Friends.FirstOrDefault(x => x.Name == name);
 				if (friend != null)
 				{
-					if (!friend.Verified.HasValue)
+					if (!friend.Blocked.HasValue)
 						ConsoleWriteLogLine($"You already asked {name} to be your friend and we're waiting for a response.");
-					else if (!friend.Verified.Value)
+					else if (friend.Blocked.Value)
 						ConsoleWriteLogLine($"You and {name} are blocked. Both you and {name} must unfriend to try again.");
 					else
 						ConsoleWriteLogLine($"{name} is already your friend!");
@@ -394,9 +394,9 @@ namespace SignalRConsole
 			ConsoleWriteLogLine("Friends:");
 			foreach (User friend in m_user.Friends)
 			{
-				string verified = friend.Verified.HasValue ? (friend.Verified.Value ? "" : " (blocked)") : " (pending)";
-				string online = m_online.Any(x => x.Name == friend.Name) ? " (online)" : "";
-				ConsoleWriteLogLine($"{friend.Name}{verified}{online}");
+				ConsoleWriteLogLine($"{friend.Name}" +
+					$"{(friend.Blocked.HasValue ? (friend.Blocked.Value ? " (blocked)" : "") : " (pending)")}" +
+					$"{(m_online.Any(x => x.Name == friend.Name) ? " (online)" : "")}");
 			}
 		}
 
@@ -526,7 +526,7 @@ namespace SignalRConsole
 
 		private static async Task MonitorFriendsAsync()
 		{
-			foreach (User user in m_user.Friends.Where(u => u.Verified != false))
+			foreach (User user in m_user.Friends.Where(u => u.Blocked != true))
 				await MonitorUserAsync(user);
 		}
 
@@ -594,11 +594,11 @@ namespace SignalRConsole
 		private static async Task CheckFriendshipAsync(string sender, ConnectionCommand command)
 		{
 			User friend = m_user.Friends.FirstOrDefault(x => x.Name == sender);
-			if (command.Flag == false || friend == null || (!command.Flag.HasValue && friend.Verified == true))
+			if (command.Flag == false || friend == null || (!command.Flag.HasValue && friend.Blocked == false))
 			{
-				if (friend != null && !friend.Verified.HasValue)
+				if (friend != null && !friend.Blocked.HasValue)
 				{
-					ConsoleWriteLogLine($"You and {friend.Name} are blocked. {friend.Name} must unfriend you" +
+					ConsoleWriteLogLine($"{friend.Name} has blocked you. {friend.Name} must unfriend you" +
 						$" before you can become friends.");
 				}
 
@@ -609,7 +609,7 @@ namespace SignalRConsole
 			{
 				SendCommand(CommandNames.Verify, GroupName, GroupName, null);
 			}
-			else if (!friend.Verified.HasValue)
+			else if (!friend.Blocked.HasValue)
 			{
 				SendCommand(CommandNames.Verify, MakeGroupName(friend), GroupName, null);
 			}
@@ -626,14 +626,14 @@ namespace SignalRConsole
 			{
 				Point cursor = ConsoleWriteLogRead($"Accept friend request from {friend.Name}," +
 					$" email address {friend.InternetId}? [y/n] ", out ConsoleKeyInfo confirm);
-				friend.Verified = confirm.Key == ConsoleKey.Y;
+				friend.Blocked = confirm.Key != ConsoleKey.Y;
 				if (user != null)
 					m_user.Friends.Remove(user);
 
 				m_user.AddFriend(friend);
 				SaveUser();
-				SendCommand(CommandNames.Verify, GroupName, GroupName, friend.Verified);
-				if (friend.Verified ?? false)
+				SendCommand(CommandNames.Verify, GroupName, GroupName, !friend.Blocked);
+				if (!friend.Blocked ?? false)
 				{
 					m_online.Add(friend);
 					await m_hubConnection.SendAsync(c_joinGroupChat, command.Data);
@@ -644,7 +644,7 @@ namespace SignalRConsole
 			}
 			else
 			{
-				user.Verified = command.Flag;
+				user.Blocked = !command.Flag;
 				SaveUser();
 				if (command.Flag == false)
 				{
@@ -653,13 +653,13 @@ namespace SignalRConsole
 				}
 			}
 			
-			ConsoleWriteLogLine($"You and {user.Name} are {(user.Verified.Value ? "now" : "not")} friends!");
+			ConsoleWriteLogLine($"You and {user.Name} are {(user.Blocked.Value ? "not" : "now")} friends!");
 		}
 
 		private static async Task UnfriendAsync(User friend)
 		{
 			SendCommand(CommandNames.Hello, GroupName, friend.Name, false);
-			if (friend.Verified ?? true)
+			if (!friend.Blocked ?? true)
 				await m_hubConnection.SendAsync(c_leaveGroupChat, MakeGroupName(friend), Name);
 
 			_ = m_online.Remove(friend);
