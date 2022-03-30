@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text.Json;
+﻿using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
 namespace SignalRConsole
@@ -11,24 +9,16 @@ namespace SignalRConsole
 		{
 		}
 
-		public User(string name, string email, bool? blocked)
+		public User(string name, string email)
 		{
 			Name = name;
 			InternetId = email;
-			Blocked = blocked;
 			Friends = new List<User>();
 		}
 
-		public User(string name, string email) : this(name, email, null)
+		public User(string name, string email, string fileName) : this(name, email)
 		{
-		}
-
-		public User(User user, bool? blocked) : this(user.Name, user.InternetId, blocked)
-		{
-		}
-
-		public User(string groupName, bool? blocked)
-		{
+			FileName = fileName;
 		}
 
 
@@ -38,27 +28,12 @@ namespace SignalRConsole
 		}
 
 
-		public static User DeserializeCommand(string json)
-		{
-			User commands;
-			try
-			{
-				commands = JsonSerializer.Deserialize<User>(json);
-				return commands;
-			}
-			catch (Exception)
-			{
-
-				throw;
-			}
-		}
-
-
 		public string Name { get; set; }
 		public string InternetId { get; set; }
 		public bool? Blocked { get; set; }
 		public List<User> Friends { get; set; }
+
 		[JsonIgnore]
-		public string FileName => $"{Name}{Program.c_fileExtension}";
+		public string FileName { get; set; }
 	}
 }

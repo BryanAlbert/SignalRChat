@@ -133,12 +133,12 @@ namespace SignalRConsole
 		private static string RegistrationToken { get; set; }
 		private static string Name => m_user?.Name;
 		private static string Email => m_user?.InternetId;
+		private static string FileName => m_user.FileName;
 		private static string GroupName => MakeGroupName(Name, Email);
 		private static string ChatGroupName => MakeChatGroupName(m_user);
 		private static string ActiveChatGroupName { get; set; }
 		private static int NextLine { get; set; }
 		private static int PromptLine { get; set; }
-		private static string FileName => $"{Name}{c_fileExtension}";
 
 
 		private static void OnRegister(string token)
@@ -291,7 +291,11 @@ namespace SignalRConsole
 			}
 
 			foreach (string fileName in Directory.EnumerateFiles(".").Where(x => x.EndsWith(c_fileExtension)))
-				m_users.Add(JsonSerializer.Deserialize<User>(File.ReadAllText(fileName)));
+			{
+				User user = JsonSerializer.Deserialize<User>(File.ReadAllText(fileName));
+				user.FileName = fileName;
+				m_users.Add(user);
+			}
 			
 			m_user = m_users.FirstOrDefault(u => u.Name == name);
 			if (m_user == null)
@@ -300,7 +304,7 @@ namespace SignalRConsole
 				if (email == null)
 					return false;
 
-				m_user = new User(name, email, null);
+				m_user = new User(name, email, $"{name}{c_fileExtension}");
 				m_users.Add(m_user);
 				SaveUser();
 			}
