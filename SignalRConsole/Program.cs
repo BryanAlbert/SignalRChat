@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
@@ -49,7 +50,7 @@ namespace SignalRConsole
 							await UnfriendFriendAsync();
 							continue;
 						case ConsoleKey.D:
-							await DeleteFriendAsync();
+							await RemoveUserAsync();
 							continue;
 						case ConsoleKey.C:
 							await ChatFriendAsync();
@@ -99,6 +100,7 @@ namespace SignalRConsole
 		public const string c_leaveGroupChat = "LeaveGroupChat";
 		public const string c_leaveGroupMessage = "LeaveGroupMessage";
 		public const string c_chatGroupName = "Chat";
+		public const string c_fileExtension = ".qkr.json";
 
 
 		private static States State
@@ -132,10 +134,11 @@ namespace SignalRConsole
 		private static string Name => m_user?.Name;
 		private static string Email => m_user?.InternetId;
 		private static string GroupName => MakeGroupName(Name, Email);
-		public static string ChatGroupName => MakeChatGroupName(m_user);
-		public static string ActiveChatGroupName { get; set; }
+		private static string ChatGroupName => MakeChatGroupName(m_user);
+		private static string ActiveChatGroupName { get; set; }
 		private static int NextLine { get; set; }
 		private static int PromptLine { get; set; }
+		private static string FileName => $"{Name}{c_fileExtension}";
 
 
 		private static void OnRegister(string token)
@@ -166,10 +169,16 @@ namespace SignalRConsole
 				}
 				else if (group == ChatGroupName)
 				{
-					SendCommand(CommandNames.Hello, group, user, State == States.Listening);
-					ActiveChatGroupName = group;
 					if (State == States.Listening)
+					{
+						SendCommand(CommandNames.Hello, group, user, true);
+						ActiveChatGroupName = group;
 						_ = await MessageLoopAsync();
+					}
+					else
+					{
+						SendCommand(CommandNames.Hello, group, user, false);
+					}
 				}
 			}
 		}
@@ -281,7 +290,7 @@ namespace SignalRConsole
 					return false;
 			}
 
-			foreach (string fileName in Directory.EnumerateFiles(".").Where(x => x.EndsWith(".qkr.json")))
+			foreach (string fileName in Directory.EnumerateFiles(".").Where(x => x.EndsWith(c_fileExtension)))
 				m_users.Add(JsonSerializer.Deserialize<User>(File.ReadAllText(fileName)));
 			
 			m_user = m_users.FirstOrDefault(u => u.Name == name);
@@ -399,16 +408,38 @@ namespace SignalRConsole
 
 		private static async Task UnfriendFriendAsync()
 		{
-			await DeleteFriendAsync(false);
+			EraseLog();
+			if (m_user.Friends.Count == 0)
+			{
+				ConsoleWriteLogLine("You have no friends.");
+				return;
+			}
+
+			State = States.Busy;
+			Point? cursor = default;
+			User friend = ChooseFriend($"Which friend would you like to unfriend (number, Enter to abort): ",
+				m_user.Friends, false, ref cursor);
+			if(friend != null)
+			{
+				await RemoveUserAsync(friend, cursor);
+			}
+			else
+			{
+				Console.SetCursorPosition(cursor.Value.X, cursor.Value.Y);
+				State = States.Listening;
+			}
 		}
 
-		private static async Task DeleteFriendAsync(bool delete = true)
+		private static async Task RemoveUserAsync(User friend = null, Point? cursor = null)
 		{
-			EraseLog();
-			State = States.Busy;
-			Point cursor = default;
-			User friend = ChooseFriend($"Which friend would you like to {(delete ? "delete" : "unfriend")}" +
-				$" (number, Enter to abort): ", m_user.Friends, ref cursor);
+			bool delete = friend == null;
+			if (delete)
+			{
+				EraseLog();
+				State = States.Busy;
+				friend = ChooseFriend($"Which user would you like to delete (number, Enter to abort): ",
+					m_users, true, ref cursor);
+			}
 
 			do
 			{
@@ -420,16 +451,19 @@ namespace SignalRConsole
 						if (confirm.Key != ConsoleKey.Y)
 							break;
 
-						File.Delete($"{friend.Name}.qkr.json");
+						File.Delete($"{friend.FileName}");
 					}
 
 					await UnfriendAsync(friend);
-					ConsoleWriteLogLine($"User {friend.Name} has been {(delete ? "deleted." : "unfriended")}");
+					if (delete)
+						ConsoleWriteLogLine($"User {friend.Name} has been deleted.");
+					else
+						ConsoleWriteLogLine($"Your friend {friend.Name} has been unfriended.");
 				}
 			}
 			while (false);
 
-			Console.SetCursorPosition(cursor.X, cursor.Y);
+			Console.SetCursorPosition(cursor.Value.X, cursor.Value.Y);
 			State = States.Listening;
 		}
 
@@ -443,9 +477,10 @@ namespace SignalRConsole
 			}
 
 			State = States.Busy;
-			Point cursor = default;
-			User friend = ChooseFriend("Which friend would you like to chat with? (number, Enter to abort): ", m_online, ref cursor);
-			Console.SetCursorPosition(cursor.X, cursor.Y);
+			Point? cursor = default;
+			User friend = ChooseFriend("Which friend would you like to chat with? (number, Enter to abort): ",
+				m_online, false, ref cursor);
+			Console.SetCursorPosition(cursor.Value.X, cursor.Value.Y);
 
 			if (friend != null)
 			{
@@ -461,9 +496,10 @@ namespace SignalRConsole
 
 		private static async Task<bool> MessageLoopAsync()
 		{
+			EraseLog();
 			State = States.Chatting;
 			Console.SetCursorPosition(0, NextLine);
-			Console.WriteLine("\nType messages, type 'goodbye' to leave the chat.");
+			Console.WriteLine("Type messages, type 'goodbye' to leave the chat.");
 			bool success = true;
 			while (true)
 			{
@@ -513,7 +549,7 @@ namespace SignalRConsole
 
 		private static void SaveUser()
 		{
-			File.WriteAllText($"{Name}.qkr.json", JsonSerializer.Serialize(m_user, m_serializerOptions));
+			File.WriteAllText($"{FileName}", JsonSerializer.Serialize(m_user, m_serializerOptions));
 		}
 
 		private static async Task MonitorChannelsAsync()
@@ -538,31 +574,31 @@ namespace SignalRConsole
 			await m_hubConnection.SendAsync(c_joinGroupChat, groupName, Name);
 		}
 
-		private static User ChooseFriend(string prompt, List<User> friends, ref Point cursor)
+		private static User ChooseFriend(string prompt, List<User> users, bool delete, ref Point? cursor)
 		{
-			ConsoleWriteLogLine("Friends:");
+			ConsoleWriteLogLine($"{(delete ? "Users:" : "Friends:")}");
 			int index;
-			for (index = 0; index < friends.Count; index++)
+			for (index = 0; index < users.Count; index++)
 			{
-				User friend = friends[index];
-				ConsoleWriteLogLine($"{index + 1}: {friend.Name}");
+				User user = users[index];
+				ConsoleWriteLogLine($"{string.Format("{0:X}", index)}: {user.Name}{(delete ? $" ({user.FileName})" : "")}");
 			}
 
-			_ = ConsoleWriteLogRead(prompt, out ConsoleKeyInfo selection);
+			cursor = ConsoleWriteLogRead(prompt, out ConsoleKeyInfo selection);
 
 			while (true)
 			{
 				if (selection.Key == ConsoleKey.Enter)
 					return null;
 
-				User friend = int.TryParse(selection.KeyChar.ToString(), out index) &&
-					index > 0 && index <= friends.Count ? friends[index - 1] : null;
+				User user = int.TryParse(selection.KeyChar.ToString(), NumberStyles.HexNumber, CultureInfo.InvariantCulture,
+					out index) && index >= 0 && index < users.Count ? users[index] : null;
 
-				if (friend != null)
-					return friend;
+				if (user != null)
+					return user;
 
 				cursor = ConsoleWriteLogRead($"{selection.KeyChar} not valid, enter a number between 1 and" +
-					$" {Math.Min(friends.Count, 9)}, please try again: ", out selection);
+					$" {Math.Min(users.Count, 9)}, please try again: ", out selection);
 			}
 		}
 
@@ -578,6 +614,7 @@ namespace SignalRConsole
 					}
 					else
 					{
+						await m_hubConnection.SendAsync(c_leaveGroupChat, ActiveChatGroupName, Name);
 						ConsoleWriteLogLine($"Your friend can't chat at the moment.");
 						State = States.Listening;
 					}
@@ -695,7 +732,7 @@ namespace SignalRConsole
 		private static void DisplayMenu()
 		{
 			Console.WriteLine("\nPick a command: a to add a friend, l to list friends, u to unfriend a friend,");
-			Console.WriteLine("d to delete a friend, c to chat, or x to exit");
+			Console.WriteLine("d to delete a user, c to chat, or x to exit");
 			PromptLine = Console.CursorTop;
 			NextLine = PromptLine + 2;
 			State = States.Listening;

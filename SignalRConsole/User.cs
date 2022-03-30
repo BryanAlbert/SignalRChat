@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace SignalRConsole
 {
@@ -57,5 +58,7 @@ namespace SignalRConsole
 		public string InternetId { get; set; }
 		public bool? Blocked { get; set; }
 		public List<User> Friends { get; set; }
+		[JsonIgnore]
+		public string FileName => $"{Name}{Program.c_fileExtension}";
 	}
 }
