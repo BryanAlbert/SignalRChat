@@ -91,6 +91,8 @@ namespace SignalRConsole
 
 
 		public const string c_register = "Register";
+		public const string c_sendCommand = "SendCommand";
+		public const string c_receiveCommand = "ReceiveCommand";
 		public const string c_joinGroupChat = "JoinGroupChat";
 		public const string c_joinGroupMessage = "JoinGroupMessage";
 		public const string c_sendGroupMessage = "SendGroupMessage";
@@ -155,12 +157,11 @@ namespace SignalRConsole
 		{
 			if (user != Name)
 			{
-				string[] parts = ParseGroupName(group);
-				Debug.WriteLine($"{user} has joined the {string.Join('-', parts)} group.");
+				Debug.WriteLine($"{user} has joined the {string.Join('-', ParseGroupName(group))} group.");
 				if (group == GroupName)
 				{
 					User friend = m_user.Friends.FirstOrDefault(x => x.Name == user);
-					SendCommand(CommandNames.Hello, group, user, !friend?.Blocked);
+					SendCommand(CommandNames.Hello, user, null, !friend?.Blocked);
 					if (friend != null && (!friend.Blocked ?? true) && !m_online.Contains(friend))
 					{
 						ConsoleWriteLogLine($"Your {(friend.Blocked.HasValue ? "" : "(pending) ")}friend {friend.Name} is online.");
@@ -171,13 +172,13 @@ namespace SignalRConsole
 				{
 					if (State == States.Listening)
 					{
-						SendCommand(CommandNames.Hello, group, user, true);
+						SendCommand(CommandNames.Hello, group, null, true);
 						ActiveChatGroupName = group;
 						_ = await MessageLoopAsync();
 					}
 					else
 					{
-						SendCommand(CommandNames.Hello, group, user, false);
+						SendCommand(CommandNames.Hello, group, null, false);
 					}
 				}
 			}
@@ -203,20 +204,27 @@ namespace SignalRConsole
 			}
 		}
 
-		private static async Task OnGroupCommandAsync(string sender, string json)
+		private static async Task OnGroupCommandAsync(string from, string json)
 		{
-			if (sender == Name)
+			// TODO: differentiate between a broadcast and directed command? 
+			await OnCommandAsync(from, Name, json);
+		}
+
+		private static async Task OnCommandAsync(string from, string to, string json)
+		{
+			// TODO: this should always be true, these commands are directed to a specific user
+			if (to != Name)
 				return;
 
-			Debug.WriteLine($"Command from {sender}: {json}");
+			Debug.WriteLine($"Command from {from} to {to}: {json}");
 			ConnectionCommand command = DeserializeCommand(json);
 			switch (command.CommandName)
 			{
 				case CommandNames.Hello:
-					await HelloAsync(sender, command);
+					await HelloAsync(from, command);
 					break;
 				case CommandNames.Verify:
-					await VerifyFriendAsync(command);
+					await VerifyFriendAsync(from, command);
 					break;
 				case CommandNames.Disonnect:
 					await m_hubConnection.SendAsync(c_leaveGroupChat, ActiveChatGroupName, Name);
@@ -258,9 +266,10 @@ namespace SignalRConsole
 			State = States.Initializing;
 			Console.WriteLine($"Initializing server and connecting to URL: {c_chatHubUrl}");
 			m_hubConnection = new HubConnectionBuilder().WithUrl(c_chatHubUrl).Build();
-			Initialize(async (g, j) => await m_hubConnection.SendAsync(c_sendGroupCommand, g, Name, j));
+			Initialize(async (to, json) => await m_hubConnection.SendAsync(c_sendCommand, Name, to, json));
 
 			_ = m_hubConnection.On<string>(c_register, (t) => OnRegister(t));
+			_ = m_hubConnection.On(c_receiveCommand, (Action<string, string, string>) (async (f, t, c) => await OnCommandAsync(f, t, c)));
 			_ = m_hubConnection.On(c_joinGroupMessage, (Action<string, string>) (async (g, u) => await OnGroupJoinAsync(g, u)));
 			_ = m_hubConnection.On(c_receiveGroupMessage, (Action<string, string>) ((u, m) => OnGroupMessage(u, m)));
 			_ = m_hubConnection.On(c_receiveGroupCommand, (Action<string, string>) (async (u, c) => await OnGroupCommandAsync(u, c)));
@@ -323,7 +332,7 @@ namespace SignalRConsole
 			await m_hubConnection.SendAsync(c_register, email);
 			if (!await WaitAsync("Waiting for the server"))
 			{
-				Console.WriteLine("'Timeout waiting for a response from the server, aborting.");
+				Console.WriteLine("Timeout waiting for a response from the server, aborting.");
 				return null;
 			}
 
@@ -359,7 +368,7 @@ namespace SignalRConsole
 
 				if (name == Name)
 				{
-					ConsoleWriteLogLine($"That's your name, try again!");
+					ConsoleWriteLogLine($"That's your name!");
 					continue;
 				}
 
@@ -537,7 +546,7 @@ namespace SignalRConsole
 						break;
 					}
 
-					await m_hubConnection.SendAsync(c_sendGroupMessage, ActiveChatGroupName, Name, message);
+					await m_hubConnection.SendAsync(c_sendGroupMessage, Name, ActiveChatGroupName, message);
 				}
 				catch (Exception exception)
 				{
@@ -570,12 +579,7 @@ namespace SignalRConsole
 
 		private static async Task MonitorUserAsync(User user)
 		{
-			await MonitorUserAsync(MakeGroupName(user));
-		}
-
-		private static async Task MonitorUserAsync(string groupName)
-		{
-			await m_hubConnection.SendAsync(c_joinGroupChat, groupName, Name);
+			await m_hubConnection.SendAsync(c_joinGroupChat, MakeGroupName(user), Name);
 		}
 
 		private static User ChooseFriend(string prompt, List<User> users, bool delete, ref Point? cursor)
@@ -608,25 +612,22 @@ namespace SignalRConsole
 
 		private static async Task HelloAsync(string sender, ConnectionCommand command)
 		{
-			if (command.Data == Name)
+			if (State == States.Connecting)
 			{
-				if (State == States.Connecting)
+				if (command.Flag == true)
 				{
-					if (command.Flag == true)
-					{
-						_ = await MessageLoopAsync();
-					}
-					else
-					{
-						await m_hubConnection.SendAsync(c_leaveGroupChat, ActiveChatGroupName, Name);
-						ConsoleWriteLogLine($"Your friend can't chat at the moment.");
-						State = States.Listening;
-					}
+					_ = await MessageLoopAsync();
 				}
 				else
 				{
-					await CheckFriendshipAsync(sender, command);
+					await m_hubConnection.SendAsync(c_leaveGroupChat, ActiveChatGroupName, Name);
+					ConsoleWriteLogLine($"Your friend can't chat at the moment.");
+					State = States.Listening;
 				}
+			}
+			else
+			{
+				await CheckFriendshipAsync(sender, command);
 			}
 		}
 
@@ -646,18 +647,20 @@ namespace SignalRConsole
 			}
 			else if (friend == null)
 			{
-				SendCommand(CommandNames.Verify, GroupName, GroupName, null);
+				// TODO: delete this, this case is already handled above!
+				SendCommand(CommandNames.Verify, sender, GroupName, null);
 			}
 			else if (!friend.Blocked.HasValue)
 			{
-				SendCommand(CommandNames.Verify, MakeGroupName(friend), GroupName, null);
+				// TODO: what is this case? It may not even be necessary? A comment would be good
+				SendCommand(CommandNames.Verify, sender, GroupName, null);
 			}
 
 			if (!m_online.Contains(friend))
 				m_online.Add(friend);
 		}
 
-		private static async Task VerifyFriendAsync(ConnectionCommand command)
+		private static async Task VerifyFriendAsync(string from, ConnectionCommand command)
 		{
 			User friend = GetUserFromGroupName(command.Data);
 			User user = m_user.Friends.FirstOrDefault(u => u.Name == friend.Name);
@@ -671,7 +674,7 @@ namespace SignalRConsole
 
 				m_user.AddFriend(friend);
 				SaveUser();
-				SendCommand(CommandNames.Verify, GroupName, GroupName, !friend.Blocked);
+				SendCommand(CommandNames.Verify, from, GroupName, !friend.Blocked);
 				if (!friend.Blocked ?? false)
 				{
 					m_online.Add(friend);

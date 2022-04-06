@@ -10,59 +10,67 @@ namespace SignalRChat.Hubs
 		{
 			string token = m_random.Next(10000, 99999).ToString();
 			Console.WriteLine($"Incoming registration request for {email}, sending token: {token}");
-
 			await Clients.Caller.SendAsync("Register", token);
 		}
 
 		public async Task JoinChat(string user)
 		{
-			await Clients.All.SendAsync("JoinChat", user);
 			Console.WriteLine($"{user} has joined the chat.");
+			await Clients.All.SendAsync("JoinChat", user);
 		}
 
 		public async Task LeaveChat(string user)
 		{
-			await Clients.All.SendAsync("LeaveChat", user);
 			Console.WriteLine($"{user} has left the chat.");
+			await Clients.All.SendAsync("LeaveChat", user);
 		}
 
 		public async Task SendMessage(string user, string message)
 		{
-			await Clients.All.SendAsync("ReceiveMessage", user, message);
 			Console.WriteLine($"{user} sent this message to the chat: {message}");
+			await Clients.All.SendAsync("ReceiveMessage", user, message);
 		}
 
-		public async Task SendCommand(string user, string command)
+		public async Task BroadcastCommand(string user, string command)
 		{
-			await Clients.All.SendAsync("ReceiveCommand", user, command);
+			// TODO: rename ReceiveCommand and add a handler?
+			// Otherwise we can't tell if it's a private message or a broadcast
 			Console.WriteLine($"{user} sent this commnd to the chat: {command}");
+			await Clients.All.SendAsync("ReceiveCommand", user, command);
+		}
+
+		public async Task SendCommand(string from, string to, string command)
+		{
+			Console.WriteLine($"{from} sent this commnd to {to}: {command}");
+			await Clients.User(to).SendAsync("ReceiveCommand", from, to, command);
 		}
 
 		public async Task JoinGroupChat(string group, string user)
 		{
+			Console.WriteLine($"{user} joined the group: {group.Replace('\n', ' ')}");
 			await Groups.AddToGroupAsync(Context.ConnectionId, group);
 			await Clients.Group(group).SendAsync("JoinGroupMessage", group, user);
-			Console.WriteLine($"{user} joined the group: {group.Replace('\n', ' ')}");
 		}
 
 		public async Task LeaveGroupChat(string group, string user)
 		{
+			Console.WriteLine($"{user} left the group: {group.Replace('\n', ' ')}");
 			await Groups.RemoveFromGroupAsync(Context.ConnectionId, group);
 			await Clients.Group(group).SendAsync("LeaveGroupMessage", group, user);
-			Console.WriteLine($"{user} left the group: {group.Replace('\n', ' ')}");
 		}
 
-		public async Task SendGroupMessage(string group, string user, string message)
+		public async Task SendGroupMessage(string from, string group, string message)
 		{
-			await Clients.Group(group).SendAsync("ReceiveGroupMessage", user, message);
-			Console.WriteLine($"{user} sent this message to the group {group.Replace('\n', ' ')}: {message}");
+			Console.WriteLine($"{from} sent this message to the group {group.Replace('\n', ' ')}: {message}");
+			await Clients.Group(group).SendAsync("ReceiveGroupMessage", from, message);
 		}
 
-		public async Task SendGroupCommand(string group, string user, string command)
+		public async Task SendGroupCommand(string from, string group, string command)
 		{
-			await Clients.Group(group).SendAsync("ReceiveGroupCommand", user, command);
-			Console.WriteLine($"{user} sent this command to the group {group.Replace('\n', ' ')}: {command}");
+			Console.WriteLine($"{from} sent this command to the group {group.Replace('\n', ' ')}: {command}");
+			await Clients.Group(group).SendAsync("ReceiveGroupCommand", from, command);
 		}
+
 
 		readonly Random m_random = new Random();
 	}

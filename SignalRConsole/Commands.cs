@@ -26,7 +26,7 @@ namespace SignalRConsole
 				ConnectionCommand command = new ConnectionCommand()
 				{
 					Command = name.ToString(),
-					Group = group
+					To = group
 				};
 
 				if (name != CommandNames.Disonnect)
@@ -45,7 +45,7 @@ namespace SignalRConsole
 				ConnectionCommand command = new ConnectionCommand()
 				{
 					Command = name.ToString(),
-					Group = group,
+					To = group,
 					Data = group,
 					Flag = flag
 				};
@@ -66,7 +66,7 @@ namespace SignalRConsole
 				ConnectionCommand command = new ConnectionCommand()
 				{
 					Command = name.ToString(),
-					Group = group,
+					To = group,
 					Data = data
 				};
 
@@ -81,12 +81,12 @@ namespace SignalRConsole
 				}
 			}
 
-			public static void SendCommand(CommandNames name, string group, string data, bool? flag)
+			public static void SendCommand(CommandNames name, string target, string data, bool? flag)
 			{
 				ConnectionCommand command = new ConnectionCommand()
 				{
 					Command = name.ToString(),
-					Group = group,
+					To = target,
 					Data = data,
 					Flag = flag
 				};
@@ -110,7 +110,7 @@ namespace SignalRConsole
 			[JsonIgnore]
 			public CommandNames CommandName { get; set; }
 			[JsonIgnore]
-			public string Group { get; set; }
+			public string To { get; set; }
 
 			public static ConnectionCommand DeserializeCommand(string json)
 			{
@@ -161,7 +161,7 @@ namespace SignalRConsole
 
 			private void SendCommand()
 			{
-				m_sendCommand(Group, JsonSerializer.Serialize(this));
+				m_sendCommand(To, JsonSerializer.Serialize(this));
 			}
 		}
 
