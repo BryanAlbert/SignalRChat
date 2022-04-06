@@ -39,12 +39,6 @@ namespace SignalRChat.Hubs
 			await Clients.All.SendAsync("ReceiveCommand", user, command);
 		}
 
-		public async Task SendCommand(string from, string to, string command)
-		{
-			Console.WriteLine($"{from} sent this commnd to {to}: {command}");
-			await Clients.User(to).SendAsync("ReceiveCommand", from, to, command);
-		}
-
 		public async Task JoinGroupChat(string group, string user)
 		{
 			Console.WriteLine($"{user} joined the group: {group.Replace('\n', ' ')}");
@@ -71,6 +65,11 @@ namespace SignalRChat.Hubs
 			await Clients.Group(group).SendAsync("ReceiveGroupCommand", from, command);
 		}
 
+		public async Task SendGroupCommandTo(string from, string group, string to, string command)
+		{
+			Console.WriteLine($"{from} sent this command to {to} in the group {group.Replace('\n', ' ')}: {command}");
+			await Clients.Group(group).SendAsync("ReceiveGroupCommandTo", from, to, command);
+		}
 
 		readonly Random m_random = new Random();
 	}

@@ -16,7 +16,7 @@ namespace SignalRConsole
 			}
 
 
-			public static void Initialize(Action<string, string> sendCommand)
+			public static void Initialize(Action<string, string, string> sendCommand)
 			{
 				m_sendCommand = sendCommand;
 			}
@@ -26,7 +26,7 @@ namespace SignalRConsole
 				ConnectionCommand command = new ConnectionCommand()
 				{
 					Command = name.ToString(),
-					To = group
+					Group = group
 				};
 
 				if (name != CommandNames.Disonnect)
@@ -45,7 +45,7 @@ namespace SignalRConsole
 				ConnectionCommand command = new ConnectionCommand()
 				{
 					Command = name.ToString(),
-					To = group,
+					Group = group,
 					Data = group,
 					Flag = flag
 				};
@@ -66,7 +66,7 @@ namespace SignalRConsole
 				ConnectionCommand command = new ConnectionCommand()
 				{
 					Command = name.ToString(),
-					To = group,
+					Group = group,
 					Data = data
 				};
 
@@ -81,12 +81,13 @@ namespace SignalRConsole
 				}
 			}
 
-			public static void SendCommand(CommandNames name, string target, string data, bool? flag)
+			public static void SendCommand(CommandNames name, string group, string to, string data, bool? flag)
 			{
 				ConnectionCommand command = new ConnectionCommand()
 				{
 					Command = name.ToString(),
-					To = target,
+					Group = group,
+					To = to,
 					Data = data,
 					Flag = flag
 				};
@@ -107,6 +108,8 @@ namespace SignalRConsole
 			public string Data { get; set; }
 			public bool? Flag { get; set; }
 
+			[JsonIgnore]
+			public string Group { get; set; }
 			[JsonIgnore]
 			public CommandNames CommandName { get; set; }
 			[JsonIgnore]
@@ -161,11 +164,11 @@ namespace SignalRConsole
 
 			private void SendCommand()
 			{
-				m_sendCommand(To, JsonSerializer.Serialize(this));
+				m_sendCommand(Group, To, JsonSerializer.Serialize(this));
 			}
 		}
 
 
-		private static Action<string, string> m_sendCommand;
+		private static Action<string, string, string> m_sendCommand;
 	}
 }
