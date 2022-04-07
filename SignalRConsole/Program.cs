@@ -79,14 +79,25 @@ namespace SignalRConsole
 				break;
 			}
 
-			foreach (User friend in m_user.Friends.Where(x => x.Blocked != true))
-				await m_hubConnection.SendAsync(c_leaveGroupChat, MakeGroupName(friend), Name);
+			try
+			{
+				_ = MoveCursorToLog();
+				foreach (User friend in m_user.Friends.Where(x => x.Blocked != true))
+					await m_hubConnection.SendAsync(c_leaveGroupChat, MakeGroupName(friend), Name);
 
-			await m_hubConnection.SendAsync(c_leaveGroupChat, GroupName, Name);
-			await m_hubConnection.SendAsync(c_leaveGroupChat, ChatGroupName, Name);
-			await m_hubConnection.StopAsync();
-			_ = MoveCursorToLog();
-			Console.WriteLine("\nFinished.");
+				await m_hubConnection.SendAsync(c_leaveGroupChat, GroupName, Name);
+				await m_hubConnection.SendAsync(c_leaveGroupChat, ChatGroupName, Name);
+				await m_hubConnection.StopAsync();
+			}
+			catch (Exception exception)
+			{
+				Console.WriteLine($"Exception shutting down: {exception.Message}");
+			}
+			finally
+			{
+				Console.WriteLine("\nFinished.");
+			}
+
 			return 0;
 		}
 
@@ -660,7 +671,10 @@ namespace SignalRConsole
 			}
 
 			if (!m_online.Contains(friend))
+			{
+				ConsoleWriteLogLine($"Your {(friend.Blocked.HasValue ? "" : "(pending) ")}friend {friend.Name} is online.");
 				m_online.Add(friend);
+			}
 		}
 
 		private static async Task VerifyFriendAsync(string from, ConnectionCommand command)
