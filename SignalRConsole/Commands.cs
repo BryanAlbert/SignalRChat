@@ -21,66 +21,6 @@ namespace SignalRConsole
 				m_sendCommand = sendCommand;
 			}
 
-			public static void SendCommand(CommandNames name, string group)
-			{
-				ConnectionCommand command = new ConnectionCommand()
-				{
-					Command = name.ToString(),
-					Group = group
-				};
-
-				if (name != CommandNames.Disonnect)
-				{
-					Debug.WriteLine($"Error: SendCommand called with no arguments is only valid for the" +
-						$" {CommandNames.Disonnect} command, called with: {name}");
-				}
-				else
-				{
-					command.SendCommand();
-				}
-			}
-
-			public static void SendCommand(CommandNames name, string group, bool? flag)
-			{
-				ConnectionCommand command = new ConnectionCommand()
-				{
-					Command = name.ToString(),
-					Group = group,
-					Data = group,
-					Flag = flag
-				};
-
-				if (name != CommandNames.Echo)
-				{
-					Debug.WriteLine($"Error: SendCommand called with bool is only valid for the" +
-						$" {CommandNames.Echo} command, called with: {name}");
-				}
-				else
-				{
-					command.SendCommand();
-				}
-			}
-
-			public static void SendCommand(CommandNames name, string group, string data)
-			{
-				ConnectionCommand command = new ConnectionCommand()
-				{
-					Command = name.ToString(),
-					Group = group,
-					Data = data
-				};
-
-				if (name != CommandNames.Handle)
-				{
-					Debug.WriteLine($"Error: SendCommand called with string is only valid for the" +
-						$" {CommandNames.Handle} command, called with: {name}");
-				}
-				else
-				{
-					command.SendCommand();
-				}
-			}
-
 			public static void SendCommand(CommandNames name, string group, string to, string data, bool? flag)
 			{
 				ConnectionCommand command = new ConnectionCommand()
@@ -155,10 +95,7 @@ namespace SignalRConsole
 			{
 				Unrecognized,
 				Hello,
-				Verify,
-				Disonnect,
-				Handle,
-				Echo
+				Verify
 			}
 
 

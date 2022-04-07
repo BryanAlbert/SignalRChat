@@ -83,6 +83,7 @@ namespace SignalRConsole
 				await m_hubConnection.SendAsync(c_leaveGroupChat, MakeGroupName(friend), Name);
 
 			await m_hubConnection.SendAsync(c_leaveGroupChat, GroupName, Name);
+			await m_hubConnection.SendAsync(c_leaveGroupChat, ChatGroupName, Name);
 			await m_hubConnection.StopAsync();
 			_ = MoveCursorToLog();
 			Console.WriteLine("\nFinished.");
@@ -104,6 +105,7 @@ namespace SignalRConsole
 		public const string c_leaveGroupMessage = "LeaveGroupMessage";
 		public const string c_chatGroupName = "Chat";
 		public const string c_fileExtension = ".qkr.json";
+		public const string c_leaveChatCommand = "goodbye";
 
 
 		private static States State
@@ -231,14 +233,6 @@ namespace SignalRConsole
 				case CommandNames.Verify:
 					await VerifyFriendAsync(from, command);
 					break;
-				case CommandNames.Disonnect:
-					await m_hubConnection.SendAsync(c_leaveGroupChat, ActiveChatGroupName, Name);
-					DisplayMenu();
-					break;
-				case CommandNames.Handle:
-				case CommandNames.Echo:
-					Debug.WriteLine($"OnGroupCommandAsync not processing command: {command.CommandName}");
-					break;
 				case CommandNames.Unrecognized:
 				default:
 					Debug.WriteLine($"Error in OnGroupCommandAsync, unrecognized command: {command.CommandName}");
@@ -246,16 +240,11 @@ namespace SignalRConsole
 			}
 		}
 
-		private static void OnGroupLeave(string group, string user)
+		private static async Task OnGroupLeaveAsync(string group, string user)
 		{
 			string[] parts = ParseGroupName(group);
 			Debug.WriteLine($"{user} has left the {string.Join('-', parts)} chat.");
-			if (group == ActiveChatGroupName)
-			{
-				Console.Write($"{(Console.CursorLeft > 0 ? "\n" : "")}{user} has left the chat. (Hit Enter)");
-				DisplayMenu();
-			}
-			else if (group == GroupName)
+			if (group == GroupName)
 			{
 				User friend = m_user.Friends.FirstOrDefault(u => u.Name == user);
 				if (friend != null && (!friend.Blocked ?? true))
@@ -263,6 +252,15 @@ namespace SignalRConsole
 					ConsoleWriteLogLine($"Your {(friend.Blocked.HasValue ? "" : "(pending) ")}friend {user} is offline.");
 					m_online.Remove(friend);
 				}
+			}
+			else if (group == ActiveChatGroupName)
+			{
+				Console.Write($"{(Console.CursorLeft > 0 ? "\n" : "")}{user} has left the chat. (Hit Enter)");
+				if (ActiveChatGroupName != ChatGroupName)
+					await m_hubConnection.SendAsync(c_leaveGroupChat, ActiveChatGroupName, Name);
+
+				ActiveChatGroupName = null;
+				DisplayMenu();
 			}
 		}
 
@@ -278,7 +276,7 @@ namespace SignalRConsole
 			_ = m_hubConnection.On(c_receiveGroupMessage, (Action<string, string>) ((f, m) => OnGroupMessage(f, m)));
 			_ = m_hubConnection.On(c_receiveGroupCommand, (Action<string, string>) (async (f, c) => await OnGroupCommandAsync(f, c)));
 			_ = m_hubConnection.On(c_receiveGroupCommandTo, (Action<string, string, string>) (async (f, t, c) => await OnGroupCommandToAsync(f, t, c)));
-			_ = m_hubConnection.On(c_leaveGroupMessage, (Action<string, string>) ((g, u) => OnGroupLeave(g, u)));
+			_ = m_hubConnection.On(c_leaveGroupMessage, (Action<string, string>) (async (g, u) => await OnGroupLeaveAsync(g, u)));
 
 			try
 			{
@@ -517,7 +515,7 @@ namespace SignalRConsole
 			EraseLog();
 			State = States.Chatting;
 			Console.SetCursorPosition(0, NextLine);
-			Console.WriteLine("Type messages, type 'goodbye' to leave the chat.");
+			Console.WriteLine($"Type messages, type '{c_leaveChatCommand}' to leave the chat.");
 			bool success = true;
 			while (true)
 			{
@@ -541,13 +539,13 @@ namespace SignalRConsole
 
 				try
 				{
-					if (message == "goodbye")
+					if (message == c_leaveChatCommand)
 					{
+						await m_hubConnection.SendAsync(c_leaveGroupChat, ActiveChatGroupName, Name);
 						if (ActiveChatGroupName == ChatGroupName)
-							SendCommand(CommandNames.Disonnect, ActiveChatGroupName);
-						else
-							await m_hubConnection.SendAsync(c_leaveGroupChat, ActiveChatGroupName, Name);
+							await m_hubConnection.SendAsync(c_joinGroupChat, ChatGroupName, Name);
 
+						ActiveChatGroupName = null;
 						break;
 					}
 
