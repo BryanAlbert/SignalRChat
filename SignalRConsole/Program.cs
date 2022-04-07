@@ -182,6 +182,15 @@ namespace SignalRConsole
 						SendCommand(CommandNames.Hello, group, user, null, false);
 					}
 				}
+				else
+				{
+					User friend = m_user.Friends.FirstOrDefault(x => x.Name == user && x.Blocked == null);
+					if (friend != null)
+					{
+						await m_hubConnection.SendAsync(c_leaveGroupChat, group, Name);
+						await MonitorUserAsync(friend);
+					}
+				}
 			}
 		}
 
