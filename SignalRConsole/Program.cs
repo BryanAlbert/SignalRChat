@@ -153,6 +153,7 @@ namespace SignalRConsole
 		private static string GroupName => MakeGroupName(Name, Email);
 		private static string ChatGroupName => MakeChatGroupName(m_user);
 		private static string ActiveChatGroupName { get; set; }
+		private static string ActiveChatFriend { get; set; }
 		private static int NextLine { get; set; }
 		private static int PromptLine { get; set; }
 
@@ -188,6 +189,7 @@ namespace SignalRConsole
 					{
 						SendCommand(CommandNames.Hello, group, user, null, true);
 						ActiveChatGroupName = group;
+						ActiveChatFriend = user;
 						_ = await MessageLoopAsync();
 					}
 					else
@@ -264,13 +266,14 @@ namespace SignalRConsole
 					m_online.Remove(friend);
 				}
 			}
-			else if (group == ActiveChatGroupName)
+			else if (group == ActiveChatGroupName && user == ActiveChatFriend)
 			{
 				Console.Write($"{(Console.CursorLeft > 0 ? "\n" : "")}{user} has left the chat. (Hit Enter)");
 				if (ActiveChatGroupName != ChatGroupName)
 					await m_hubConnection.SendAsync(c_leaveGroupChat, ActiveChatGroupName, Name);
 
 				ActiveChatGroupName = null;
+				ActiveChatFriend = null;
 				DisplayMenu();
 			}
 		}
@@ -444,7 +447,7 @@ namespace SignalRConsole
 
 			State = States.Busy;
 			Point? cursor = default;
-			User friend = ChooseFriend($"Which friend would you like to unfriend (number, Enter to abort): ",
+			User friend = ChooseFriend($"Whom would you like to unfriend (number, Enter to abort): ",
 				m_user.Friends, false, ref cursor);
 			if (friend != null)
 			{
@@ -464,7 +467,7 @@ namespace SignalRConsole
 			{
 				EraseLog();
 				State = States.Busy;
-				friend = ChooseFriend($"Which user would you like to delete (number, Enter to abort): ",
+				friend = ChooseFriend($"Whom would you like to delete (number, Enter to abort): ",
 					m_users, true, ref cursor);
 			}
 
@@ -505,7 +508,7 @@ namespace SignalRConsole
 
 			State = States.Busy;
 			Point? cursor = default;
-			User friend = ChooseFriend("Which friend would you like to chat with? (number, Enter to abort): ",
+			User friend = ChooseFriend("Whom would you like to chat with? (number, Enter to abort): ",
 				m_online, false, ref cursor);
 			Console.SetCursorPosition(cursor.Value.X, cursor.Value.Y);
 
@@ -513,6 +516,7 @@ namespace SignalRConsole
 			{
 				State = States.Connecting;
 				ActiveChatGroupName = MakeChatGroupName(friend);
+				ActiveChatFriend = friend.Name;
 				await m_hubConnection.SendAsync(c_joinGroupChat, ActiveChatGroupName, Name);
 			}
 			else
@@ -557,6 +561,7 @@ namespace SignalRConsole
 							await m_hubConnection.SendAsync(c_joinGroupChat, ChatGroupName, Name);
 
 						ActiveChatGroupName = null;
+						ActiveChatFriend = null;
 						break;
 					}
 
@@ -635,7 +640,7 @@ namespace SignalRConsole
 				else
 				{
 					await m_hubConnection.SendAsync(c_leaveGroupChat, ActiveChatGroupName, Name);
-					ConsoleWriteLogLine($"Your friend can't chat at the moment.");
+					ConsoleWriteLogLine($"{from} can't chat at the moment.");
 					State = States.Listening;
 				}
 			}
@@ -783,14 +788,6 @@ namespace SignalRConsole
 			Console.WriteLine(line);
 			m_log.Add(line);
 			Console.SetCursorPosition(cursor.X, cursor.Y);
-		}
-
-		private static Point ConsoleWriteLog(string line)
-		{
-			Point cursor = MoveCursorToLog();
-			Console.Write(line);
-			m_log.Add(line);
-			return cursor;
 		}
 
 		private static Point ConsoleWriteLogRead(string line, out string value)
