@@ -83,10 +83,10 @@ namespace SignalRConsole
 			{
 				_ = MoveCursorToLog();
 				foreach (User friend in m_user.Friends.Where(x => x.Blocked != true))
-					await m_hubConnection.SendAsync(c_leaveGroupChat, MakeGroupName(friend), Name);
+					await m_hubConnection.SendAsync(c_leaveChannel, MakeChannelName(friend), Name);
 
-				await m_hubConnection.SendAsync(c_leaveGroupChat, GroupName, Name);
-				await m_hubConnection.SendAsync(c_leaveGroupChat, ChatGroupName, Name);
+				await m_hubConnection.SendAsync(c_leaveChannel, ChannelName, Name);
+				await m_hubConnection.SendAsync(c_leaveChannel, ChatChannelName, Name);
 				await m_hubConnection.StopAsync();
 			}
 			catch (Exception exception)
@@ -103,18 +103,15 @@ namespace SignalRConsole
 
 
 		public const string c_register = "Register";
+		public const string c_joinChannel = "JoinChannel";
+		public const string c_joinedChannel = "JoinedChannel";
+		public const string c_sendMessage = "SendMessage";
+		public const string c_sentMessage = "SentMessage";
 		public const string c_sendCommand = "SendCommand";
-		public const string c_receiveCommand = "ReceiveCommand";
-		public const string c_joinGroupChat = "JoinGroupChat";
-		public const string c_joinGroupMessage = "JoinGroupMessage";
-		public const string c_sendGroupMessage = "SendGroupMessage";
-		public const string c_receiveGroupMessage = "ReceiveGroupMessage";
-		public const string c_sendGroupCommandTo = "SendGroupCommandTo";
-		public const string c_receiveGroupCommandTo = "ReceiveGroupCommandTo";
-		public const string c_receiveGroupCommand = "ReceiveGroupCommand";
-		public const string c_leaveGroupChat = "LeaveGroupChat";
-		public const string c_leaveGroupMessage = "LeaveGroupMessage";
-		public const string c_chatGroupName = "Chat";
+		public const string c_sentCommand = "SentCommand";
+		public const string c_leaveChannel = "LeaveChannel";
+		public const string c_leftChannel = "LeftChannel";
+		public const string c_chatChannelName = "Chat";
 		public const string c_fileExtension = ".qkr.json";
 		public const string c_leaveChatCommand = "goodbye";
 
@@ -150,9 +147,9 @@ namespace SignalRConsole
 		private static string Name => m_user?.Name;
 		private static string Email => m_user?.InternetId;
 		private static string FileName => m_user.FileName;
-		private static string GroupName => MakeGroupName(Name, Email);
-		private static string ChatGroupName => MakeChatGroupName(m_user);
-		private static string ActiveChatGroupName { get; set; }
+		private static string ChannelName => MakeChannelName(Name, Email);
+		private static string ChatChannelName => MakeChatChannelName(m_user);
+		private static string ActiveChatChannelName { get; set; }
 		private static string ActiveChatFriend { get; set; }
 		private static int NextLine { get; set; }
 		private static int PromptLine { get; set; }
@@ -168,33 +165,33 @@ namespace SignalRConsole
 			State = States.Changing;
 		}
 
-		private static async Task OnGroupJoinAsync(string group, string user)
+		private static async Task OnJoinedChannelAsync(string channel, string user)
 		{
 			if (user != Name)
 			{
-				Debug.WriteLine($"{user} has joined the {string.Join('-', ParseGroupName(group))} group.");
-				if (group == GroupName)
+				Debug.WriteLine($"{user} has joined the {string.Join('-', ParseChannelName(channel))} channel.");
+				if (channel == ChannelName)
 				{
 					User friend = m_user.Friends.FirstOrDefault(x => x.Name == user);
-					SendCommand(CommandNames.Hello, group, user, null, !friend?.Blocked);
+					SendCommand(CommandNames.Hello, channel, user, null, !friend?.Blocked);
 					if (friend != null && (!friend.Blocked ?? true) && !m_online.Contains(friend))
 					{
 						ConsoleWriteLogLine($"Your {(friend.Blocked.HasValue ? "" : "(pending) ")}friend {friend.Name} is online.");
 						m_online.Add(friend);
 					}
 				}
-				else if (group == ChatGroupName)
+				else if (channel == ChatChannelName)
 				{
 					if (State == States.Listening)
 					{
-						SendCommand(CommandNames.Hello, group, user, null, true);
-						ActiveChatGroupName = group;
+						SendCommand(CommandNames.Hello, channel, user, null, true);
+						ActiveChatChannelName = channel;
 						ActiveChatFriend = user;
 						_ = await MessageLoopAsync();
 					}
 					else
 					{
-						SendCommand(CommandNames.Hello, group, user, null, false);
+						SendCommand(CommandNames.Hello, channel, user, null, false);
 					}
 				}
 				else
@@ -202,14 +199,14 @@ namespace SignalRConsole
 					User friend = m_user.Friends.FirstOrDefault(x => x.Name == user && x.Blocked == null);
 					if (friend != null)
 					{
-						await m_hubConnection.SendAsync(c_leaveGroupChat, group, Name);
+						await m_hubConnection.SendAsync(c_leaveChannel, channel, Name);
 						await MonitorUserAsync(friend);
 					}
 				}
 			}
 		}
 
-		private static void OnGroupMessage(string from, string message)
+		private static void OnSentMessage(string from, string message)
 		{
 			Point cursor = new Point(Console.CursorLeft, Console.CursorTop);
 			if (from == Name)
@@ -229,35 +226,32 @@ namespace SignalRConsole
 			}
 		}
 
-		private static async Task OnGroupCommandToAsync(string from, string to, string json)
+		private static async Task OnSentCommandAsync(string from, string to, string json)
 		{
 			if (to == Name)
-				await OnGroupCommandAsync(from, json);
-		}
-
-		private static async Task OnGroupCommandAsync(string from, string json)
-		{
-			ConnectionCommand command = DeserializeCommand(json);
-			switch (command.CommandName)
 			{
-				case CommandNames.Hello:
-					await HelloAsync(from, command);
-					break;
-				case CommandNames.Verify:
-					await VerifyFriendAsync(from, command);
-					break;
-				case CommandNames.Unrecognized:
-				default:
-					Debug.WriteLine($"Error in OnGroupCommandAsync, unrecognized command: {command.CommandName}");
-					break;
+				ConnectionCommand command = DeserializeCommand(json);
+				switch (command.CommandName)
+				{
+					case CommandNames.Hello:
+						await HelloAsync(from, command);
+						break;
+					case CommandNames.Verify:
+						await VerifyFriendAsync(from, command);
+						break;
+					case CommandNames.Unrecognized:
+					default:
+						Debug.WriteLine($"Error in OnSentCommandAsync, unrecognized command: {command.CommandName}");
+						break;
+				}
 			}
 		}
 
-		private static async Task OnGroupLeaveAsync(string group, string user)
+		private static async Task OnLeftChannelAsync(string channel, string user)
 		{
-			string[] parts = ParseGroupName(group);
-			Debug.WriteLine($"{user} has left the {string.Join('-', parts)} chat.");
-			if (group == GroupName)
+			string[] parts = ParseChannelName(channel);
+			Debug.WriteLine($"{user} has left the {string.Join('-', parts)} channel.");
+			if (channel == ChannelName)
 			{
 				User friend = m_user.Friends.FirstOrDefault(u => u.Name == user);
 				if (friend != null && (!friend.Blocked ?? true))
@@ -266,13 +260,13 @@ namespace SignalRConsole
 					m_online.Remove(friend);
 				}
 			}
-			else if (group == ActiveChatGroupName && user == ActiveChatFriend)
+			else if (channel == ActiveChatChannelName && user == ActiveChatFriend)
 			{
 				Console.Write($"{(Console.CursorLeft > 0 ? "\n" : "")}{user} has left the chat. (Hit Enter)");
-				if (ActiveChatGroupName != ChatGroupName)
-					await m_hubConnection.SendAsync(c_leaveGroupChat, ActiveChatGroupName, Name);
+				if (ActiveChatChannelName != ChatChannelName)
+					await m_hubConnection.SendAsync(c_leaveChannel, ActiveChatChannelName, Name);
 
-				ActiveChatGroupName = null;
+				ActiveChatChannelName = null;
 				ActiveChatFriend = null;
 				DisplayMenu();
 			}
@@ -283,14 +277,13 @@ namespace SignalRConsole
 			State = States.Initializing;
 			Console.WriteLine($"Initializing server and connecting to URL: {c_chatHubUrl}");
 			m_hubConnection = new HubConnectionBuilder().WithUrl(c_chatHubUrl).Build();
-			Initialize(async (g, t, j) => await m_hubConnection.SendAsync(c_sendGroupCommandTo, Name, g, t, j));
+			Initialize(async (c, t, j) => await m_hubConnection.SendAsync(c_sendCommand, Name, c, t, j));
 
 			_ = m_hubConnection.On<string>(c_register, (t) => OnRegister(t));
-			_ = m_hubConnection.On(c_joinGroupMessage, (Action<string, string>) (async (g, u) => await OnGroupJoinAsync(g, u)));
-			_ = m_hubConnection.On(c_receiveGroupMessage, (Action<string, string>) ((f, m) => OnGroupMessage(f, m)));
-			_ = m_hubConnection.On(c_receiveGroupCommand, (Action<string, string>) (async (f, c) => await OnGroupCommandAsync(f, c)));
-			_ = m_hubConnection.On(c_receiveGroupCommandTo, (Action<string, string, string>) (async (f, t, c) => await OnGroupCommandToAsync(f, t, c)));
-			_ = m_hubConnection.On(c_leaveGroupMessage, (Action<string, string>) (async (g, u) => await OnGroupLeaveAsync(g, u)));
+			_ = m_hubConnection.On(c_joinedChannel, (Action<string, string>) (async (c, u) => await OnJoinedChannelAsync(c, u)));
+			_ = m_hubConnection.On(c_sentMessage, (Action<string, string>) ((f, m) => OnSentMessage(f, m)));
+			_ = m_hubConnection.On(c_sentCommand, (Action<string, string, string>) (async (f, t, c) => await OnSentCommandAsync(f, t, c)));
+			_ = m_hubConnection.On(c_leftChannel, (Action<string, string>) (async (c, u) => await OnLeftChannelAsync(c, u)));
 
 			try
 			{
@@ -515,9 +508,9 @@ namespace SignalRConsole
 			if (friend != null)
 			{
 				State = States.Connecting;
-				ActiveChatGroupName = MakeChatGroupName(friend);
+				ActiveChatChannelName = MakeChatChannelName(friend);
 				ActiveChatFriend = friend.Name;
-				await m_hubConnection.SendAsync(c_joinGroupChat, ActiveChatGroupName, Name);
+				await m_hubConnection.SendAsync(c_joinChannel, ActiveChatChannelName, Name);
 			}
 			else
 			{
@@ -556,16 +549,16 @@ namespace SignalRConsole
 				{
 					if (message == c_leaveChatCommand)
 					{
-						await m_hubConnection.SendAsync(c_leaveGroupChat, ActiveChatGroupName, Name);
-						if (ActiveChatGroupName == ChatGroupName)
-							await m_hubConnection.SendAsync(c_joinGroupChat, ChatGroupName, Name);
+						await m_hubConnection.SendAsync(c_leaveChannel, ActiveChatChannelName, Name);
+						if (ActiveChatChannelName == ChatChannelName)
+							await m_hubConnection.SendAsync(c_joinChannel, ChatChannelName, Name);
 
-						ActiveChatGroupName = null;
+						ActiveChatChannelName = null;
 						ActiveChatFriend = null;
 						break;
 					}
 
-					await m_hubConnection.SendAsync(c_sendGroupMessage, Name, ActiveChatGroupName, message);
+					await m_hubConnection.SendAsync(c_sendMessage, Name, ActiveChatChannelName, message);
 				}
 				catch (Exception exception)
 				{
@@ -586,8 +579,8 @@ namespace SignalRConsole
 
 		private static async Task MonitorChannelsAsync()
 		{
-			await m_hubConnection.SendAsync(c_joinGroupChat, GroupName, Name);
-			await m_hubConnection.SendAsync(c_joinGroupChat, ChatGroupName, Name);
+			await m_hubConnection.SendAsync(c_joinChannel, ChannelName, Name);
+			await m_hubConnection.SendAsync(c_joinChannel, ChatChannelName, Name);
 		}
 
 		private static async Task MonitorFriendsAsync()
@@ -598,7 +591,7 @@ namespace SignalRConsole
 
 		private static async Task MonitorUserAsync(User user)
 		{
-			await m_hubConnection.SendAsync(c_joinGroupChat, MakeGroupName(user), Name);
+			await m_hubConnection.SendAsync(c_joinChannel, MakeChannelName(user), Name);
 		}
 
 		private static User ChooseFriend(string prompt, List<User> users, bool delete, ref Point? cursor)
@@ -639,7 +632,7 @@ namespace SignalRConsole
 				}
 				else
 				{
-					await m_hubConnection.SendAsync(c_leaveGroupChat, ActiveChatGroupName, Name);
+					await m_hubConnection.SendAsync(c_leaveChannel, ActiveChatChannelName, Name);
 					ConsoleWriteLogLine($"{from} can't chat at the moment.");
 					State = States.Listening;
 				}
@@ -664,15 +657,10 @@ namespace SignalRConsole
 				await UnfriendAsync(friend);
 				return;
 			}
-			else if (friend == null)
-			{
-				// TODO: delete this, this case is already handled above!
-				SendCommand(CommandNames.Verify, GroupName, from, GroupName, null);
-			}
 			else if (!friend.Blocked.HasValue)
 			{
 				// TODO: what is this case? It may not even be necessary? A comment would be good
-				SendCommand(CommandNames.Verify, MakeGroupName(friend), from, GroupName, null);
+				SendCommand(CommandNames.Verify, MakeChannelName(friend), from, ChannelName, null);
 			}
 
 			if (!m_online.Contains(friend))
@@ -684,7 +672,7 @@ namespace SignalRConsole
 
 		private static async Task VerifyFriendAsync(string from, ConnectionCommand command)
 		{
-			User friend = GetUserFromGroupName(command.Data);
+			User friend = GetUserFromChannelName(command.Data);
 			User user = m_user.Friends.FirstOrDefault(u => u.Name == friend.Name);
 			if (!command.Flag.HasValue)
 			{
@@ -696,11 +684,11 @@ namespace SignalRConsole
 
 				m_user.AddFriend(friend);
 				SaveUser();
-				SendCommand(CommandNames.Verify, GroupName, from, GroupName, !friend.Blocked);
+				SendCommand(CommandNames.Verify, ChannelName, from, ChannelName, !friend.Blocked);
 				if (!friend.Blocked ?? false)
 				{
 					m_online.Add(friend);
-					await m_hubConnection.SendAsync(c_joinGroupChat, command.Data);
+					await m_hubConnection.SendAsync(c_joinChannel, command.Data);
 				}
 
 				Console.SetCursorPosition(cursor.X, cursor.Y);
@@ -712,7 +700,7 @@ namespace SignalRConsole
 				SaveUser();
 				if (command.Flag == false)
 				{
-					await m_hubConnection.SendAsync(c_leaveGroupChat, command.Data, Name);
+					await m_hubConnection.SendAsync(c_leaveChannel, command.Data, Name);
 					_ = m_online.Remove(user);
 				}
 			}
@@ -722,9 +710,9 @@ namespace SignalRConsole
 
 		private static async Task UnfriendAsync(User friend)
 		{
-			SendCommand(CommandNames.Hello, GroupName, friend.Name, null, false);
+			SendCommand(CommandNames.Hello, ChannelName, friend.Name, null, false);
 			if (!friend.Blocked ?? true)
-				await m_hubConnection.SendAsync(c_leaveGroupChat, MakeGroupName(friend), Name);
+				await m_hubConnection.SendAsync(c_leaveChannel, MakeChannelName(friend), Name);
 
 			_ = m_online.Remove(friend);
 			_ = m_user.Friends.Remove(friend);
@@ -815,30 +803,30 @@ namespace SignalRConsole
 			return cursor;
 		}
 
-		private static string MakeGroupName(User user)
+		private static string MakeChannelName(User user)
 		{
 			return $"{user.InternetId}\n{user.Name}";
 		}
 
-		private static string MakeGroupName(string name, string email)
+		private static string MakeChannelName(string name, string email)
 		{
 			return $"{email}\n{name}";
 		}
 
-		private static string MakeChatGroupName(User user)
+		private static string MakeChatChannelName(User user)
 		{
-			return $"{MakeGroupName(user)}\n{c_chatGroupName}";
+			return $"{MakeChannelName(user)}\n{c_chatChannelName}";
 		}
 
-		private static User GetUserFromGroupName(string groupName)
+		private static User GetUserFromChannelName(string channelName)
 		{
-			string[] parts = ParseGroupName(groupName);
+			string[] parts = ParseChannelName(channelName);
 			return new User(parts[1], parts[0]);
 		}
 
-		private static string[] ParseGroupName(string groupName)
+		private static string[] ParseChannelName(string channelName)
 		{
-			return groupName.Split('\n');
+			return channelName.Split('\n');
 		}
 
 

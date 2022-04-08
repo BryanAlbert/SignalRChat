@@ -21,12 +21,12 @@ namespace SignalRConsole
 				m_sendCommand = sendCommand;
 			}
 
-			public static void SendCommand(CommandNames name, string group, string to, string data, bool? flag)
+			public static void SendCommand(CommandNames name, string channel, string to, string data, bool? flag)
 			{
 				ConnectionCommand command = new ConnectionCommand()
 				{
 					Command = name.ToString(),
-					Group = group,
+					Channel = channel,
 					To = to,
 					Data = data,
 					Flag = flag
@@ -49,7 +49,7 @@ namespace SignalRConsole
 			public bool? Flag { get; set; }
 
 			[JsonIgnore]
-			public string Group { get; set; }
+			public string Channel { get; set; }
 			[JsonIgnore]
 			public CommandNames CommandName { get; set; }
 			[JsonIgnore]
@@ -76,21 +76,6 @@ namespace SignalRConsole
 			}
 
 
-			/// <summary>
-			/// Unrecognized: a new command issued by a newer QKR, perhaps
-			/// Handle: Data contains the opponent's Handle
-			/// Away: opponent has pushed the Tables page and can't interact
-			/// TableList: Tables contains a Dictionary<string, List<int>> of the opponent's tables
-			/// InitiateRace: leader sends when pushing to the Tables page, follower responds with from
-			///		the Tables page
-			/// StartRace: Leader sends when pushing to the Race page, follower responds with from the Race page
-			/// RaceCard: RaceData contains RaceData, leader sends when the next card is picked
-			/// CardResult: RaceData contains quiz result, sent when a card is finished
-			/// Reset: sent to restart the current race
-			/// NavigateBack: sent when the current page is popped off the navigation statck
-			/// Echo: Flag contains bool, when entered from the Connect page's Entry, turns echo on or off,
-			///		e.g. {"Command":"Echo","Flag":true}
-			/// </summary>
 			public enum CommandNames
 			{
 				Unrecognized,
@@ -101,7 +86,7 @@ namespace SignalRConsole
 
 			private void SendCommand()
 			{
-				m_sendCommand(Group, To, JsonSerializer.Serialize(this));
+				m_sendCommand(Channel, To, JsonSerializer.Serialize(this));
 			}
 		}
 
