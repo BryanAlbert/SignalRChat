@@ -9,14 +9,23 @@ namespace SignalRConsole
 		{
 		}
 
-		public User(string name, string email)
+		public User(string handle, string email)
 		{
-			Name = name;
-			InternetId = email;
+			Handle = handle;
+			Email = email;
 			Friends = new List<User>();
 		}
 
-		public User(string name, string email, string fileName) : this(name, email)
+		public User(string handle, string email, string name, string color, string id) :
+			this(handle, email)
+		{
+			Name = name;
+			Color = color;
+			Id = id;
+		}
+
+		public User(string handle, string email, string name, string color, string id, string fileName) :
+			this(handle, email, name, color, id)
 		{
 			FileName = fileName;
 		}
@@ -28,8 +37,11 @@ namespace SignalRConsole
 		}
 
 
+		public string Handle { get; set; }
+		public string Email { get; set; }
 		public string Name { get; set; }
-		public string InternetId { get; set; }
+		public string Color { get; set; }
+		public string Id { get; set; }
 		public bool? Blocked { get; set; }
 		public List<User> Friends { get; set; }
 
