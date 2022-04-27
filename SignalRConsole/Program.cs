@@ -496,6 +496,7 @@ namespace SignalRConsole
 						File.Delete($"{friend.FileName}");
 					}
 
+					SendCommand(CommandNames.Hello, friend.Id, friend.Id, SerializeUserData(m_user), false);
 					await UnfriendAsync(friend);
 					if (delete)
 						ConsoleWriteLogLine($"User {friend.Handle} has been deleted.");
@@ -667,7 +668,7 @@ namespace SignalRConsole
 
 		private static async Task CheckFriendshipAsync(string from, User friend, ConnectionCommand command)
 		{
-			if (command.Flag == false || friend == null || (!command.Flag.HasValue && friend.Blocked == false))
+			if (command.Flag == false || (!command.Flag.HasValue && friend.Blocked == false))
 			{
 				if (friend != null && !friend.Blocked.HasValue)
 				{
@@ -680,8 +681,10 @@ namespace SignalRConsole
 			}
 			else if (!friend.Blocked.HasValue)
 			{
-				// TODO: what is this case? It may not even be necessary? A comment would be good
-				SendCommand(CommandNames.Verify, MakeChannelName(friend), from, SerializeUserData(m_user), null);
+				if (command.Flag == true)
+					SendCommand(CommandNames.Hello, friend.Id, friend.Id, SerializeUserData(m_user), false);
+				else
+					SendCommand(CommandNames.Verify, MakeChannelName(friend), from, SerializeUserData(m_user), null);
 			}
 
 			if (!m_online.Contains(friend))
@@ -717,7 +720,9 @@ namespace SignalRConsole
 			}
 			else
 			{
-				pending.Blocked = !command.Flag;
+				if (pending != null)
+					pending.Blocked = !command.Flag;
+				
 				SaveUser();
 				if (command.Flag == false)
 				{
@@ -726,15 +731,13 @@ namespace SignalRConsole
 				}
 			}
 
-			ConsoleWriteLogLine($"You and {pending.Handle} are {(pending.Blocked.Value ? "not" : "now")} friends!");
+			if (pending != null)
+				ConsoleWriteLogLine($"You and {pending.Handle} are {(pending.Blocked.Value ? "not" : "now")} friends!");
 		}
 
 		private static async Task UnfriendAsync(User friend)
 		{
-			SendCommand(CommandNames.Hello, HandleChannelName, friend.Handle, SerializeUserData(m_user), false);
-			if (!friend.Blocked ?? true)
-				await m_hubConnection.SendAsync(c_leaveChannel, MakeChannelName(friend), Handle);
-
+			await m_hubConnection.SendAsync(c_leaveChannel, friend.Id ?? MakeChannelName(friend), Id);
 			_ = m_online.Remove(friend);
 			_ = m_user.Friends.Remove(friend);
 			SaveUser();
