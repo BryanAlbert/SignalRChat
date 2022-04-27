@@ -197,15 +197,22 @@ namespace SignalRConsole
 				}
 				else
 				{
-					// someone joined a Handle channel we're monitoring
-					string[] parts = ParseChannelName(channel);
-					friend = m_user.Friends.FirstOrDefault(x => x.Email == parts[0] && x.Handle == parts[1]);
-					if (friend != null)
+					// a friend joined a Handle channel we're monitoring
+					if (channel == user)
 					{
-						// leave the channel and rejoin to force formerly-offline pending friend to send Hello with null
-						await m_hubConnection.SendAsync(c_leaveChannel, channel, Id);
-						await MonitorUserAsync(friend);
-						return;
+						friend = m_user.Friends.FirstOrDefault(x => x.Id == channel);
+					}
+					else
+					{
+						string[] parts = ParseChannelName(channel);
+						friend = m_user.Friends.FirstOrDefault(x => x.Email == parts[0] && x.Handle == parts[1]);
+						if (friend != null)
+						{
+							// leave the channel and rejoin to force formerly-offline pending friend to send Hello with null
+							await m_hubConnection.SendAsync(c_leaveChannel, channel, Id);
+							await MonitorUserAsync(friend);
+							return;
+						}
 					}
 				}
 
@@ -275,7 +282,7 @@ namespace SignalRConsole
 			}
 			else if (channel == ActiveChatChannelName && user == ActiveChatFriend.Id)
 			{
-				Console.Write($"{(Console.CursorLeft > 0 ? "\n" : "")}{user} has left the chat. (Hit Enter)");
+				Console.Write($"{(Console.CursorLeft > 0 ? "\n" : "")}{ActiveChatFriend.Handle} has left the chat. (Hit Enter)");
 				if (ActiveChatChannelName != ChatChannelName)
 					await m_hubConnection.SendAsync(c_leaveChannel, ActiveChatChannelName, Id);
 
@@ -870,12 +877,6 @@ namespace SignalRConsole
 		{
 			string[] parts = data.Split(c_delimiter);
 			return new User(parts[0], parts[1], parts[2], parts[3], parts[4]);
-		}
-
-		private static User GetUserFromChannelName(string channelName)
-		{
-			string[] parts = ParseChannelName(channelName);
-			return new User(parts[1], parts[0]);
 		}
 
 		private static string[] ParseChannelName(string channelName)
