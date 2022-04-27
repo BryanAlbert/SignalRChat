@@ -154,7 +154,7 @@ namespace SignalRConsole
 		private static string IdChannelName => m_user.Id;
 		private static string ChatChannelName => MakeChatChannelName(m_user);
 		private static string ActiveChatChannelName { get; set; }
-		private static string ActiveChatFriend { get; set; }
+		private static User ActiveChatFriend { get; set; }
 		private static int NextLine { get; set; }
 		private static int PromptLine { get; set; }
 
@@ -173,17 +173,11 @@ namespace SignalRConsole
 		{
 			if (user != Id)
 			{
+				User friend = null;
 				Debug.WriteLine($"{user} has joined the {string.Join('-', ParseChannelName(channel))} channel.");
-				if (channel == HandleChannelName || channel == IdChannelName)
+				if (channel == IdChannelName || channel == HandleChannelName)
 				{
-					// TODO: what about a pending friend? find by handle in that case
-					User friend = m_user.Friends.FirstOrDefault(x => x.Id == user);
-					SendCommand(CommandNames.Hello, channel, user, SerializeUserData(m_user), !friend?.Blocked);
-					if (friend != null && (!friend.Blocked ?? true) && !m_online.Contains(friend))
-					{
-						ConsoleWriteLogLine($"Your {(friend.Blocked.HasValue ? "" : "(pending) ")}friend {friend.Handle} is online.");
-						m_online.Add(friend);
-					}
+					friend = m_user.Friends.FirstOrDefault(x =>  x.Id == user);
 				}
 				else if (channel == ChatChannelName)
 				{
@@ -191,23 +185,35 @@ namespace SignalRConsole
 					{
 						SendCommand(CommandNames.Hello, channel, user, SerializeUserData(m_user), true);
 						ActiveChatChannelName = channel;
-						ActiveChatFriend = user;
+						ActiveChatFriend = m_user.Friends.FirstOrDefault(x =>  x.Id == user);
 						_ = await MessageLoopAsync();
 					}
 					else
 					{
 						SendCommand(CommandNames.Hello, channel, user, SerializeUserData(m_user), false);
 					}
+
+					return;
 				}
 				else
 				{
-					// former/pending friend joining our Handle channel 
-					User friend = m_user.Friends.FirstOrDefault(x => x.Id == user && x.Blocked == null);
+					// someone joined a Handle channel we're monitoring
+					string[] parts = ParseChannelName(channel);
+					friend = m_user.Friends.FirstOrDefault(x => x.Email == parts[0] && x.Handle == parts[1]);
 					if (friend != null)
 					{
+						// leave the channel and rejoin to force formerly-offline pending friend to send Hello with null
 						await m_hubConnection.SendAsync(c_leaveChannel, channel, Id);
 						await MonitorUserAsync(friend);
+						return;
 					}
+				}
+
+				SendCommand(CommandNames.Hello, channel, user, SerializeUserData(m_user), !friend?.Blocked);
+				if (friend != null && (!friend.Blocked ?? true) && !m_online.Contains(friend))
+				{
+					ConsoleWriteLogLine($"Your {(friend.Blocked.HasValue ? "" : "(pending) ")}friend {friend.Handle} is online.");
+					m_online.Add(friend);
 				}
 			}
 		}
@@ -222,7 +228,7 @@ namespace SignalRConsole
 			else if (cursor.X == 0)
 			{
 				// TODO: use the friend's Handle (track it--make ActiveChatFriend a User)
-				Console.WriteLine($"{from} said: {message}");
+				Console.WriteLine($"{ActiveChatFriend.Handle} said: {message}");
 			}
 			else
 			{
@@ -267,7 +273,7 @@ namespace SignalRConsole
 					m_online.Remove(friend);
 				}
 			}
-			else if (channel == ActiveChatChannelName && user == ActiveChatFriend)
+			else if (channel == ActiveChatChannelName && user == ActiveChatFriend.Id)
 			{
 				Console.Write($"{(Console.CursorLeft > 0 ? "\n" : "")}{user} has left the chat. (Hit Enter)");
 				if (ActiveChatChannelName != ChatChannelName)
@@ -515,7 +521,7 @@ namespace SignalRConsole
 			{
 				State = States.Connecting;
 				ActiveChatChannelName = MakeChatChannelName(friend);
-				ActiveChatFriend = friend.Id;
+				ActiveChatFriend = friend;
 				await m_hubConnection.SendAsync(c_joinChannel, ActiveChatChannelName, Id);
 			}
 			else
@@ -598,7 +604,8 @@ namespace SignalRConsole
 
 		private static async Task MonitorUserAsync(User user)
 		{
-			await m_hubConnection.SendAsync(c_joinChannel, user.Id ?? MakeChannelName(user), Id);
+			await m_hubConnection.SendAsync(c_joinChannel, !user.Blocked.HasValue ||
+				user.Id == null ? MakeChannelName(user) : user.Id, Id);
 		}
 
 		private static User ChooseFriend(string prompt, List<User> users, bool delete, ref Point? cursor)
