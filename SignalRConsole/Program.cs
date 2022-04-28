@@ -676,7 +676,9 @@ namespace SignalRConsole
 						$" before you can become friends.");
 				}
 
-				await UnfriendAsync(friend);
+				if (friend.Blocked != true)
+					await UnfriendAsync(friend);
+
 				return;
 			}
 			else if (!friend.Blocked.HasValue)
