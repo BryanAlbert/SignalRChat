@@ -217,12 +217,18 @@ namespace SignalRConsole
 					}
 				}
 
-				await SendCommandAsync(CommandNames.Hello, channel, user, SerializeUserData(m_user), !friend?.Blocked);
-				if (friend != null && (!friend.Blocked ?? true) && !m_online.Contains(friend))
+				// since we expect two JoinedChannel messages (one for our channel, once for the friend's channel)
+				// we need to lock here so that we don't add the user to the online list twice
+				lock (m_lock)
 				{
-					ConsoleWriteLogLine($"Your {(friend.Blocked.HasValue ? "" : "(pending) ")}friend {friend.Handle} is online.");
-					m_online.Add(friend);
+					if (friend != null && (!friend.Blocked ?? true) && !m_online.Contains(friend))
+					{
+						ConsoleWriteLogLine($"Your {(friend.Blocked.HasValue ? "" : "(pending) ")}friend {friend.Handle} is online.");
+						m_online.Add(friend);
+					}
 				}
+
+				await SendCommandAsync(CommandNames.Hello, channel, user, SerializeUserData(m_user), !friend?.Blocked);
 			}
 		}
 
@@ -917,6 +923,7 @@ namespace SignalRConsole
 
 		private User m_user;
 		private States m_state;
+		private object m_lock = new object();
 		private readonly List<User> m_users = new List<User>();
 		private readonly List<User> m_online = new List<User>();
 		private readonly List<string> m_log = new List<string>();
