@@ -1,7 +1,9 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.SignalR.Client;
+using System;
 using System.Diagnostics;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Threading.Tasks;
 
 namespace SignalRConsole
 {
@@ -16,12 +18,13 @@ namespace SignalRConsole
 			}
 
 
-			public static void Initialize(Action<string, string, string> sendCommand)
+			public static void Initialize(HubConnection hubConnection, string handle)
 			{
-				m_sendCommand = sendCommand;
+				m_hubConnection = hubConnection;
+				m_handle = handle;
 			}
 
-			public static void SendCommand(CommandNames name, string channel, string to, string data, bool? flag)
+			public static async Task SendCommandAsync(CommandNames name, string channel, string to, string data, bool? flag)
 			{
 				ConnectionCommand command = new ConnectionCommand()
 				{
@@ -39,7 +42,7 @@ namespace SignalRConsole
 				}
 				else
 				{
-					command.SendCommand();
+					await command.SendCommandAsync();
 				}
 			}
 
@@ -84,13 +87,14 @@ namespace SignalRConsole
 			}
 
 
-			private void SendCommand()
+			private async Task SendCommandAsync()
 			{
-				m_sendCommand(Channel, To, JsonSerializer.Serialize(this));
+				await m_hubConnection.SendAsync(ConsoleChat.c_sendCommand, m_handle, Channel, To, JsonSerializer.Serialize(this));
 			}
 		}
 
 
-		private static Action<string, string, string> m_sendCommand;
+		private static string m_handle;
+		private static HubConnection m_hubConnection;
 	}
 }
