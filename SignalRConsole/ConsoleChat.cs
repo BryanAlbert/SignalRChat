@@ -172,7 +172,7 @@ namespace SignalRConsole
 
 		private async Task OnJoinedChannelAsync(string channel, string user)
 		{
-			if (user != Id)
+			if (user != Id && user != Handle)
 			{
 				User friend = null;
 				Debug.WriteLine($"{user} has joined the {string.Join('-', ParseChannelName(channel))} channel.");
@@ -198,26 +198,31 @@ namespace SignalRConsole
 				}
 				else
 				{
-					// a friend joined a Handle channel we're monitoring
 					if (channel == user)
 					{
+						// a friend joined his own channel (and is now online)
 						friend = m_user.Friends.FirstOrDefault(x => x.Id == channel);
 					}
 					else
 					{
 						string[] parts = ParseChannelName(channel);
 						friend = m_user.Friends.FirstOrDefault(x => x.Email == parts[0] && x.Handle == parts[1]);
-						if (friend != null)
+						if (friend != null && user == parts[1])
 						{
-							// leave the channel and rejoin to force formerly-offline pending friend to send Hello with null
+							// pending friend joined his Handle channel, we leave and rejoin to signal him to send Hello with null
 							await m_hubConnection.SendAsync(c_leaveChannel, channel, Id);
 							await MonitorUserAsync(friend);
+							return;
+						}
+						else
+						{
+							// someone else joined a Handle channel we're monitoring, just ignore it
 							return;
 						}
 					}
 				}
 
-				// since we expect two JoinedChannel messages (one for our channel, once for the friend's channel)
+				// since we expect two JoinedChannel messages (one for our channel, one for the friend's channel)
 				// we need to lock here so that we don't add the user to the online list twice
 				lock (m_lock)
 				{
@@ -255,7 +260,7 @@ namespace SignalRConsole
 
 		private async Task OnSentCommandAsync(string from, string to, string json)
 		{
-			if (to == Id)
+			if (to == Id || to == Handle)
 			{
 				ConnectionCommand command = DeserializeCommand(json);
 				switch (command.CommandName)
@@ -438,7 +443,7 @@ namespace SignalRConsole
 			ConsoleWriteLogLine("Friends:");
 			foreach (User friend in m_user.Friends)
 			{
-				ConsoleWriteLogLine($"{friend.Handle}, {friend.Color}" +
+				ConsoleWriteLogLine($"{friend.Handle},{(friend.Color != null ? $" {friend.Color}" : "")}" +
 					$"{(friend.Blocked.HasValue ? (friend.Blocked.Value ? " (blocked)" : "") : " (pending)")}" +
 					$"{(m_online.Any(x => x.Id == friend.Id) ? " (online)" : "")}");
 			}
@@ -510,6 +515,13 @@ namespace SignalRConsole
 		private async Task ChatFriendAsync()
 		{
 			EraseLog();
+
+			if (m_user.Friends.Count == 0)
+			{
+				ConsoleWriteLogLine("You have no friends.");
+				return;
+			}
+
 			if (m_online.Count == 0)
 			{
 				ConsoleWriteLogLine("None of your friends is online.");
@@ -557,6 +569,13 @@ namespace SignalRConsole
 
 				NextLine = Console.CursorTop;
 				string message = Console.ReadLine();
+				if (m_waitForEnter)
+				{
+					m_waitForEnter = false;
+					DisplayMenu();
+					return true;
+				}
+
 				if (State != States.Chatting)
 					return true;
 
@@ -606,7 +625,7 @@ namespace SignalRConsole
 
 		private async Task MonitorChannelsAsync()
 		{
-			await m_hubConnection.SendAsync(c_joinChannel, HandleChannelName, Id);
+			await m_hubConnection.SendAsync(c_joinChannel, HandleChannelName, Handle);
 			await m_hubConnection.SendAsync(c_joinChannel, IdChannelName, Id);
 			await m_hubConnection.SendAsync(c_joinChannel, ChatChannelName, Id);
 		}
@@ -619,8 +638,10 @@ namespace SignalRConsole
 
 		private async Task MonitorUserAsync(User user)
 		{
-			await m_hubConnection.SendAsync(c_joinChannel, !user.Blocked.HasValue ||
-				user.Id == null ? MakeChannelName(user) : user.Id, Id);
+			if (!user.Blocked.HasValue || user.Id == null)
+				await m_hubConnection.SendAsync(c_joinChannel,  MakeChannelName(user), Handle);
+			else
+				await m_hubConnection.SendAsync(c_joinChannel,  user.Id, Id);
 		}
 
 		private User ChooseFriend(string prompt, List<User> users, bool delete, ref Point? cursor)
@@ -663,14 +684,23 @@ namespace SignalRConsole
 				else
 				{
 					await m_hubConnection.SendAsync(c_leaveChannel, ActiveChatChannelName, Id);
-					ConsoleWriteLogLine($"{from} can't chat at the moment.");
+					ConsoleWriteLogLine($"{friend.Handle} can't chat at the moment.");
 					State = States.Listening;
 				}
 			}
 			else if (State == States.Chatting && command.Flag == false)
 			{
+				if (Console.CursorLeft > 0)
+				{
+					Console.Write($" {ActiveChatFriend.Handle} has left the chat, hit Enter...");
+					m_waitForEnter = true;
+				}
+				else
+				{
+					DisplayMenu();
+				}
+
 				await LeaveChatChannelAsync(send: false);
-				DisplayMenu();
 			}
 			else
 			{
@@ -924,6 +954,7 @@ namespace SignalRConsole
 		private User m_user;
 		private States m_state;
 		private object m_lock = new object();
+		private bool m_waitForEnter;
 		private readonly List<User> m_users = new List<User>();
 		private readonly List<User> m_online = new List<User>();
 		private readonly List<string> m_log = new List<string>();

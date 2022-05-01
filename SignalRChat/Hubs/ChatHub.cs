@@ -35,7 +35,7 @@ namespace SignalRChat.Hubs
 
 		public async Task SendCommand(string from, string channel, string to, string command)
 		{
-			Console.WriteLine($"{from} sent this command to {to} in the channel {channel.Replace('\n', ' ')}: {command}");
+			Console.WriteLine($"{from} sent this command to {to} on the channel {channel.Replace('\n', ' ')}: {command}");
 			await Clients.Group(channel).SendAsync("SentCommand", from, to, command);
 		}
 
