@@ -178,7 +178,7 @@ namespace SignalRConsole
 				Debug.WriteLine($"{user} has joined the {string.Join('-', ParseChannelName(channel))} channel.");
 				if (channel == IdChannelName || channel == HandleChannelName)
 				{
-					friend = m_user.Friends.FirstOrDefault(x => x.Id == user);
+					friend = m_user.Friends.FirstOrDefault(x => channel == IdChannelName ? x.Id == user : x.Handle == user);
 				}
 				else if (channel == ChatChannelName)
 				{
@@ -262,6 +262,7 @@ namespace SignalRConsole
 		{
 			if (to == Id || to == Handle)
 			{
+				State = States.Busy;
 				ConnectionCommand command = DeserializeCommand(json);
 				switch (command.CommandName)
 				{
@@ -276,6 +277,8 @@ namespace SignalRConsole
 						Debug.WriteLine($"Error in OnSentCommandAsync, unrecognized command: {command.CommandName}");
 						break;
 				}
+
+				State = States.Listening;
 			}
 		}
 
@@ -408,7 +411,7 @@ namespace SignalRConsole
 					if (!friend.Blocked.HasValue)
 						ConsoleWriteLogLine($"You already asked {handle} to be your friend and we're waiting for a response.");
 					else if (friend.Blocked.Value)
-						ConsoleWriteLogLine($"You and {handle} are blocked. Both you and {handle} must unfriend to try again.");
+						ConsoleWriteLogLine($"You and {handle} are blocked. Both you and {handle} must unfriend before you can become friends.");
 					else
 						ConsoleWriteLogLine($"{handle} is already your friend!");
 
@@ -953,7 +956,7 @@ namespace SignalRConsole
 
 		private User m_user;
 		private States m_state;
-		private object m_lock = new object();
+		private readonly object m_lock = new object();
 		private bool m_waitForEnter;
 		private readonly List<User> m_users = new List<User>();
 		private readonly List<User> m_online = new List<User>();
