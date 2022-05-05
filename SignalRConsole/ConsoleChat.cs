@@ -84,7 +84,7 @@ namespace SignalRConsole
 			{
 				_ = MoveCursorToLog();
 				foreach (User friend in m_user.Friends.Where(x => x.Blocked != true))
-					await m_hubConnection.SendAsync(c_leaveChannel, friend.Id ?? MakeChannelName(friend), Id);
+					await m_hubConnection.SendAsync(c_leaveChannel, friend.Id ?? MakeHandleChannelName(friend), Id);
 
 				await m_hubConnection.SendAsync(c_leaveChannel, IdChannelName, Id);
 				await m_hubConnection.SendAsync(c_leaveChannel, HandleChannelName, Id);
@@ -151,7 +151,7 @@ namespace SignalRConsole
 		private string Id => m_user?.Id;
 		private string Email => m_user?.Email;
 		private string FileName => m_user.FileName;
-		private string HandleChannelName => MakeChannelName(Handle, Email);
+		private string HandleChannelName => MakeHandleChannelName(Handle, Email);
 		private string IdChannelName => m_user.Id;
 		private string ChatChannelName => MakeChatChannelName(m_user);
 		private string ActiveChatChannelName { get; set; }
@@ -246,7 +246,6 @@ namespace SignalRConsole
 			}
 			else if (cursor.X == 0)
 			{
-				// TODO: use the friend's Handle (track it--make ActiveChatFriend a User)
 				Console.WriteLine($"{ActiveChatFriend.Handle} said: {message}");
 			}
 			else
@@ -262,7 +261,6 @@ namespace SignalRConsole
 		{
 			if (to == Id || to == Handle)
 			{
-				State = States.Busy;
 				ConnectionCommand command = DeserializeCommand(json);
 				switch (command.CommandName)
 				{
@@ -277,8 +275,6 @@ namespace SignalRConsole
 						Debug.WriteLine($"Error in OnSentCommandAsync, unrecognized command: {command.CommandName}");
 						break;
 				}
-
-				State = States.Listening;
 			}
 		}
 
@@ -293,7 +289,7 @@ namespace SignalRConsole
 				{
 					ConsoleWriteLogLine($"Your {(friend.Blocked.HasValue ? "" : "(pending) ")}friend {friend.Handle} is offline.");
 					m_online.Remove(friend);
-					}
+				}
 			}
 		}
 
@@ -642,9 +638,9 @@ namespace SignalRConsole
 		private async Task MonitorUserAsync(User user)
 		{
 			if (!user.Blocked.HasValue || user.Id == null)
-				await m_hubConnection.SendAsync(c_joinChannel,  MakeChannelName(user), Handle);
+				await m_hubConnection.SendAsync(c_joinChannel, MakeHandleChannelName(user), Handle);
 			else
-				await m_hubConnection.SendAsync(c_joinChannel,  user.Id, Id);
+				await m_hubConnection.SendAsync(c_joinChannel, user.Id, Id);
 		}
 
 		private User ChooseFriend(string prompt, List<User> users, bool delete, ref Point? cursor)
@@ -731,7 +727,7 @@ namespace SignalRConsole
 				if (command.Flag == true)
 					await SendCommandAsync(CommandNames.Hello, friend.Id, friend.Id, SerializeUserData(m_user), false);
 				else
-					await SendCommandAsync(CommandNames.Verify, MakeChannelName(friend), from, SerializeUserData(m_user), null);
+					await SendCommandAsync(CommandNames.Verify, MakeHandleChannelName(friend), from, SerializeUserData(m_user), null);
 			}
 
 			if (!m_online.Contains(friend))
@@ -784,7 +780,7 @@ namespace SignalRConsole
 
 		private async Task UnfriendAsync(User friend)
 		{
-			await m_hubConnection.SendAsync(c_leaveChannel, friend.Id ?? MakeChannelName(friend), Id);
+			await m_hubConnection.SendAsync(c_leaveChannel, friend.Id ?? MakeHandleChannelName(friend), Id);
 			_ = m_online.Remove(friend);
 			_ = m_user.Friends.Remove(friend);
 			SaveUser();
@@ -902,12 +898,12 @@ namespace SignalRConsole
 			return cursor;
 		}
 
-		private string MakeChannelName(User user)
+		private string MakeHandleChannelName(User user)
 		{
 			return $"{user.Email}{c_delimiter}{user.Handle}";
 		}
 
-		private string MakeChannelName(string name, string email)
+		private string MakeHandleChannelName(string name, string email)
 		{
 			return $"{email}{c_delimiter}{name}";
 		}
