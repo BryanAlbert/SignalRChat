@@ -207,9 +207,10 @@ namespace SignalRConsole
 					{
 						string[] parts = ParseChannelName(channel);
 						friend = m_user.Friends.FirstOrDefault(x => x.Email == parts[0] && x.Handle == parts[1]);
-						if (friend != null && user == parts[1])
+						if (friend != null && user == parts[1] && !friend.HelloInitiated)
 						{
 							// pending friend joined his Handle channel, we leave and rejoin to signal him to send Hello with null
+							friend.HelloInitiated = true;
 							await m_hubConnection.SendAsync(c_leaveChannel, channel, Id);
 							await MonitorUserAsync(friend);
 							return;
@@ -231,6 +232,12 @@ namespace SignalRConsole
 						ConsoleWriteLogLine($"Your {(friend.Blocked.HasValue ? "" : "(pending) ")}friend {friend.Handle} is online.");
 						m_online.Add(friend);
 					}
+				}
+
+				if (friend?.HelloInitiated ?? false)
+				{
+					friend.HelloInitiated = false;
+					return;
 				}
 
 				await SendCommandAsync(CommandNames.Hello, channel, user, SerializeUserData(m_user), !friend?.Blocked);
@@ -754,7 +761,8 @@ namespace SignalRConsole
 				await SendCommandAsync(CommandNames.Verify, HandleChannelName, from, SerializeUserData(m_user), !friend.Blocked);
 				if (!friend.Blocked ?? false)
 				{
-					m_online.Add(friend);
+					if (!m_online.Contains(friend))
+						m_online.Add(friend);
 					await m_hubConnection.SendAsync(c_joinChannel, command.Data);
 				}
 

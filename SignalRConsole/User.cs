@@ -47,5 +47,7 @@ namespace SignalRConsole
 
 		[JsonIgnore]
 		public string FileName { get; set; }
+		[JsonIgnore]
+		public bool HelloInitiated { get; set; }
 	}
 }

@@ -1,0 +1,128 @@
+Both come online, Bruce adds Fred:
+Bruce joins his own channels:
+Bruce joined the channel: bruce@hotmail.com Bruce
+brucef68-3c37-4aef-b8a6-1649659bbbc4 joined the channel: brucef68-3c37-4aef-b8a6-1649659bbbc4
+brucef68-3c37-4aef-b8a6-1649659bbbc4 joined the channel: brucef68-3c37-4aef-b8a6-1649659bbbc4 Chat
+
+Fred joins his channels:
+Fred joined the channel: fred@gmail.com Fred
+fredac24-3f25-41e0-84f2-3f34f54d072e joined the channel: fredac24-3f25-41e0-84f2-3f34f54d072e
+fredac24-3f25-41e0-84f2-3f34f54d072e joined the channel: fredac24-3f25-41e0-84f2-3f34f54d072e Chat
+
+Bruce adds Fred, joins his Handle channel:
+Bruce joined the channel: fred@gmail.com Fred
+
+Fred responds by sending Hello with null to Bruce on the channel:
+fredac24-3f25-41e0-84f2-3f34f54d072e sent this command to Bruce on the channel fred@gmail.com Fred: {"Command":"Hello","Data":"Fred\nfred@gmail.com\nFred Sanson\nGreen\nfredac24-3f25-41e0-84f2-3f34f54d072e","Flag":null}
+
+Bruce answers with a Verify null on the channel:
+brucef68-3c37-4aef-b8a6-1649659bbbc4 sent this command to fredac24-3f25-41e0-84f2-3f34f54d072e on the channel fred@gmail.com Fred: {"Command":"Verify","Data":"Bruce\nbruce@hotmail.com\nBruce Albert\nRed\nbrucef68-3c37-4aef-b8a6-1649659bbbc4","Flag":null}
+
+Fred answers with Verify true on the channel and they're friends:
+fredac24-3f25-41e0-84f2-3f34f54d072e sent this command to brucef68-3c37-4aef-b8a6-1649659bbbc4 on the channel fred@gmail.com Fred: {"Command":"Verify","Data":"Fred\nfred@gmail.com\nFred Sanson\nGreen\nfredac24-3f25-41e0-84f2-3f34f54d072e","Flag":true}
+
+
+Here's a scenario where Bruce adds Fred, goes offline, then Fred comes online, and now Bruce comes onine:
+Bruce joins his own Handle channel then his regular channels:
+Bruce joined the channel: bruce@hotmail.com Bruce
+brucef68-3c37-4aef-b8a6-1649659bbbc4 joined the channel: brucef68-3c37-4aef-b8a6-1649659bbbc4
+brucef68-3c37-4aef-b8a6-1649659bbbc4 joined the channel: brucef68-3c37-4aef-b8a6-1649659bbbc4 Chat
+
+Bruce joins his friends' channels, in this case the Handle channel of his pending friend Fred:
+Bruce joined the channel: fred@gmail.com Fred
+
+Fred responds to Bruce joining his Handle channel by sending Hello null back on the same channel:
+fredac24-3f25-41e0-84f2-3f34f54d072e sent this command to Bruce on the channel fred@gmail.com Fred: {"Command":"Hello","Data":"Fred\nfred@gmail.com\nFred Sanson\nGreen\nfredac24-3f25-41e0-84f2-3f34f54d072e","Flag":null}
+
+Bruce responds with the Verify command on Fred's handle channel:
+brucef68-3c37-4aef-b8a6-1649659bbbc4 sent this command to fredac24-3f25-41e0-84f2-3f34f54d072e on the channel fred@gmail.com Fred: {"Command":"Verify","Data":"Bruce\nbruce@hotmail.com\nBruce Albert\nRed\nbrucef68-3c37-4aef-b8a6-1649659bbbc4","Flag":null}
+
+Fred responds with the Verify command with the answer:
+fredac24-3f25-41e0-84f2-3f34f54d072e sent this command to brucef68-3c37-4aef-b8a6-1649659bbbc4 on the channel fred@gmail.com Fred: {"Command":"Verify","Data":"Fred\nfred@gmail.com\nFred Sanson\nGreen\nfredac24-3f25-41e0-84f2-3f34f54d072e","Flag":true}
+
+
+And here Bruce adds Fred then Fred comes online:
+Fred comes online and joins his channels:
+Fred joined the channel: fred@gmail.com Fred
+fredac24-3f25-41e0-84f2-3f34f54d072e joined the channel: fredac24-3f25-41e0-84f2-3f34f54d072e
+fredac24-3f25-41e0-84f2-3f34f54d072e joined the channel: fredac24-3f25-41e0-84f2-3f34f54d072e Chat
+
+Bruce handles Fred's joining his own Handle channel by leaving then rejoining the channel:
+brucef68-3c37-4aef-b8a6-1649659bbbc4 left the channel: fred@gmail.com Fred
+Bruce joined the channel: fred@gmail.com Fred
+
+Fred responds to Bruce joining his Handle channel by sending Hello null on that channel:
+fredac24-3f25-41e0-84f2-3f34f54d072e sent this command to Bruce on the channel fred@gmail.com Fred: {"Command":"Hello","Data":"Fred\nfred@gmail.com\nFred Sanson\nGreen\nfredac24-3f25-41e0-84f2-3f34f54d072e","Flag":null}
+
+Bruce responds by sending Verify null:
+brucef68-3c37-4aef-b8a6-1649659bbbc4 sent this command to fredac24-3f25-41e0-84f2-3f34f54d072e on the channel fred@gmail.com Fred: {"Command":"Verify","Data":"Bruce\nbruce@hotmail.com\nBruce Albert\nRed\nbrucef68-3c37-4aef-b8a6-1649659bbbc4","Flag":null}
+
+Fred responds with Verify true:
+fredac24-3f25-41e0-84f2-3f34f54d072e sent this command to brucef68-3c37-4aef-b8a6-1649659bbbc4 on the channel fred@gmail.com Fred: {"Command":"Verify","Data":"Fred\nfred@gmail.com\nFred Sanson\nGreen\nfredac24-3f25-41e0-84f2-3f34f54d072e","Flag":true}
+
+
+Bruce already added Fred and went offline, waiting for a response. Fred comes online, adds Bruce and remains 
+online. Bruce comes online:
+Bruce joins channels, starting with his own Handle channel:
+Bruce joined the channel: bruce@hotmail.com Bruce
+
+Fred sees Bruce joining his own Handle channel; since Fred has Bruce's Handle channel listed in his friends list, he
+leaves and rejoins the channel to trigger Bruce to send him a Hello (as would happen if Fred had just come online):
+fredac24-3f25-41e0-84f2-3f34f54d072e left the channel: bruce@hotmail.com Bruce
+
+Bruce joins his own standerd channel:
+brucef68-3c37-4aef-b8a6-1649659bbbc4 joined the channel: brucef68-3c37-4aef-b8a6-1649659bbbc4
+
+...while Fred rejoins Bruce's Handle channel (above): [set a flag, HelloInitiated]
+Fred joined the channel: bruce@hotmail.com Bruce
+
+Bruce joins his own Chat channel:
+brucef68-3c37-4aef-b8a6-1649659bbbc4 joined the channel: brucef68-3c37-4aef-b8a6-1649659bbbc4 Chat
+
+Bruce joins Fred's Handle channel, since he's in his list of friends:
+Bruce joined the channel: fred@gmail.com Fred
+
+Fred handles Bruce joining his (Fred's) handle chanel: [Check HelloInitiated, don't do this if so]
+fredac24-3f25-41e0-84f2-3f34f54d072e sent this command to Bruce on the channel fred@gmail.com Fred: {"Command":"Hello","Data":"Fred\nfred@gmail.com\nFred Sanson\nGreen\nfredac24-3f25-41e0-84f2-3f34f54d072e","Flag":null}
+
+Bruce handles Fred rejoining his (Bruce's) handle channel
+brucef68-3c37-4aef-b8a6-1649659bbbc4 sent this command to Fred on the channel bruce@hotmail.com Bruce: {"Command":"Hello","Data":"Bruce\nbruce@hotmail.com\nBruce Albert\nRed\nbrucef68-3c37-4aef-b8a6-1649659bbbc4","Flag":null}
+
+Fred resonds to Bruce's Hello command with a Verify:
+fredac24-3f25-41e0-84f2-3f34f54d072e sent this command to brucef68-3c37-4aef-b8a6-1649659bbbc4 on the channel bruce@hotmail.com Bruce: {"Command":"Verify","Data":"Fred\nfred@gmail.com\nFred Sanson\nGreen\nfredac24-3f25-41e0-84f2-3f34f54d072e","Flag":null}
+
+Bruce responds to Fred's Hello command with a Verify:
+brucef68-3c37-4aef-b8a6-1649659bbbc4 sent this command to fredac24-3f25-41e0-84f2-3f34f54d072e on the channel fred@gmail.com Fred: {"Command":"Verify","Data":"Bruce\nbruce@hotmail.com\nBruce Albert\nRed\nbrucef68-3c37-4aef-b8a6-1649659bbbc4","Flag":null}
+
+
+Both added already, as above, with implementation of the above-mentioned HelloInitiated:
+
+Fred comes online and joins his channels, including his pending friend Bruce's Handle channel:
+Fred joined the channel: fred@gmail.com Fred
+fredac24-3f25-41e0-84f2-3f34f54d072e joined the channel: fredac24-3f25-41e0-84f2-3f34f54d072e
+fredac24-3f25-41e0-84f2-3f34f54d072e joined the channel: fredac24-3f25-41e0-84f2-3f34f54d072e Chat
+Fred joined the channel: bruce@hotmail.com Bruce
+
+Bruce comes onoine and joins his Handle channel:
+Bruce joined the channel: bruce@hotmail.com Bruce
+
+Fred responds by leaving the channel and sets HelloInitiated...
+fredac24-3f25-41e0-84f2-3f34f54d072e left the channel: bruce@hotmail.com Bruce
+
+Bruce continues joining his channels:
+brucef68-3c37-4aef-b8a6-1649659bbbc4 joined the channel: brucef68-3c37-4aef-b8a6-1649659bbbc4
+
+Fred rejoins Fred's Handle channel:
+Fred joined the channel: bruce@hotmail.com Bruce:
+
+Bruce finishes joining his channels and joins his pending friend Fred's Handle channel:
+brucef68-3c37-4aef-b8a6-1649659bbbc4 joined the channel: brucef68-3c37-4aef-b8a6-1649659bbbc4 Chat
+
+This time Fred checks HelloInitiated and doesn't send hello:
+Bruce joined the channel: fred@gmail.com Fred
+
+Bruce responds to Fred's joining his Handle channel by sending Hello null on the channel to Fred:
+brucef68-3c37-4aef-b8a6-1649659bbbc4 sent this command to Fred on the channel bruce@hotmail.com Bruce: {"Command":"Hello","Data":"Bruce\nbruce@hotmail.com\nBruce Albert\nRed\nbrucef68-3c37-4aef-b8a6-1649659bbbc4","Flag":null}
+
+Fred gets user response and replies by sending Bruce Verify true on the channel and friendship is initiated:
+fredac24-3f25-41e0-84f2-3f34f54d072e sent this command to brucef68-3c37-4aef-b8a6-1649659bbbc4 on the channel bruce@hotmail.com Bruce: {"Command":"Verify","Data":"Fred\nfred@gmail.com\nFred Sanson\nGreen\nfredac24-3f25-41e0-84f2-3f34f54d072e","Flag":null}
