@@ -680,7 +680,6 @@ namespace SignalRConsole
 
 		private async Task HelloAsync(string from, ConnectionCommand command)
 		{
-			User friend = UpdateFriendData(command.Data);
 			if (State == States.Connecting)
 			{
 				if (command.Flag == true)
@@ -690,7 +689,8 @@ namespace SignalRConsole
 				else
 				{
 					await m_hubConnection.SendAsync(c_leaveChannel, ActiveChatChannelName, Id);
-					ConsoleWriteLogLine($"{friend.Handle} can't chat at the moment.");
+					ConsoleWriteLogLine($"{DeserializeUserData(DeserializeCommand(command.Data).Data).Handle}" +
+						$" can't chat at the moment.");
 					State = States.Listening;
 				}
 			}
@@ -710,80 +710,103 @@ namespace SignalRConsole
 			}
 			else
 			{
-				await CheckFriendshipAsync(from, friend, command);
+				await CheckFriendshipAsync(from, command);
 			}
 		}
 
-		private async Task CheckFriendshipAsync(string from, User friend, ConnectionCommand command)
+		private async Task CheckFriendshipAsync(string from, ConnectionCommand hello)
 		{
-			if (command.Flag == false || (!command.Flag.HasValue && friend.Blocked == false))
+			Tuple<User, User> update = UpdateFriendData(hello.Data);
+			User existing = update.Item1;
+			User pending = update.Item2;
+			if (hello.Flag == false || (!hello.Flag.HasValue && existing?.Blocked == false))
 			{
-				if (friend != null && !friend.Blocked.HasValue)
+				if (existing != null)
 				{
-					ConsoleWriteLogLine($"{friend.Handle} has blocked you. {friend.Handle} must unfriend you" +
-						$" before you can become friends.");
+					if (!existing.Blocked.HasValue)
+					{
+						ConsoleWriteLogLine($"{existing.Handle} has blocked you. {existing.Handle} must unfriend you" +
+							$" before you can become friends.");
+					}
+					else if (existing.Blocked == false)
+					{
+						await UnfriendAsync(existing);
+					}
 				}
-
-				if (friend.Blocked != true)
-					await UnfriendAsync(friend);
 
 				return;
 			}
-			else if (!friend.Blocked.HasValue)
+			else if (!existing?.Blocked.HasValue ?? true)
 			{
-				if (command.Flag == true)
-					await SendCommandAsync(CommandNames.Hello, friend.Id, friend.Id, SerializeUserData(m_user), false);
+				if (hello.Flag == true)
+				{
+					if (existing == null)
+					{
+						// we unfriended him while he was away, send Hello with false
+						await SendCommandAsync(CommandNames.Hello, pending.Id, pending.Id, SerializeUserData(m_user), false);
+					}
+					else if (!existing.Blocked.HasValue)
+					{
+						// he accepted our friend request while we were away
+						existing.Blocked = false;
+						SaveUser();
+						await SendCommandAsync(CommandNames.Hello, existing.Id, existing.Id, SerializeUserData(m_user), true);
+					}
+				}
 				else
-					await SendCommandAsync(CommandNames.Verify, MakeHandleChannelName(friend), from, SerializeUserData(m_user), null);
+				{
+					await SendCommandAsync(CommandNames.Verify, MakeHandleChannelName(existing), from, SerializeUserData(m_user), null);
+				}
 			}
 
-			if (!m_online.Contains(friend))
+			if (existing != null && !m_online.Contains(existing))
 			{
-				ConsoleWriteLogLine($"Your {(friend.Blocked.HasValue ? "" : "(pending) ")}friend {friend.Handle} is online.");
-				m_online.Add(friend);
+				ConsoleWriteLogLine($"Your {(existing.Blocked.HasValue ? "" : "(pending) ")}friend {existing.Handle} is online.");
+				m_online.Add(existing);
 			}
 		}
 
-		private async Task VerifyFriendAsync(string from, ConnectionCommand command)
+		private async Task VerifyFriendAsync(string from, ConnectionCommand verify)
 		{
-			User friend = UpdateFriendData(command.Data);
-			User pending = m_user.Friends.FirstOrDefault(u => u.Id == friend.Id);
-			if (!command.Flag.HasValue)
+			Tuple<User, User> update = UpdateFriendData(verify.Data);
+			User existing = update.Item1;
+			User pending = update.Item2;
+			if (!verify.Flag.HasValue)
 			{
-				Point cursor = ConsoleWriteLogRead($"Accept friend request from {friend.Handle}," +
-					$" email address {friend.Email}? [y/n] ", out ConsoleKeyInfo confirm);
-				friend.Blocked = confirm.Key != ConsoleKey.Y;
-				if (pending != null)
-					m_user.Friends.Remove(pending);
+				Point cursor = ConsoleWriteLogRead($"Accept friend request from {pending.Handle}," +
+					$" email address {pending.Email}? [y/n] ", out ConsoleKeyInfo confirm);
+				pending.Blocked = confirm.Key != ConsoleKey.Y;
+				if (existing != null)
+					m_user.Friends.Remove(existing);
 
-				m_user.AddFriend(friend);
+				m_user.AddFriend(pending);
 				SaveUser();
-				await SendCommandAsync(CommandNames.Verify, HandleChannelName, from, SerializeUserData(m_user), !friend.Blocked);
-				if (!friend.Blocked ?? false)
+				await SendCommandAsync(CommandNames.Verify, HandleChannelName, from, SerializeUserData(m_user), !pending.Blocked);
+				if (!pending.Blocked ?? false)
 				{
-					if (!m_online.Contains(friend))
-						m_online.Add(friend);
-					await m_hubConnection.SendAsync(c_joinChannel, command.Data);
+					if (!m_online.Contains(pending))
+						m_online.Add(pending);
+					await m_hubConnection.SendAsync(c_joinChannel, verify.Data);
 				}
 
 				Console.SetCursorPosition(cursor.X, cursor.Y);
-				pending = friend;
+				existing = pending;
 			}
 			else
 			{
-				if (pending != null)
-					pending.Blocked = !command.Flag;
+				if (existing != null)
+					existing.Blocked = !verify.Flag;
 
 				SaveUser();
-				if (command.Flag == false)
+				if (verify.Flag == false)
 				{
-					_ = m_online.Remove(pending);
-					await m_hubConnection.SendAsync(c_leaveChannel, command.Data, Handle);
+					_ = m_online.Remove(existing);
+					await m_hubConnection.SendAsync(c_leaveChannel, verify.Data, Handle);
 				}
 			}
 
-			if (pending != null)
-				ConsoleWriteLogLine($"You and {pending.Handle} are {(pending.Blocked.Value ? "not" : "now")} friends!");
+			if (existing != null)
+				ConsoleWriteLogLine($"You and {existing.Handle} are {(existing.Blocked.Value ? "not" : "now")} friends!");
 		}
 
 		private async Task UnfriendAsync(User friend)
@@ -794,25 +817,26 @@ namespace SignalRConsole
 			SaveUser();
 		}
 
-		private User UpdateFriendData(string data)
+		private Tuple<User, User> UpdateFriendData(string data)
 		{
 			User updated = DeserializeUserData(data);
 			User friend = m_user.Friends.FirstOrDefault(x => x.Id == updated.Id) ??
 				m_user.Friends.FirstOrDefault(x => x.Email == updated.Email && x.Handle == updated.Handle);
-			if (friend == null)
-				return updated;
 
-			if (friend.Handle != updated.Handle || friend.Name != updated.Name ||
-				friend.Color != updated.Color || friend.Id != updated.Id)
+			if (friend != null)
 			{
-				friend.Handle = updated.Handle;
-				friend.Name = updated.Name;
-				friend.Color = updated.Color;
-				friend.Id = updated.Id;
-				SaveUser();
+				if (friend.Handle != updated.Handle || friend.Name != updated.Name ||
+					friend.Color != updated.Color || friend.Id != updated.Id)
+				{
+					friend.Handle = updated.Handle;
+					friend.Name = updated.Name;
+					friend.Color = updated.Color;
+					friend.Id = updated.Id;
+					SaveUser();
+				}
 			}
 
-			return friend;
+			return new Tuple<User, User>(friend, updated);
 		}
 
 		private async Task<bool> WaitAsync(string message, int intervalms = 100, int timeouts = 10)
