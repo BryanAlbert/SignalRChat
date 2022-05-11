@@ -15,13 +15,13 @@ namespace SignalRConsole
 {
 	public class ConsoleChat
 	{
-		public async Task<int> Run(string[] args, Harness console)
+		public async Task<int> Run(Harness console)
 		{
 			m_console = console;
 			if (!await StartServerAsync())
 				return -1;
 
-			if (!await LoadUsersAsync(args.Length > 0 ? args[0] : null))
+			if (!await LoadUsersAsync(m_console.NextArg()))
 				return -2;
 
 			Initialize(m_hubConnection, Id);
@@ -329,8 +329,15 @@ namespace SignalRConsole
 
 		private async Task<bool> LoadUsersAsync(string handle)
 		{
-			if (string.IsNullOrEmpty(handle) && !GetData("What is your handle (nickname)? ", out handle))
-				return false;
+			if (string.IsNullOrEmpty(handle))
+			{
+				if (!GetData("What is your handle (nickname)? ", out handle))
+					return false;
+			}
+			else
+			{
+				m_console.WriteLine($"Hello {handle}!");
+			}
 
 			foreach (string fileName in Directory.EnumerateFiles(".").Where(x => x.EndsWith(c_fileExtension)))
 			{

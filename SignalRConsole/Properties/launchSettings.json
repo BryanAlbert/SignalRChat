@@ -1,7 +1,8 @@
 {
   "profiles": {
     "SignalRConsole": {
-      "commandName": "Project"
+      "commandName": "Project",
+      "commandLineArgs": "BruceInput.txt"
     }
   }
 }

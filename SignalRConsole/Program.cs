@@ -6,8 +6,7 @@ namespace SignalRConsole
 	{
 		private static async Task<int> Main(string[] args)
 		{
-			Harness harness = new Harness();
-			return await new ConsoleChat().Run(args, harness);
+			return await new ConsoleChat().Run(new Harness(args));
 		}
 	}
 }
