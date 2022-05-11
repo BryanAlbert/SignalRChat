@@ -15,8 +15,9 @@ namespace SignalRConsole
 {
 	public class ConsoleChat
 	{
-		public async Task<int> Run(string[] args)
+		public async Task<int> Run(string[] args, Harness console)
 		{
+			m_console = console;
 			if (!await StartServerAsync())
 				return -1;
 
@@ -31,12 +32,12 @@ namespace SignalRConsole
 
 			while (true)
 			{
-				Console.CursorLeft = 0;
-				Console.Write($"{State}> ");
-				while (!Console.KeyAvailable || State != States.Listening)
+				m_console.CursorLeft = 0;
+				m_console.Write($"{State}> ");
+				while (!m_console.KeyAvailable || State != States.Listening)
 					await Task.Delay(10);
 
-				ConsoleKeyInfo menu = Console.ReadKey(intercept: true);
+				ConsoleKeyInfo menu = m_console.ReadKey(intercept: true);
 				try
 				{
 					switch (menu.Key)
@@ -64,7 +65,7 @@ namespace SignalRConsole
 				}
 				catch (InvalidOperationException)
 				{
-					Console.WriteLine("Disconnected from the server, reconnecting...");
+					m_console.WriteLine("Disconnected from the server, reconnecting...");
 					await StartServerAsync();
 					DisplayMenu();
 					continue;
@@ -93,11 +94,11 @@ namespace SignalRConsole
 			}
 			catch (Exception exception)
 			{
-				Console.WriteLine($"Exception shutting down: {exception.Message}");
+				m_console.WriteLine($"Exception shutting down: {exception.Message}");
 			}
 			finally
 			{
-				Console.WriteLine("\nFinished.");
+				m_console.WriteLine("\nFinished.");
 			}
 
 			return 0;
@@ -126,19 +127,19 @@ namespace SignalRConsole
 			{
 				if (value != States.Initializing)
 				{
-					Point cursor = new Point(Console.CursorLeft, Console.CursorTop);
-					Console.SetCursorPosition(0, PromptLine);
+					Point cursor = new Point(m_console.CursorLeft, m_console.CursorTop);
+					m_console.SetCursorPosition(0, PromptLine);
 					int padding = m_state == States.Initializing ? 0 : (m_state.ToString().Length) - value.ToString().Length + 2;
 					if (value == States.Listening)
 					{
-						Console.Write(padding > 0 ? $"{value}> {(padding > 0 ? new string(' ', padding) : "")}" : $"{value}> ");
+						m_console.Write(padding > 0 ? $"{value}> {(padding > 0 ? new string(' ', padding) : "")}" : $"{value}> ");
 						while (padding-- > 0)
-							Console.CursorLeft--;
+							m_console.CursorLeft--;
 					}
 					else
 					{
-						Console.Write($"{value}...{(padding > 0 ? new string(' ', padding) : "")}");
-						Console.SetCursorPosition(cursor.X, cursor.Y);
+						m_console.Write($"{value}...{(padding > 0 ? new string(' ', padding) : "")}");
+						m_console.SetCursorPosition(cursor.X, cursor.Y);
 					}
 				}
 
@@ -162,10 +163,10 @@ namespace SignalRConsole
 
 		private void OnRegister(string token)
 		{
-			ConsoleColor color = Console.ForegroundColor;
-			Console.ForegroundColor = ConsoleColor.Yellow;
+			ConsoleColor color = m_console.ForegroundColor;
+			m_console.ForegroundColor = ConsoleColor.Yellow;
 			ConsoleWriteLogLine($"Registration token from server: {token}");
-			Console.ForegroundColor = color;
+			m_console.ForegroundColor = color;
 			RegistrationToken = token;
 			State = States.Changing;
 		}
@@ -246,21 +247,21 @@ namespace SignalRConsole
 
 		private void OnSentMessage(string from, string message)
 		{
-			Point cursor = new Point(Console.CursorLeft, Console.CursorTop);
+			Point cursor = new Point(m_console.CursorLeft, m_console.CursorTop);
 			if (from == Id)
 			{
-				Console.WriteLine($"You said: {message}");
+				m_console.WriteLine($"You said: {message}");
 			}
 			else if (cursor.X == 0)
 			{
-				Console.WriteLine($"{ActiveChatFriend.Handle} said: {message}");
+				m_console.WriteLine($"{ActiveChatFriend.Handle} said: {message}");
 			}
 			else
 			{
-				Console.SetCursorPosition(0, cursor.Y + 1);
-				Console.WriteLine($"{from} said: {message}");
-				NextLine = Console.CursorTop;
-				Console.SetCursorPosition(cursor.X, cursor.Y);
+				m_console.SetCursorPosition(0, cursor.Y + 1);
+				m_console.WriteLine($"{from} said: {message}");
+				NextLine = m_console.CursorTop;
+				m_console.SetCursorPosition(cursor.X, cursor.Y);
 			}
 		}
 
@@ -303,7 +304,7 @@ namespace SignalRConsole
 		private async Task<bool> StartServerAsync()
 		{
 			State = States.Initializing;
-			Console.WriteLine($"Initializing server and connecting to URL: {c_chatHubUrl}");
+			m_console.WriteLine($"Initializing server and connecting to URL: {c_chatHubUrl}");
 			m_hubConnection = new HubConnectionBuilder().WithUrl(c_chatHubUrl).Build();
 
 			_ = m_hubConnection.On<string>(c_register, (t) => OnRegister(t));
@@ -318,7 +319,7 @@ namespace SignalRConsole
 			}
 			catch (Exception exception)
 			{
-				Console.WriteLine($"Failed to connect to server (is the server running?), exception:" +
+				m_console.WriteLine($"Failed to connect to server (is the server running?), exception:" +
 					$" {exception.Message}");
 				return false;
 			}
@@ -368,23 +369,23 @@ namespace SignalRConsole
 			await m_hubConnection.SendAsync(c_register, email);
 			if (!await WaitAsync("Waiting for the server"))
 			{
-				Console.WriteLine("Timeout waiting for a response from the server, aborting.");
+				m_console.WriteLine("Timeout waiting for a response from the server, aborting.");
 				return null;
 			}
 
 			State = States.Initializing;
-			Console.WriteLine("Enter the token returned from the server, Enter to abort: ");
+			m_console.WriteLine("Enter the token returned from the server, Enter to abort: ");
 			string token;
 			while (true)
 			{
-				token = Console.ReadLine();
+				token = m_console.ReadLine();
 				if (token == RegistrationToken)
 					return email;
 
 				if (token == string.Empty)
 					return null;
 
-				Console.WriteLine("Tokens do not match, please try again, Enter to abort: ");
+				m_console.WriteLine("Tokens do not match, please try again, Enter to abort: ");
 			}
 		}
 
@@ -434,7 +435,7 @@ namespace SignalRConsole
 			}
 
 			State = States.Listening;
-			Console.SetCursorPosition(cursor.X, cursor.Y);
+			m_console.SetCursorPosition(cursor.X, cursor.Y);
 		}
 
 		private void ListFriends()
@@ -475,7 +476,7 @@ namespace SignalRConsole
 			}
 			else
 			{
-				Console.SetCursorPosition(cursor.Value.X, cursor.Value.Y);
+				m_console.SetCursorPosition(cursor.Value.X, cursor.Value.Y);
 				State = States.Listening;
 			}
 		}
@@ -514,7 +515,7 @@ namespace SignalRConsole
 			}
 			while (false);
 
-			Console.SetCursorPosition(cursor.Value.X, cursor.Value.Y);
+			m_console.SetCursorPosition(cursor.Value.X, cursor.Value.Y);
 			State = States.Listening;
 		}
 
@@ -538,7 +539,7 @@ namespace SignalRConsole
 			Point? cursor = default;
 			User friend = ChooseFriend("Whom would you like to chat with? (number, Enter to abort): ",
 				m_online, false, ref cursor);
-			Console.SetCursorPosition(cursor.Value.X, cursor.Value.Y);
+			m_console.SetCursorPosition(cursor.Value.X, cursor.Value.Y);
 
 			if (friend != null)
 			{
@@ -557,8 +558,8 @@ namespace SignalRConsole
 		{
 			EraseLog();
 			State = States.Chatting;
-			Console.SetCursorPosition(0, NextLine);
-			Console.WriteLine($"Type messages, type '{c_leaveChatCommand}' to leave the chat.");
+			m_console.SetCursorPosition(0, NextLine);
+			m_console.WriteLine($"Type messages, type '{c_leaveChatCommand}' to leave the chat.");
 			bool success = true;
 			while (true)
 			{
@@ -567,14 +568,14 @@ namespace SignalRConsole
 					if (State == States.Listening)
 						return true;
 
-					if (Console.KeyAvailable)
+					if (m_console.KeyAvailable)
 						break;
 
 					await Task.Delay(100);
 				}
 
-				NextLine = Console.CursorTop;
-				string message = Console.ReadLine();
+				NextLine = m_console.CursorTop;
+				string message = m_console.ReadLine();
 				if (m_waitForEnter)
 				{
 					m_waitForEnter = false;
@@ -585,7 +586,7 @@ namespace SignalRConsole
 				if (State != States.Chatting)
 					return true;
 
-				Console.CursorTop = NextLine;
+				m_console.CursorTop = NextLine;
 
 				try
 				{
@@ -599,7 +600,7 @@ namespace SignalRConsole
 				}
 				catch (Exception exception)
 				{
-					Console.WriteLine($"Error sending message, exception: {exception.Message}");
+					m_console.WriteLine($"Error sending message, exception: {exception.Message}");
 					success = false;
 					break;
 				}
@@ -696,9 +697,9 @@ namespace SignalRConsole
 			}
 			else if (State == States.Chatting && command.Flag == false)
 			{
-				if (Console.CursorLeft > 0)
+				if (m_console.CursorLeft > 0)
 				{
-					Console.Write($" {ActiveChatFriend.Handle} has left the chat, hit Enter...");
+					m_console.Write($" {ActiveChatFriend.Handle} has left the chat, hit Enter...");
 					m_waitForEnter = true;
 				}
 				else
@@ -789,7 +790,7 @@ namespace SignalRConsole
 					await m_hubConnection.SendAsync(c_joinChannel, verify.Data);
 				}
 
-				Console.SetCursorPosition(cursor.X, cursor.Y);
+				m_console.SetCursorPosition(cursor.X, cursor.Y);
 				existing = pending;
 			}
 			else
@@ -843,8 +844,8 @@ namespace SignalRConsole
 		{
 			TimeSpan interval = TimeSpan.FromMilliseconds(intervalms);
 			DateTime timeout = DateTime.Now + TimeSpan.FromSeconds(timeouts);
-			Console.Write(message);
-			Point cursorPosition = new Point(Console.CursorLeft, Console.CursorTop);
+			m_console.Write(message);
+			Point cursorPosition = new Point(m_console.CursorLeft, m_console.CursorTop);
 			NextLine = cursorPosition.Y;
 			char bullet = '.';
 			for (int x = cursorPosition.X; State != States.Changing && DateTime.Now < timeout; x++)
@@ -853,63 +854,63 @@ namespace SignalRConsole
 				{
 					bullet = bullet == '.' ? ' ' : '.';
 					x = cursorPosition.X;
-					Console.SetCursorPosition(cursorPosition.X, cursorPosition.Y);
+					m_console.SetCursorPosition(cursorPosition.X, cursorPosition.Y);
 				}
 
-				Console.SetCursorPosition(x, cursorPosition.Y);
-				Console.Write(bullet);
+				m_console.SetCursorPosition(x, cursorPosition.Y);
+				m_console.Write(bullet);
 
 				await Task.Delay(interval);
 			}
 
-			Console.SetCursorPosition(0, NextLine + 1);
+			m_console.SetCursorPosition(0, NextLine + 1);
 			return DateTime.Now < timeout;
 		}
 
 		private bool GetData(string prompt, out string data)
 		{
-			Console.Write(prompt);
-			data = Console.ReadLine();
+			m_console.Write(prompt);
+			data = m_console.ReadLine();
 			return !string.IsNullOrEmpty(data);
 		}
 
 		private void DisplayMenu()
 		{
-			Console.WriteLine("\nPick a command: a to add a friend, l to list friends, u to unfriend a friend,");
-			Console.WriteLine("d to delete a user, c to chat, or x to exit");
-			PromptLine = Console.CursorTop;
+			m_console.WriteLine("\nPick a command: a to add a friend, l to list friends, u to unfriend a friend,");
+			m_console.WriteLine("d to delete a user, c to chat, or x to exit");
+			PromptLine = m_console.CursorTop;
 			NextLine = PromptLine + 2;
 			State = States.Listening;
 		}
 
 		private void EraseLog()
 		{
-			Point cursor = new Point(Console.CursorLeft, Console.CursorTop);
+			Point cursor = new Point(m_console.CursorLeft, m_console.CursorTop);
 			NextLine = PromptLine + 2;
-			Console.SetCursorPosition(0, NextLine);
-			ConsoleColor color = Console.ForegroundColor;
-			Console.ForegroundColor = Console.BackgroundColor;
+			m_console.SetCursorPosition(0, NextLine);
+			ConsoleColor color = m_console.ForegroundColor;
+			m_console.ForegroundColor = m_console.BackgroundColor;
 			foreach (string line in m_log)
-				Console.WriteLine(line);
+				m_console.WriteLine(line);
 
 			m_log.Clear();
-			Console.ForegroundColor = color;
-			Console.SetCursorPosition(cursor.X, cursor.Y);
+			m_console.ForegroundColor = color;
+			m_console.SetCursorPosition(cursor.X, cursor.Y);
 		}
 
 		private void ConsoleWriteLogLine(string line)
 		{
 			Point cursor = MoveCursorToLog();
-			Console.WriteLine(line);
+			m_console.WriteLine(line);
 			m_log.Add(line);
-			Console.SetCursorPosition(cursor.X, cursor.Y);
+			m_console.SetCursorPosition(cursor.X, cursor.Y);
 		}
 
 		private Point ConsoleWriteLogRead(string line, out string value)
 		{
 			Point cursor = MoveCursorToLog();
-			Console.Write(line);
-			value = Console.ReadLine();
+			m_console.Write(line);
+			value = m_console.ReadLine();
 			m_log.Add(line + value);
 			return cursor;
 		}
@@ -917,16 +918,16 @@ namespace SignalRConsole
 		private Point ConsoleWriteLogRead(string line, out ConsoleKeyInfo confirm)
 		{
 			Point cursor = MoveCursorToLog();
-			Console.Write(line);
-			confirm = Console.ReadKey();
+			m_console.Write(line);
+			confirm = m_console.ReadKey();
 			m_log.Add(line + confirm.KeyChar);
 			return cursor;
 		}
 
 		private Point MoveCursorToLog()
 		{
-			Point cursor = new Point(Console.CursorLeft, Console.CursorTop);
-			Console.SetCursorPosition(0, NextLine++);
+			Point cursor = new Point(m_console.CursorLeft, m_console.CursorTop);
+			m_console.SetCursorPosition(0, NextLine++);
 			return cursor;
 		}
 
@@ -982,6 +983,7 @@ namespace SignalRConsole
 		private readonly string c_chatHubUrl = "https://localhost:44398/chathub";
 #endif
 
+		private Harness m_console;
 		private User m_user;
 		private States m_state;
 		private readonly object m_lock = new object();
