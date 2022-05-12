@@ -898,7 +898,7 @@ namespace SignalRConsole
 			ConsoleColor color = m_console.ForegroundColor;
 			m_console.ForegroundColor = m_console.BackgroundColor;
 			foreach (string line in m_log)
-				m_console.WriteLine(line);
+				Console.WriteLine(line);
 
 			m_log.Clear();
 			m_console.ForegroundColor = color;
