@@ -1,0 +1,2 @@
+>start Bruce1.txt
+>start Fred1.txt

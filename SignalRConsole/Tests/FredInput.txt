@@ -1,0 +1,7 @@
+Fred
+L
+>menu-block # skip menu processsing until the "Accept friend request from..." has been handled
+Y
+>menu-resume # resume menu processing
+L
+X

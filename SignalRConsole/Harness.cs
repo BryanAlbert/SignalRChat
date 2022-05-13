@@ -75,27 +75,19 @@ namespace SignalRConsole
 		{
 			if (m_inputStream != null)
 			{
-				if (CurrentInputLine != null)
-				{
-					LogWriteLine(CurrentInputLine);
-					if (!intercept)
-						Console.Write(CurrentInputLine);
+				LogWriteLine(CurrentInputLine);
+				if (!intercept)
+					Console.Write(CurrentInputLine);
 
-					if (Enum.TryParse(CurrentInputLine, out ConsoleKey info))
-					{
-						char key = CurrentInputLine[0];
-						GetNextInputLine();
-						return new ConsoleKeyInfo(key, info, false, false, false);
-					}
-					else
-					{
-						Console.WriteLine($"Error: Failed to parse a ConsoleKey from '{CurrentInputLine}', manual input is requried.");
-						m_inputStream = null;
-					}
+				if (Enum.TryParse(CurrentInputLine, out ConsoleKey info))
+				{
+					char key = CurrentInputLine[0];
+					GetNextInputLine();
+					return new ConsoleKeyInfo(key, info, false, false, false);
 				}
 				else
 				{
-					Console.WriteLine($"Error: The file {m_inputStreamFilename} has run out of input, manual input is required.");
+					Console.WriteLine($"Error: Failed to parse a ConsoleKey from '{CurrentInputLine}', manual input is requried.");
 					m_inputStream = null;
 				}
 			}
@@ -107,19 +99,11 @@ namespace SignalRConsole
 		{
 			if (m_inputStream != null)
 			{
-				if (CurrentInputLine != null)
-				{
-					string line = CurrentInputLine;
-					Console.WriteLine(line);
-					LogWriteLine(line);
-					GetNextInputLine();
-					return line;
-				}
-				else
-				{
-					Console.WriteLine($"Error: the file {m_inputStreamFilename} has run out of input, manual input is required.");
-					m_inputStream = null;
-				}
+				string line = CurrentInputLine;
+				Console.WriteLine(line);
+				LogWriteLine(line);
+				GetNextInputLine();
+				return line;
 			}
 
 			return Console.ReadLine();
@@ -157,7 +141,11 @@ namespace SignalRConsole
 			do
 			{
 				if (!m_inputStream.MoveNext())
+				{
+					Console.WriteLine($"Error: The file {m_inputStreamFilename} has run out of input, manual input is now required.");
+					m_inputStream = null;
 					break;
+				}
 
 				CurrentInputLine = m_inputStream.Current;
 			}
