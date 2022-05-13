@@ -24,13 +24,12 @@ namespace SignalRConsole
 					Console.WriteLine($"Note: output is written to {m_outputStreamFilename}");
 					m_outputStreamFilename = Path.Combine(WorkingDirectory, m_outputStreamFilename); 
 					m_outputStream = new StreamWriter(m_outputStreamFilename) { AutoFlush = true };
-				
-					m_backgroundColor = Console.BackgroundColor;
 				}
 			}
 		}
 
 
+		public bool ScriptMode => m_inputStreamFilename != null;
 		public string WorkingDirectory { get; set; }
 		public int CursorLeft { get => Console.CursorLeft; set { Console.CursorLeft = value; } }
 		public int CursorTop { get => Console.CursorTop; set { Console.CursorTop = value; } }
@@ -76,8 +75,7 @@ namespace SignalRConsole
 			if (m_inputStream != null)
 			{
 				LogWriteLine(CurrentInputLine);
-				if (!intercept)
-					Console.Write(CurrentInputLine);
+				Console.WriteLine(CurrentInputLine);
 
 				if (Enum.TryParse(CurrentInputLine, out ConsoleKey info))
 				{
@@ -132,7 +130,8 @@ namespace SignalRConsole
 
 		public void SetCursorPosition(int left, int top)
 		{
-			Console.SetCursorPosition(left, top);
+			if (!ScriptMode)
+				Console.SetCursorPosition(left, top);
 		}
 
 
@@ -140,28 +139,27 @@ namespace SignalRConsole
 		{
 			do
 			{
-				if (!m_inputStream.MoveNext())
+				if (m_eof)
 				{
 					Console.WriteLine($"Error: The file {m_inputStreamFilename} has run out of input, manual input is now required.");
 					m_inputStream = null;
 					break;
 				}
 
+				m_eof = !m_inputStream.MoveNext();
 				CurrentInputLine = m_inputStream.Current;
 			}
-			while (CurrentInputLine.StartsWith("#"));
+			while (!m_eof && CurrentInputLine?.StartsWith("#") == true);
 		}
 
 		private void LogWriteLine(string line)
 		{
-			if (Console.ForegroundColor != m_backgroundColor)
-				m_outputStream?.WriteLine(line);
+			m_outputStream?.WriteLine(line);
 		}
 
 		private void LogWrite(string line)
 		{
-			if (Console.ForegroundColor != m_backgroundColor)
-				m_outputStream?.Write(line);
+			m_outputStream?.Write(line);
 		}
 
 
@@ -172,10 +170,10 @@ namespace SignalRConsole
 		private readonly string m_inputStreamFilename;
 
 
+		private IEnumerator<string> m_inputStream;
+		private bool m_eof;
 		private readonly string m_outputStreamFilename;
 		private readonly StreamWriter m_outputStream;
-		private IEnumerator<string> m_inputStream;
-		private readonly ConsoleColor m_backgroundColor;
 		private bool m_menuBlocked;
 	}
 }

@@ -15,6 +15,34 @@ namespace SignalRConsole
 {
 	public class ConsoleChat
 	{
+		public States State
+		{
+			get => m_state;
+			set
+			{
+				if (value != States.Initializing)
+				{
+					Point cursor = new Point(m_console.CursorLeft, m_console.CursorTop);
+					m_console.SetCursorPosition(0, PromptLine);
+					int padding = m_state == States.Initializing ? 0 : (m_state.ToString().Length) - value.ToString().Length + 2;
+					if (value == States.Listening)
+					{
+						m_console.Write(padding > 0 ? $"{value}> {(padding > 0 ? new string(' ', padding) : "")}" : $"{value}> ");
+						while (padding-- > 0)
+							m_console.CursorLeft--;
+					}
+					else
+					{
+						m_console.Write($"{value}...{(padding > 0 ? new string(' ', padding) : "")}");
+						m_console.SetCursorPosition(cursor.X, cursor.Y);
+					}
+				}
+
+				m_state = value;
+			}
+		}
+
+
 		public async Task<int> RunAsync(Harness console)
 		{
 			m_console = console;
@@ -119,33 +147,18 @@ namespace SignalRConsole
 		public const string c_fileExtension = ".qkr.json";
 		public const string c_leaveChatCommand = "goodbye";
 
-
-		private States State
+		public enum States
 		{
-			get => m_state;
-			set
-			{
-				if (value != States.Initializing)
-				{
-					Point cursor = new Point(m_console.CursorLeft, m_console.CursorTop);
-					m_console.SetCursorPosition(0, PromptLine);
-					int padding = m_state == States.Initializing ? 0 : (m_state.ToString().Length) - value.ToString().Length + 2;
-					if (value == States.Listening)
-					{
-						m_console.Write(padding > 0 ? $"{value}> {(padding > 0 ? new string(' ', padding) : "")}" : $"{value}> ");
-						while (padding-- > 0)
-							m_console.CursorLeft--;
-					}
-					else
-					{
-						m_console.Write($"{value}...{(padding > 0 ? new string(' ', padding) : "")}");
-						m_console.SetCursorPosition(cursor.X, cursor.Y);
-					}
-				}
-
-				m_state = value;
-			}
+			Initializing,
+			Changing,
+			Registering,
+			Busy,
+			Listening,
+			Connecting,
+			Chatting,
+			Broken
 		}
+
 
 		private string RegistrationToken { get; set; }
 		private string Handle => m_user?.Handle;
@@ -892,17 +905,20 @@ namespace SignalRConsole
 
 		private void EraseLog()
 		{
+			if (m_console.ScriptMode)
+				return;
+
 			Point cursor = new Point(m_console.CursorLeft, m_console.CursorTop);
 			NextLine = PromptLine + 2;
-			m_console.SetCursorPosition(0, NextLine);
+			Console.SetCursorPosition(0, NextLine);
 			ConsoleColor color = m_console.ForegroundColor;
-			m_console.ForegroundColor = m_console.BackgroundColor;
+			Console.ForegroundColor = m_console.BackgroundColor;
 			foreach (string line in m_log)
 				Console.WriteLine(line);
 
 			m_log.Clear();
-			m_console.ForegroundColor = color;
-			m_console.SetCursorPosition(cursor.X, cursor.Y);
+			Console.ForegroundColor = color;
+			Console.SetCursorPosition(cursor.X, cursor.Y);
 		}
 
 		private void ConsoleWriteLogLine(string line)
@@ -970,18 +986,6 @@ namespace SignalRConsole
 			return channelName.Split(c_delimiter);
 		}
 
-
-		private enum States
-		{
-			Initializing,
-			Changing,
-			Registering,
-			Busy,
-			Listening,
-			Connecting,
-			Chatting,
-			Broken
-		}
 
 		private HubConnection m_hubConnection;
 #if true

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
+using static SignalRConsole.ConsoleChat;
 
 namespace SignalRConsole
 {
@@ -17,6 +18,7 @@ namespace SignalRConsole
 					if (lines[0] != c_harness)
 						break;
 
+					string workingDirectory = Directory.GetParent(args[0]).FullName;
 					List<Task<int>> tasks = new List<Task<int>>();
 					foreach (string line in lines)
 					{
@@ -28,15 +30,16 @@ namespace SignalRConsole
 							case c_start:
 								string commandLine = line[(c_start.Length + 1)..];
 								Console.WriteLine($"Launching and waiting with command line: {commandLine}");
-								Harness harness = new Harness(commandLine.Split(" "), Directory.GetParent(args[0]).FullName);
 								ConsoleChat consoleChat = new ConsoleChat();
-								tasks.Add(Task.Run(async () => await consoleChat.RunAsync(harness)));
+								tasks.Add(Task.Run(async () => await consoleChat.RunAsync(new Harness(commandLine.Split(" "),
+									workingDirectory))));
+								while (consoleChat.State != States.Listening)
+									await Task.Delay(10);
 								break;
 							case c_startWait:
 								commandLine = line[(c_startWait.Length + 1)..];
 								Console.WriteLine($"Launching and waiting with command line: {commandLine}");
-								harness = new Harness(commandLine.Split(" "), Directory.GetParent(args[0]).FullName);
-								await new ConsoleChat().RunAsync(harness);
+								await new ConsoleChat().RunAsync(new Harness(commandLine.Split(" "), workingDirectory));
 								break;
 							default:
 								Console.WriteLine($"Error: unknown command '{line.Split(" ")[0]}' in file {args[0]}");
