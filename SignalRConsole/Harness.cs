@@ -6,13 +6,15 @@ namespace SignalRConsole
 {
 	public class Harness
 	{
-		public Harness(string[] args)
+		public Harness(string[] args, string workingDirectory = null)
 		{
+			WorkingDirectory = workingDirectory ?? ".";
 			m_args = new List<string>(args);
 			if (m_args.Count > 0 && File.Exists(m_args[0]))
 			{
 				m_inputStreamFilename = NextArg();
 				Console.WriteLine($"Note: input is provided by {m_inputStreamFilename}");
+				m_inputStreamFilename = Path.Combine(WorkingDirectory, m_inputStreamFilename);
 				m_inputStream = File.ReadLines(m_inputStreamFilename).GetEnumerator();
 				GetNextInputLine();
 
@@ -20,10 +22,8 @@ namespace SignalRConsole
 				{
 					m_outputStreamFilename = NextArg();
 					Console.WriteLine($"Note: output is written to {m_outputStreamFilename}");
-					m_outputStream = new StreamWriter(m_outputStreamFilename)
-					{
-						AutoFlush = true
-					};
+					m_outputStreamFilename = Path.Combine(WorkingDirectory, m_outputStreamFilename); 
+					m_outputStream = new StreamWriter(m_outputStreamFilename) { AutoFlush = true };
 				
 					m_backgroundColor = Console.BackgroundColor;
 				}
@@ -31,6 +31,7 @@ namespace SignalRConsole
 		}
 
 
+		public string WorkingDirectory { get; set; }
 		public int CursorLeft { get => Console.CursorLeft; set { Console.CursorLeft = value; } }
 		public int CursorTop { get => Console.CursorTop; set { Console.CursorTop = value; } }
 		public ConsoleColor ForegroundColor { get => Console.ForegroundColor; set { Console.ForegroundColor = value; } }
@@ -153,8 +154,14 @@ namespace SignalRConsole
 
 		private void GetNextInputLine()
 		{
-			m_inputStream.MoveNext();
-			CurrentInputLine = m_inputStream.Current;
+			do
+			{
+				if (!m_inputStream.MoveNext())
+					break;
+
+				CurrentInputLine = m_inputStream.Current;
+			}
+			while (CurrentInputLine.StartsWith("#"));
 		}
 
 		private void LogWriteLine(string line)

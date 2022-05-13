@@ -15,7 +15,7 @@ namespace SignalRConsole
 {
 	public class ConsoleChat
 	{
-		public async Task<int> Run(Harness console)
+		public async Task<int> RunAsync(Harness console)
 		{
 			m_console = console;
 			if (!await StartServerAsync())
@@ -339,7 +339,7 @@ namespace SignalRConsole
 				m_console.WriteLine($"Hello {handle}!");
 			}
 
-			foreach (string fileName in Directory.EnumerateFiles(".").Where(x => x.EndsWith(c_fileExtension)))
+			foreach (string fileName in Directory.EnumerateFiles(m_console.WorkingDirectory).Where(x => x.EndsWith(c_fileExtension)))
 			{
 				User user = JsonSerializer.Deserialize<User>(File.ReadAllText(fileName));
 				user.FileName = fileName;
