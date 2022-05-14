@@ -12,6 +12,7 @@ namespace SignalRConsole
 			m_args = new List<string>(args);
 			if (m_args.Count > 0 && File.Exists(m_args[0]))
 			{
+				// command line can contain the script file name, the logging file name, and the tag for console output
 				m_inputStreamFilename = NextArg();
 				Console.WriteLine($"Note: input is provided by {m_inputStreamFilename}");
 				m_inputStreamFilename = Path.Combine(WorkingDirectory, m_inputStreamFilename);
@@ -25,6 +26,9 @@ namespace SignalRConsole
 					m_outputStreamFilename = Path.Combine(WorkingDirectory, m_outputStreamFilename); 
 					m_outputStream = new StreamWriter(m_outputStreamFilename) { AutoFlush = true };
 				}
+
+				if (m_args.Count > 0)
+					m_tag = NextArg();
 			}
 		}
 
@@ -41,7 +45,7 @@ namespace SignalRConsole
 		{
 			get
 			{
-				if (m_inputStream == null)
+				if (!ScriptMode)
 					return Console.KeyAvailable;
 
 				if (CurrentInputLine.StartsWith(c_blockCommand))
@@ -72,7 +76,7 @@ namespace SignalRConsole
 
 		public ConsoleKeyInfo ReadKey(bool intercept = false)
 		{
-			if (m_inputStream != null)
+			if (ScriptMode)
 			{
 				LogWriteLine(CurrentInputLine);
 				Console.WriteLine(CurrentInputLine);
@@ -95,7 +99,7 @@ namespace SignalRConsole
 
 		public string ReadLine()
 		{
-			if (m_inputStream != null)
+			if (ScriptMode)
 			{
 				string line = CurrentInputLine;
 				Console.WriteLine(line);
@@ -109,7 +113,7 @@ namespace SignalRConsole
 
 		public void WriteLine(string value)
 		{
-			Console.WriteLine(value);
+			Console.WriteLine(m_tag != null ? $"{m_tag} {value}" : value);
 			LogWriteLine(value);
 			CurrentOutputLine = value;
 		}
@@ -123,7 +127,7 @@ namespace SignalRConsole
 
 		public void Write(string value)
 		{
-			Console.Write(value);
+			Console.Write(m_tag != null ? $"{m_tag} {value}" : value);
 			LogWrite(value);
 			CurrentOutputLine = value;
 		}
@@ -163,15 +167,13 @@ namespace SignalRConsole
 		}
 
 
-
 		private const string c_blockCommand = ">menu-block";
 		private const string c_resumeCommand = ">menu-resume";
 		private readonly List<string> m_args;
 		private readonly string m_inputStreamFilename;
-
-
 		private IEnumerator<string> m_inputStream;
 		private bool m_eof;
+		private string m_tag;
 		private readonly string m_outputStreamFilename;
 		private readonly StreamWriter m_outputStream;
 		private bool m_menuBlocked;
