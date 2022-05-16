@@ -8,13 +8,18 @@ namespace SignalRConsole
 	{
 		public Harness(string[] args, string workingDirectory = null)
 		{
-			WorkingDirectory = workingDirectory ?? ".";
+			WorkingDirectory = workingDirectory != null
+				? Environment.CurrentDirectory.StartsWith(Environment.CurrentDirectory) ?
+					workingDirectory[(Environment.CurrentDirectory.Length + 1)..] : workingDirectory
+				: ".";
+
+			Console.WriteLine($"Harness: working directory is: {WorkingDirectory}");
 			m_args = new List<string>(args);
 			if (m_args.Count > 0 && File.Exists(m_args[0]))
 			{
 				// command line can contain the script file name, the logging file name, and the tag for console output
 				m_inputStreamFilename = NextArg();
-				Console.WriteLine($"Note: input is provided by {m_inputStreamFilename}");
+				Console.WriteLine($"Harness: input is provided by {m_inputStreamFilename}");
 				m_inputStreamFilename = Path.Combine(WorkingDirectory, m_inputStreamFilename);
 				m_inputStream = File.ReadLines(m_inputStreamFilename).GetEnumerator();
 				GetNextInputLine();
@@ -22,7 +27,7 @@ namespace SignalRConsole
 				if (m_args.Count > 0)
 				{
 					m_outputStreamFilename = NextArg();
-					Console.WriteLine($"Note: output is written to {m_outputStreamFilename}");
+					Console.WriteLine($"Harness: output is written to {m_outputStreamFilename}");
 					m_outputStreamFilename = Path.Combine(WorkingDirectory, m_outputStreamFilename); 
 					m_outputStream = new StreamWriter(m_outputStreamFilename) { AutoFlush = true };
 				}
@@ -57,6 +62,12 @@ namespace SignalRConsole
 				{
 					GetNextInputLine();
 					m_menuBlocked = false;
+				}
+				else if (CurrentInputLine.StartsWith(c_waitForCommand))
+				{
+					m_menuBlocked = CurrentInputLine[c_waitForCommand.Length..] != CurrentOutputLine;
+					if (!m_menuBlocked)
+						GetNextInputLine();
 				}
 
 				return !m_menuBlocked;
@@ -169,6 +180,7 @@ namespace SignalRConsole
 
 		private const string c_blockCommand = ">menu-block";
 		private const string c_resumeCommand = ">menu-resume";
+		private const string c_waitForCommand = ">wait-for: ";
 		private readonly List<string> m_args;
 		private readonly string m_inputStreamFilename;
 		private IEnumerator<string> m_inputStream;

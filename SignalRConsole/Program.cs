@@ -15,7 +15,7 @@ namespace SignalRConsole
 				if (args.Length > 0 && File.Exists(args[0]))
 				{
 					string[] lines = File.ReadAllLines(args[0]);
-					if (lines[0] != c_harness)
+					if (lines[0].Split(" ")[0] != c_harness)
 						break;
 
 					string workingDirectory = Directory.GetParent(args[0]).FullName;
@@ -25,11 +25,11 @@ namespace SignalRConsole
 						switch (line.Split(" ")[0])
 						{
 							case c_harness:
-								Console.WriteLine($"Processing test harnes file {args[0]}");
+								Console.WriteLine($"Processing test harnes file {args[0]}: {line[(c_harness.Length + 1)..]}");
 								break;
 							case c_start:
 								string commandLine = line[(c_start.Length + 1)..];
-								Console.WriteLine($"Launching and waiting with command line: {commandLine}");
+								Console.WriteLine($"\nLaunching with command line: {commandLine}");
 								ConsoleChat consoleChat = new ConsoleChat();
 								tasks.Add(Task.Run(async () => await consoleChat.RunAsync(new Harness(commandLine.Split(" "),
 									workingDirectory))));
@@ -38,7 +38,7 @@ namespace SignalRConsole
 								break;
 							case c_startWait:
 								commandLine = line[(c_startWait.Length + 1)..];
-								Console.WriteLine($"Launching and waiting with command line: {commandLine}");
+								Console.WriteLine($"\nLaunching and waiting with command line: {commandLine}");
 								await new ConsoleChat().RunAsync(new Harness(commandLine.Split(" "), workingDirectory));
 								break;
 							default:
