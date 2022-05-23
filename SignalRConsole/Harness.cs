@@ -22,7 +22,9 @@ namespace SignalRConsole
 			{
 				// command line can contain the script file name, the logging file name, and the tag for console output
 				m_inputStreamFilename = NextArg();
-				if (WorkingDirectory != ".")
+				if (WorkingDirectory == ".")
+					WorkingDirectory = Directory.GetParent(m_inputStreamFilename).FullName;
+				else
 					m_inputStreamFilename = Path.Combine(WorkingDirectory, m_inputStreamFilename);
 
 				Console.WriteLine($"Harness: input is provided by {m_inputStreamFilename}");
