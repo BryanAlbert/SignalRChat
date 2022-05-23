@@ -334,6 +334,7 @@ namespace SignalRConsole
 			{
 				m_console.WriteLine($"Failed to connect to server (is the server running?), exception:" +
 					$" {exception.Message}");
+				State = States.Broken;
 				return false;
 			}
 

@@ -33,7 +33,7 @@ namespace SignalRConsole
 								ConsoleChat consoleChat = new ConsoleChat();
 								tasks.Add(Task.Run(async () => await consoleChat.RunAsync(new Harness(commandLine.Split(" "),
 									workingDirectory))));
-								while (consoleChat.State != States.Listening)
+								while (consoleChat.State != States.Listening && consoleChat.State != States.Broken)
 									await Task.Delay(10);
 								break;
 							case c_startWait:

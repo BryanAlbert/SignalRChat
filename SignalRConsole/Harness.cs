@@ -8,38 +8,48 @@ namespace SignalRConsole
 	{
 		public Harness(string[] args, string workingDirectory = null)
 		{
-			WorkingDirectory = workingDirectory != null
-				? Environment.CurrentDirectory.StartsWith(Environment.CurrentDirectory) ?
-					workingDirectory[(Environment.CurrentDirectory.Length + 1)..] : workingDirectory
-				: ".";
+			if (workingDirectory != null)
+			{
+				WorkingDirectory = workingDirectory.Length > Environment.CurrentDirectory.Length &&
+					Environment.CurrentDirectory.StartsWith(Environment.CurrentDirectory) ?
+						workingDirectory[(Environment.CurrentDirectory.Length + 1)..] :
+						workingDirectory;
+				Console.WriteLine($"Harness: working directory is: {WorkingDirectory}");
+			}
 
-			Console.WriteLine($"Harness: working directory is: {WorkingDirectory}");
 			m_args = new List<string>(args);
 			if (m_args.Count > 0 && File.Exists(m_args[0]))
 			{
 				// command line can contain the script file name, the logging file name, and the tag for console output
 				m_inputStreamFilename = NextArg();
+				if (WorkingDirectory != ".")
+					m_inputStreamFilename = Path.Combine(WorkingDirectory, m_inputStreamFilename);
+
 				Console.WriteLine($"Harness: input is provided by {m_inputStreamFilename}");
-				m_inputStreamFilename = Path.Combine(WorkingDirectory, m_inputStreamFilename);
 				m_inputStream = File.ReadLines(m_inputStreamFilename).GetEnumerator();
 				GetNextInputLine();
 
 				if (m_args.Count > 0)
 				{
 					m_outputStreamFilename = NextArg();
+					if (WorkingDirectory != ".")
+						m_outputStreamFilename = Path.Combine(WorkingDirectory, m_outputStreamFilename); 
+
 					Console.WriteLine($"Harness: output is written to {m_outputStreamFilename}");
-					m_outputStreamFilename = Path.Combine(WorkingDirectory, m_outputStreamFilename); 
 					m_outputStream = new StreamWriter(m_outputStreamFilename) { AutoFlush = true };
 				}
 
 				if (m_args.Count > 0)
+				{
 					m_tag = NextArg();
+					Console.WriteLine($"Harness: User is {m_tag}");
+				}
 			}
 		}
 
 
 		public bool ScriptMode => m_inputStreamFilename != null;
-		public string WorkingDirectory { get; set; }
+		public string WorkingDirectory { get; set; } = ".";
 		public int CursorLeft { get => Console.CursorLeft; set { Console.CursorLeft = value; } }
 		public int CursorTop { get => Console.CursorTop; set { Console.CursorTop = value; } }
 		public ConsoleColor ForegroundColor { get => Console.ForegroundColor; set { Console.ForegroundColor = value; } }
@@ -90,7 +100,7 @@ namespace SignalRConsole
 			if (ScriptMode)
 			{
 				LogWriteLine(CurrentInputLine);
-				Console.WriteLine(CurrentInputLine);
+				Console.WriteLine(m_tag != null ? $"{m_tag} {CurrentInputLine}" : CurrentInputLine);
 
 				if (Enum.TryParse(CurrentInputLine, out ConsoleKey info))
 				{
@@ -100,7 +110,8 @@ namespace SignalRConsole
 				}
 				else
 				{
-					Console.WriteLine($"Error: Failed to parse a ConsoleKey from '{CurrentInputLine}', manual input is requried.");
+					Console.WriteLine($"{(m_tag != null ? $"{m_tag}" : "")}Error: Failed to parse a ConsoleKey from" +
+						$" '{CurrentInputLine}', manual input is requried.");
 					m_inputStream = null;
 				}
 			}
@@ -113,7 +124,7 @@ namespace SignalRConsole
 			if (ScriptMode)
 			{
 				string line = CurrentInputLine;
-				Console.WriteLine(line);
+				Console.WriteLine(m_tag != null ? $"{m_tag} {CurrentInputLine}" : CurrentInputLine);
 				LogWriteLine(line);
 				GetNextInputLine();
 				return line;
