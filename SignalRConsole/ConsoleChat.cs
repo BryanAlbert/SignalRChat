@@ -52,7 +52,7 @@ namespace SignalRConsole
 			if (!await LoadUsersAsync(m_console.NextArg()))
 				return -2;
 
-			Initialize(m_hubConnection, Id);
+			InitializeCommands(m_hubConnection);
 			await MonitorChannelsAsync();
 			await MonitorFriendsAsync();
 
@@ -198,14 +198,14 @@ namespace SignalRConsole
 				{
 					if (State == States.Listening)
 					{
-						await SendCommandAsync(CommandNames.Hello, channel, user, SerializeUserData(m_user), true);
+						await SendCommandAsync(CommandNames.Hello, Id, channel, user, SerializeUserData(m_user), true);
 						ActiveChatChannelName = channel;
 						ActiveChatFriend = m_user.Friends.FirstOrDefault(x => x.Id == user);
 						_ = await MessageLoopAsync();
 					}
 					else
 					{
-						await SendCommandAsync(CommandNames.Hello, channel, user, SerializeUserData(m_user), false);
+						await SendCommandAsync(CommandNames.Hello, Id, channel, user, SerializeUserData(m_user), false);
 					}
 
 					return;
@@ -254,7 +254,7 @@ namespace SignalRConsole
 					return;
 				}
 
-				await SendCommandAsync(CommandNames.Hello, channel, user, SerializeUserData(m_user), !friend?.Blocked);
+				await SendCommandAsync(CommandNames.Hello, Id, channel, user, SerializeUserData(m_user), !friend?.Blocked);
 			}
 		}
 
@@ -526,7 +526,7 @@ namespace SignalRConsole
 						File.Delete($"{friend.FileName}");
 					}
 
-					await SendCommandAsync(CommandNames.Hello, friend.Id, friend.Id, SerializeUserData(m_user), false);
+					await SendCommandAsync(CommandNames.Hello, Id, friend.Id, friend.Id, SerializeUserData(m_user), false);
 					await UnfriendAsync(friend);
 					if (delete)
 						ConsoleWriteLogLine($"User {friend.Handle} has been deleted.");
@@ -635,7 +635,7 @@ namespace SignalRConsole
 		{
 			if (send)
 			{
-				await SendCommandAsync(CommandNames.Hello, ActiveChatChannelName, ActiveChatFriend.Id,
+				await SendCommandAsync(CommandNames.Hello, Id, ActiveChatChannelName, ActiveChatFriend.Id,
 					SerializeUserData(m_user), false);
 			}
 
@@ -765,19 +765,19 @@ namespace SignalRConsole
 					if (existing == null)
 					{
 						// we unfriended him while he was away, send Hello with false
-						await SendCommandAsync(CommandNames.Hello, pending.Id, pending.Id, SerializeUserData(m_user), false);
+						await SendCommandAsync(CommandNames.Hello, Id, pending.Id, pending.Id, SerializeUserData(m_user), false);
 					}
 					else if (!existing.Blocked.HasValue)
 					{
 						// he accepted our friend request while we were away
 						existing.Blocked = false;
 						SaveUser();
-						await SendCommandAsync(CommandNames.Hello, existing.Id, existing.Id, SerializeUserData(m_user), true);
+						await SendCommandAsync(CommandNames.Hello, Id, existing.Id, existing.Id, SerializeUserData(m_user), true);
 					}
 				}
 				else
 				{
-					await SendCommandAsync(CommandNames.Verify, MakeHandleChannelName(existing), from, SerializeUserData(m_user), null);
+					await SendCommandAsync(CommandNames.Verify, Id, MakeHandleChannelName(existing), from, SerializeUserData(m_user), null);
 				}
 			}
 
@@ -803,7 +803,7 @@ namespace SignalRConsole
 
 				m_user.AddFriend(pending);
 				SaveUser();
-				await SendCommandAsync(CommandNames.Verify, HandleChannelName, from, SerializeUserData(m_user), !pending.Blocked);
+				await SendCommandAsync(CommandNames.Verify, Id, HandleChannelName, from, SerializeUserData(m_user), !pending.Blocked);
 				if (!pending.Blocked ?? false)
 				{
 					if (!m_online.Contains(pending))

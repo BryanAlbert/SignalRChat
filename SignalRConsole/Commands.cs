@@ -18,18 +18,18 @@ namespace SignalRConsole
 			}
 
 
-			public static void Initialize(HubConnection hubConnection, string handle)
+			public static void InitializeCommands(HubConnection hubConnection)
 			{
 				m_hubConnection = hubConnection;
-				m_handle = handle;
 			}
 
-			public static async Task SendCommandAsync(CommandNames name, string channel, string to, string data, bool? flag)
+			public static async Task SendCommandAsync(CommandNames name, string from, string channel, string to, string data, bool? flag)
 			{
 				ConnectionCommand command = new ConnectionCommand()
 				{
 					Command = name.ToString(),
 					Channel = channel,
+					From = from,
 					To = to,
 					Data = data,
 					Flag = flag
@@ -55,6 +55,8 @@ namespace SignalRConsole
 			public string Channel { get; set; }
 			[JsonIgnore]
 			public CommandNames CommandName { get; set; }
+			[JsonIgnore]
+			public string From { get; private set; }
 			[JsonIgnore]
 			public string To { get; set; }
 
@@ -89,12 +91,11 @@ namespace SignalRConsole
 
 			private async Task SendCommandAsync()
 			{
-				await m_hubConnection.SendAsync(ConsoleChat.c_sendCommand, m_handle, Channel, To, JsonSerializer.Serialize(this));
+				await m_hubConnection.SendAsync(ConsoleChat.c_sendCommand, From, Channel, To, JsonSerializer.Serialize(this));
 			}
 		}
 
 
-		private static string m_handle;
 		private static HubConnection m_hubConnection;
 	}
 }

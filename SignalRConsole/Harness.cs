@@ -34,7 +34,7 @@ namespace SignalRConsole
 				if (m_args.Count > 0)
 				{
 					m_outputStreamFilename = NextArg();
-					if (WorkingDirectory != ".")
+					if (workingDirectory != null)
 						m_outputStreamFilename = Path.Combine(WorkingDirectory, m_outputStreamFilename); 
 
 					Console.WriteLine($"Harness: output is written to {m_outputStreamFilename}");
@@ -57,7 +57,7 @@ namespace SignalRConsole
 		public ConsoleColor ForegroundColor { get => Console.ForegroundColor; set { Console.ForegroundColor = value; } }
 		public ConsoleColor BackgroundColor { get => Console.BackgroundColor; set { Console.BackgroundColor = value; } }
 		public string CurrentOutputLine { get; private set; }
-		public string CurrentInputLine { get; private set; }
+		public string NextInputLine { get; private set; }
 		public bool KeyAvailable
 		{
 			get
@@ -65,19 +65,20 @@ namespace SignalRConsole
 				if (!ScriptMode)
 					return Console.KeyAvailable;
 
-				if (CurrentInputLine.StartsWith(c_blockCommand))
+				if (NextInputLine.StartsWith(c_menuBlockCommand))
 				{
 					GetNextInputLine();
 					m_menuBlocked = true;
 				}
-				else if (CurrentInputLine.StartsWith(c_resumeCommand))
+				else if (NextInputLine.StartsWith(c_menuResumeCommand))
 				{
 					GetNextInputLine();
 					m_menuBlocked = false;
 				}
-				else if (CurrentInputLine.StartsWith(c_waitForCommand))
+				
+				if (NextInputLine.StartsWith(c_waitForCommand))
 				{
-					m_menuBlocked = CurrentInputLine[c_waitForCommand.Length..] != CurrentOutputLine;
+					m_menuBlocked = NextInputLine[c_waitForCommand.Length..] != CurrentOutputLine;
 					if (!m_menuBlocked)
 						GetNextInputLine();
 				}
@@ -101,19 +102,19 @@ namespace SignalRConsole
 		{
 			if (ScriptMode)
 			{
-				LogWriteLine(CurrentInputLine);
-				Console.WriteLine(m_tag != null ? $"{m_tag} {CurrentInputLine}" : CurrentInputLine);
+				LogWriteLine(NextInputLine);
+				Console.WriteLine(m_tag != null ? $"{m_tag}: {NextInputLine}" : NextInputLine);
 
-				if (Enum.TryParse(CurrentInputLine, out ConsoleKey info))
+				if (Enum.TryParse(NextInputLine, out ConsoleKey info))
 				{
-					char key = CurrentInputLine[0];
+					char key = NextInputLine[0];
 					GetNextInputLine();
 					return new ConsoleKeyInfo(key, info, false, false, false);
 				}
 				else
 				{
-					Console.WriteLine($"{(m_tag != null ? $"{m_tag}" : "")}Error: Failed to parse a ConsoleKey from" +
-						$" '{CurrentInputLine}', manual input is requried.");
+					Console.WriteLine($"{(m_tag != null ? $"{m_tag}: " : "")}Error: Failed to parse a ConsoleKey from" +
+						$" '{NextInputLine}', manual input is requried.");
 					m_inputStream = null;
 				}
 			}
@@ -125,8 +126,8 @@ namespace SignalRConsole
 		{
 			if (ScriptMode)
 			{
-				string line = CurrentInputLine;
-				Console.WriteLine(m_tag != null ? $"{m_tag} {CurrentInputLine}" : CurrentInputLine);
+				string line = NextInputLine;
+				Console.WriteLine(m_tag != null ? $"{m_tag}: {NextInputLine}" : NextInputLine);
 				LogWriteLine(line);
 				GetNextInputLine();
 				return line;
@@ -137,7 +138,7 @@ namespace SignalRConsole
 
 		public void WriteLine(string value)
 		{
-			Console.WriteLine(m_tag != null ? $"{m_tag} {value}" : value);
+			Console.WriteLine(m_tag != null ? $"{m_tag}: {value}" : value);
 			LogWriteLine(value);
 			CurrentOutputLine = value;
 		}
@@ -151,7 +152,7 @@ namespace SignalRConsole
 
 		public void Write(string value)
 		{
-			Console.Write(m_tag != null ? $"{m_tag} {value}" : value);
+			Console.Write(m_tag != null ? $"{m_tag}: {value}" : value);
 			LogWrite(value);
 			CurrentOutputLine = value;
 		}
@@ -169,15 +170,16 @@ namespace SignalRConsole
 			{
 				if (m_eof)
 				{
-					Console.WriteLine($"Error: The file {m_inputStreamFilename} has run out of input, manual input is now required.");
+					Console.WriteLine($"{(m_tag != null ? $"{m_tag} " : "")}Error: The file {m_inputStreamFilename}" +
+						$" has run out of input, manual input is now required.");
 					m_inputStream = null;
 					break;
 				}
 
 				m_eof = !m_inputStream.MoveNext();
-				CurrentInputLine = m_inputStream.Current;
+				NextInputLine = m_inputStream.Current;
 			}
-			while (!m_eof && CurrentInputLine?.StartsWith("#") == true);
+			while (!m_eof && NextInputLine?.StartsWith("#") == true);
 		}
 
 		private void LogWriteLine(string line)
@@ -191,14 +193,14 @@ namespace SignalRConsole
 		}
 
 
-		private const string c_blockCommand = ">menu-block";
-		private const string c_resumeCommand = ">menu-resume";
+		private const string c_menuBlockCommand = ">menu-block";
+		private const string c_menuResumeCommand = ">menu-resume";
 		private const string c_waitForCommand = ">wait-for: ";
 		private readonly List<string> m_args;
 		private readonly string m_inputStreamFilename;
 		private IEnumerator<string> m_inputStream;
 		private bool m_eof;
-		private string m_tag;
+		private readonly string m_tag;
 		private readonly string m_outputStreamFilename;
 		private readonly StreamWriter m_outputStream;
 		private bool m_menuBlocked;
