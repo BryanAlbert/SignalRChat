@@ -1,7 +1,0 @@
->Users Bruce, Fred
-# Bruce adds Fred
-A
-Fred
-fred@gmail.com
-L
-X

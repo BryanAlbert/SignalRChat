@@ -1,6 +1,4 @@
 Bruce
-A
-Fred
-fred@gmail.com
+>wait-for: Your friend Fred is online.
 L
 X

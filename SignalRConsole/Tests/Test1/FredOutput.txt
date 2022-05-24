@@ -3,13 +3,11 @@ What is your handle (nickname)? Fred
 
 Pick a command: a to add a friend, l to list friends, u to unfriend a friend,
 d to delete a user, c to chat, or x to exit
-Listening> Listening> L
-You have no friends.
-Listening> Accept friend request from Bruce, email address bruce@hotmail.com? [y/n] Y
+Listening> Listening> Your friend Bruce is online.
+Your friend Bruce is offline.
 L
 Friends:
-You and Bruce are now friends!
-Bruce, Red (online)
+Bruce, Red
 Listening> X
 
 Finished.

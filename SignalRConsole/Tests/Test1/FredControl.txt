@@ -1,7 +1,13 @@
 Initializing server and connecting to URL: https://localhost:5001/chathub
-What is your handle (nickname)? Bruce
+What is your handle (nickname)? Fred
 
 Pick a command: a to add a friend, l to list friends, u to unfriend a friend,
 d to delete a user, c to chat, or x to exit
-Listening> Listening> L
-You have no friends.
+Listening> Listening> Your friend Bruce is online.
+Your friend Bruce is offline.
+L
+Friends:
+Bruce, Red
+Listening> X
+
+Finished.

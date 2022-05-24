@@ -1,0 +1,3 @@
+test-harness Listing friends
+start BruceInput.txt BruceOutput.txt Bruce
+start FredInput.txt FredOutput.txt Fred

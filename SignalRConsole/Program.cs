@@ -25,7 +25,7 @@ namespace SignalRConsole
 						switch (line.Split(" ")[0])
 						{
 							case c_harness:
-								Console.WriteLine($"Processing test harnes file {args[0]}: {line[(c_harness.Length + 1)..]}");
+								Console.WriteLine($"Processing test harness file {args[0]}: {line[(c_harness.Length + 1)..]}");
 								break;
 							case c_start:
 								string commandLine = line[(c_start.Length + 1)..];
