@@ -127,6 +127,7 @@ namespace SignalRConsole
 			finally
 			{
 				m_console.WriteLine("\nFinished.");
+				m_console.Close();
 			}
 
 			return 0;

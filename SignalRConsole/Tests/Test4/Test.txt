@@ -1,0 +1,4 @@
+test-harness Bruce online, adds Fred, goes offline, Fred online, waits for Bruce online then accepts, lists, exits, Bruce lists, exists
+start-wait BruceInput1.txt BruceOutput.txt Bruce
+start FredInput.txt FredOutput.txt Fred
+start BruceInput2.txt BruceOutput.txt Bruce

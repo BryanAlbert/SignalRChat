@@ -43,7 +43,7 @@ namespace SignalRConsole
 						m_outputStreamFilename = Path.Combine(WorkingDirectory, m_outputStreamFilename); 
 
 					Console.WriteLine($"Harness: output is written to {m_outputStreamFilename}");
-					m_outputStream = new StreamWriter(m_outputStreamFilename) { AutoFlush = true };
+					m_outputStream = new StreamWriter(m_outputStreamFilename, true) { AutoFlush = true };
 				}
 
 				if (m_args.Count > 0)
@@ -166,6 +166,11 @@ namespace SignalRConsole
 		{
 			if (!ScriptMode)
 				Console.SetCursorPosition(left, top);
+		}
+
+		public void Close()
+		{
+			m_outputStream.Close();
 		}
 
 
