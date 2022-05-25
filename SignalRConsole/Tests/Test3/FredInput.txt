@@ -1,0 +1,7 @@
+Fred
+>menu-block wait for the "Accept friend request" output
+Y
+>menu-resume
+>wait-for: Your friend Bruce is offline.
+L
+X

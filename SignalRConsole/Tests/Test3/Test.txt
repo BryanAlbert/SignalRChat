@@ -1,0 +1,3 @@
+test-harness Bruce online, Bruce adds Fred, Fred online, accepts, lists, exits, Bruce lists, exists
+start BruceInput.txt BruceOutput.txt Bruce
+start FredInput.txt FredOutput.txt Fred
