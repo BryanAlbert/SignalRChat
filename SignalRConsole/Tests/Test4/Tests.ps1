@@ -21,32 +21,46 @@ function Run-Test
 	"Running script $script"
 	dotnet.exe .\SignalRConsole.dll $script
 	Push-Location $tests
-	if (((Compare-Object (Get-Content .\BruceControl.txt) (Get-Content .\BruceOutput.txt)) | Measure-Object).Count -gt 0) {
-		"Error: BruceOutput.txt has unexpected output."
-		$errorCount++
-	}
-	if ((((Compare-Object (Get-Content .\FredControl.txt) (Get-Content .\FredOutput.txt))) | Measure-Object).Count -gt 0) {
-		"Error: FredOutput.txt has unexpected output."
-		$errorCount++
-	}
+	Compare-Files .\BruceControl.txt .\BruceOutput.txt
+	Compare-Files .\FredControl.txt .\FredOutput.txt
+	Compare-Files .\BruceControl.qkr .\Bruce.qkr.json
+	Compare-Files .\FredControl.qkr .\Fred.qkr.json
 
 	"Total error count: $errorCount"
 	Pop-Location
 }
 
-function List-Results
+function Print-Files
 {
 	"Results for $tests"
 	Push-Location $tests
 	Get-ChildItem *.qkr.json | ForEach-Object { $_.Name; Get-Content $_; "" }
-	"BruceOutput.txt:"
-	Get-Content .\BruceOutput.txt
-	"FredOutput.txt:"
-	Get-Content .\FredOutput.txt
+	Get-ChildItem *Output.txt | ForEach-Object { $_.Name; Get-Content $_; "" }
+	Pop-Location
+}
+
+function Update-ControlFiles
+{
+	"Updating control files for $tests"
+	Push-Location $tests
+	Copy-Item .\BruceOutput.txt .\BruceControl.txt
+	Copy-Item .\FredOutput.txt .\FredControl.txt
+	Copy-Item .\Bruce.qkr.json .\BruceControl.qkr
+	Copy-Item .\Fred.qkr.json .\FredControl.qkr
 	Pop-Location
 }
 
 function Update-SignalRConsole
 {
 	Get-ChildItem ..\bin\Debug\netcoreapp3.1\* -File | Copy-Item -Destination .
+}
+
+function Compare-Files($control, $file)
+{
+	"Comparing: $control with $file"
+	if ((((Compare-Object (Get-Content $control) (Get-Content $file))) | Measure-Object).Count -gt 0) {
+		"Error: $file has unexpected output:"
+		Compare-Object (Get-Content $control) (Get-Content $file)
+		$errorCount++
+	}
 }

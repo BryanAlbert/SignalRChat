@@ -3,10 +3,10 @@ What is your handle (nickname)? Bruce
 
 Pick a command: a to add a friend, l to list friends, u to unfriend a friend,
 d to delete a user, c to chat, or x to exit
-Listening> Listening> Your friend Fred is online.
+Listening> Your friend Fred is online.
 L
 Friends:
 Fred, Green (online)
-Listening> X
+X
 
 Finished.

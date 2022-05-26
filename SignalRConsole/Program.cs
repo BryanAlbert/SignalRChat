@@ -44,13 +44,13 @@ namespace SignalRConsole
 							case c_startWaitFor:
 								// requires the output to wait for in quotes before the rest of the command line
 								int start = line.IndexOf('"') + 1;
-								string waitForOutput = line.Substring(start, line.LastIndexOf('"') - start);
-								commandLine = line.Substring(line.LastIndexOf('"') + 2);
+								string waitForOutput = line[start..line.LastIndexOf('"')];
+								commandLine = line[(line.LastIndexOf('"') + 2)..];
 								Console.WriteLine($"\nLaunching with command line: {commandLine}");
 								consoleChat = new ConsoleChat();
 								Harness harness = new Harness(commandLine.Split(' '), workingDirectory);
 								tasks.Add(Task.Run(async () => await consoleChat.RunAsync(harness)));
-								while (harness.CurrentOutputLine != waitForOutput)
+								while (!harness.OutputMatches(waitForOutput))
 									await Task.Delay(10);
 								break;
 							default:

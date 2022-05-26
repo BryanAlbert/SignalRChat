@@ -60,8 +60,6 @@ namespace SignalRConsole
 
 			while (true)
 			{
-				m_console.CursorLeft = 0;
-				m_console.Write($"{State}> ");
 				while (!m_console.KeyAvailable || State != States.Listening)
 					await Task.Delay(10);
 

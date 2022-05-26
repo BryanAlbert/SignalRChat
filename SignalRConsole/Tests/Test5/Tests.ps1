@@ -1,16 +1,18 @@
-# Bruce online, waits for Fred, Fred online waits for Bruce to leave, 
-# Bruce lists friends and goes offline, Fred lists friends and goes offline. 
 
-$Global:tests = "Test1"
+# Bruce, Fred and Mom online, Bruce and Fred befriend Mom, Bruce and Fred list, exit, Mom exits
+
+$Global:tests = "Test5"
 
 function Reset-Test
 {
 	"Resetting $tests"
 	Push-Location $tests
-	Copy-Item .\BruceFriends.qkr .\Bruce.qkr.json
-	Copy-Item .\FredFriends.qkr .\Fred.qkr.json
+	Copy-Item .\BruceNoFriends.qkr .\Bruce.qkr.json
+	Copy-Item .\FredNoFriends.qkr .\Fred.qkr.json
+	Copy-Item .\MomNoFriends.qkr .\Mom.qkr.json
 	if (Test-Path .\BruceOutput.txt) { Remove-Item .\BruceOutput.txt }
 	if (Test-Path .\FredOutput.txt) { Remove-Item .\FredOutput.txt }
+	if (Test-Path .\MomOutput.txt) { Remove-Item .\MomOutput.txt}
 	Pop-Location
 }
 
@@ -21,10 +23,14 @@ function Run-Test
 	"Running script $script"
 	dotnet.exe .\SignalRConsole.dll $script
 	Push-Location $tests
+	
+	# Since Bruce and Fred add Mom asynchronously, we can't tell which will send the friend request first, 
+	# do MomOutput.txt may be different between test runs, so we don't keep a MomControl.txt file. 
 	Compare-Files .\BruceControl.txt .\BruceOutput.txt
 	Compare-Files .\FredControl.txt .\FredOutput.txt
 	Compare-Files .\BruceControl.qkr .\Bruce.qkr.json
 	Compare-Files .\FredControl.qkr .\Fred.qkr.json
+	Compare-Files .\MomControl.qkr .\Mom.qkr.json
 
 	"Total error count: $errorCount"
 	Pop-Location
@@ -47,6 +53,7 @@ function Update-ControlFiles
 	Copy-Item .\FredOutput.txt .\FredControl.txt
 	Copy-Item .\Bruce.qkr.json .\BruceControl.qkr
 	Copy-Item .\Fred.qkr.json .\FredControl.qkr
+	Copy-Item .\Mom.qkr.json .\MomControl.qkr
 	Pop-Location
 }
 
@@ -54,7 +61,6 @@ function Update-SignalRConsole
 {
 	Get-ChildItem ..\bin\Debug\netcoreapp3.1\* -File | Copy-Item -Destination .
 }
-
 
 function Compare-Files($control, $file)
 {

@@ -1,0 +1,8 @@
+Mom
+>menu-block wait for next input requst for "Accept friend request..."
+Y
+Y
+>wait-for: Your friend (Bruce|Fred) is offline.
+>wait-for: Your friend (Bruce|Fred) is offline.
+L
+X

@@ -1,6 +1,7 @@
 ﻿using System; 
 using System.Collections.Generic;
 using System.IO;
+using System.Text.RegularExpressions;
 
 namespace SignalRConsole
 {
@@ -35,7 +36,7 @@ namespace SignalRConsole
 
 				Console.WriteLine($"Harness: input is provided by {m_inputStreamFilename}");
 				m_inputStream = File.ReadLines(m_inputStreamFilename).GetEnumerator();
-				GetNextInputLine();
+				CueNextInputLine();
 
 				if (m_args.Count > 0)
 				{
@@ -62,8 +63,18 @@ namespace SignalRConsole
 		public int CursorTop { get => Console.CursorTop; set { Console.CursorTop = value; } }
 		public ConsoleColor ForegroundColor { get => Console.ForegroundColor; set { Console.ForegroundColor = value; } }
 		public ConsoleColor BackgroundColor { get => Console.BackgroundColor; set { Console.BackgroundColor = value; } }
-		public string CurrentOutputLine { get; private set; }
 		public string NextInputLine { get; private set; }
+		public string CurrentOutputLine
+		{
+			set => m_output.Add(value);
+			get
+			{
+				string output = m_output[0];
+				m_output.RemoveAt(0);
+				return output;
+			}
+		}
+
 		public bool KeyAvailable
 		{
 			get
@@ -73,20 +84,21 @@ namespace SignalRConsole
 
 				if (NextInputLine.StartsWith(c_menuBlockCommand))
 				{
-					GetNextInputLine();
+					CueNextInputLine();
 					m_menuBlocked = true;
 				}
 				else if (NextInputLine.StartsWith(c_menuResumeCommand))
 				{
-					GetNextInputLine();
+					CueNextInputLine();
 					m_menuBlocked = false;
 				}
 				
 				if (NextInputLine.StartsWith(c_waitForCommand))
 				{
-					m_menuBlocked = NextInputLine[c_waitForCommand.Length..] != CurrentOutputLine;
-					if (!m_menuBlocked)
-						GetNextInputLine();
+					if (OutputMatches(NextInputLine[c_waitForCommand.Length..]))
+						CueNextInputLine();
+
+					m_menuBlocked = NextInputLine.StartsWith(c_waitForCommand[0]);
 				}
 
 				return !m_menuBlocked;
@@ -114,7 +126,7 @@ namespace SignalRConsole
 				if (Enum.TryParse(NextInputLine, out ConsoleKey info))
 				{
 					char key = NextInputLine[0];
-					GetNextInputLine();
+					CueNextInputLine();
 					return new ConsoleKeyInfo(key, info, false, false, false);
 				}
 				else
@@ -135,7 +147,7 @@ namespace SignalRConsole
 				string line = NextInputLine;
 				Console.WriteLine(m_tag != null ? $"{m_tag}: {NextInputLine}" : NextInputLine);
 				LogWriteLine(line);
-				GetNextInputLine();
+				CueNextInputLine();
 				return line;
 			}
 
@@ -174,8 +186,21 @@ namespace SignalRConsole
 			m_outputStream?.Close();
 		}
 
+		public bool OutputMatches(string line)
+		{
+			while(m_output.Count > 0)
+			{
+				bool match = Regex.Match(m_output[0], line).Success;
+				m_output.RemoveAt(0);
+				if (match)
+					return true;
+			}
 
-		private void GetNextInputLine()
+			return false;
+		}
+
+
+		private void CueNextInputLine()
 		{
 			do
 			{
@@ -215,5 +240,6 @@ namespace SignalRConsole
 		private readonly string m_outputStreamFilename;
 		private readonly StreamWriter m_outputStream;
 		private bool m_menuBlocked;
+		private readonly List<string> m_output = new List<string>();
 	}
 }

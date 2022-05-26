@@ -1,0 +1,4 @@
+test-harness Bruce, Fred, and Mom online, Bruce and Fred befriend Mom
+start MomInput.txt MomOutput.txt Mom
+start BruceInput.txt BruceOutput.txt Bruce
+start FredInput.txt FredOutput.txt Fred
