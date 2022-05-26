@@ -1,7 +1,7 @@
 
 # Bruce, Fred and Mom online, Bruce and Fred befriend Mom, Bruce and Fred list, exit, Mom exits
 
-$Global:tests = "Test5"
+$Global:tests = "Test6"
 
 function Reset-Test
 {
