@@ -60,10 +60,7 @@ namespace SignalRConsole
 
 			while (true)
 			{
-				while (!m_console.KeyAvailable || State != States.Listening)
-					await Task.Delay(10);
-
-				ConsoleKeyInfo menu = m_console.ReadKey(intercept: true);
+				ConsoleKeyInfo menu = await ReadKeyAvailableAsync(() => State == States.Listening);
 				try
 				{
 					switch (menu.Key)
@@ -486,17 +483,16 @@ namespace SignalRConsole
 			}
 
 			State = States.Busy;
-			Point? cursor = default;
-			User friend = ChooseFriend($"Whom would you like to unfriend (number, Enter to abort): ",
-				m_user.Friends, false, ref cursor);
+			Tuple<Point, User> result = await ChooseFriendAsync($"Whom would you like to unfriend (number, Enter to abort): ",
+				m_user.Friends, false);
 
-			if (friend != null)
+			if (result.Item2 != null)
 			{
-				await RemoveUserAsync(friend, cursor);
+				await RemoveUserAsync(result.Item2, result.Item1);
 			}
 			else
 			{
-				m_console.SetCursorPosition(cursor.Value.X, cursor.Value.Y);
+				m_console.SetCursorPosition(result.Item1.X, result.Item1.Y);
 				State = States.Listening;
 			}
 		}
@@ -508,8 +504,10 @@ namespace SignalRConsole
 			{
 				EraseLog();
 				State = States.Busy;
-				friend = ChooseFriend($"Whom would you like to delete (number, Enter to abort): ",
-					m_users, true, ref cursor);
+				Tuple<Point, User> result = await ChooseFriendAsync($"Whom would you like to delete (number, Enter to abort): ",
+					m_users, true);
+				cursor = result.Item1;
+				friend = result.Item2;
 			}
 
 			do
@@ -518,8 +516,8 @@ namespace SignalRConsole
 				{
 					if (delete)
 					{
-						_ = ConsoleWriteLogRead($"Are you sure you want to delete {friend.Handle}? ", out ConsoleKeyInfo confirm);
-						if (confirm.Key != ConsoleKey.Y)
+						Tuple<Point, ConsoleKeyInfo> result = await ConsoleWriteLogReadAsync($"Are you sure you want to delete {friend.Handle}? ");
+						if (result.Item2.Key != ConsoleKey.Y)
 							break;
 
 						File.Delete($"{friend.FileName}");
@@ -556,16 +554,15 @@ namespace SignalRConsole
 			}
 
 			State = States.Busy;
-			Point? cursor = default;
-			User friend = ChooseFriend("Whom would you like to chat with? (number, Enter to abort): ",
-				m_online, false, ref cursor);
-			m_console.SetCursorPosition(cursor.Value.X, cursor.Value.Y);
+			Tuple<Point, User> result = await ChooseFriendAsync("Whom would you like to chat with? (number, Enter to abort): ",
+				m_online, false);
+			m_console.SetCursorPosition(result.Item1.X, result.Item1.Y);
 
-			if (friend != null)
+			if (result.Item2 != null)
 			{
 				State = States.Connecting;
-				ActiveChatChannelName = MakeChatChannelName(friend);
-				ActiveChatFriend = friend;
+				ActiveChatChannelName = MakeChatChannelName(result.Item2);
+				ActiveChatFriend = result.Item2;
 				await m_hubConnection.SendAsync(c_joinChannel, ActiveChatChannelName, Id);
 			}
 			else
@@ -671,7 +668,7 @@ namespace SignalRConsole
 				await m_hubConnection.SendAsync(c_joinChannel, user.Id, Id);
 		}
 
-		private User ChooseFriend(string prompt, List<User> users, bool delete, ref Point? cursor)
+		private async Task<Tuple<Point, User>> ChooseFriendAsync(string prompt, List<User> users, bool delete)
 		{
 			ConsoleWriteLogLine($"{(delete ? "Users:" : "Friends:")}");
 			int index;
@@ -681,21 +678,21 @@ namespace SignalRConsole
 				ConsoleWriteLogLine($"{string.Format("{0:X}", index)}: {user.Handle}{(delete ? $" ({user.FileName})" : "")}");
 			}
 
-			cursor = ConsoleWriteLogRead(prompt, out ConsoleKeyInfo selection);
+			Tuple<Point, ConsoleKeyInfo> result = await ConsoleWriteLogReadAsync(prompt);
 
 			while (true)
 			{
-				if (selection.Key == ConsoleKey.Enter)
-					return null;
+				if (result.Item2.Key == ConsoleKey.Enter)
+					return new Tuple<Point, User>(result.Item1, null);
 
-				User user = int.TryParse(selection.KeyChar.ToString(), NumberStyles.HexNumber, CultureInfo.InvariantCulture,
+				User user = int.TryParse(result.Item2.KeyChar.ToString(), NumberStyles.HexNumber, CultureInfo.InvariantCulture,
 					out index) && index >= 0 && index < users.Count ? users[index] : null;
 
 				if (user != null)
-					return user;
+					return new Tuple<Point, User>(result.Item1, user);
 
-				cursor = ConsoleWriteLogRead($"{selection.KeyChar} not valid, enter a number between 1 and" +
-					$" {Math.Min(users.Count, 9)}, please try again: ", out selection);
+				result = await ConsoleWriteLogReadAsync($"{result.Item2.KeyChar} not valid, enter a number between 1 and" +
+					$" {Math.Min(users.Count, 9)}, please try again: ");
 			}
 		}
 
@@ -794,23 +791,27 @@ namespace SignalRConsole
 			User pending = update.Item2;
 			if (!verify.Flag.HasValue)
 			{
-				Point cursor = ConsoleWriteLogRead($"Accept friend request from {pending.Handle}," +
-					$" email address {pending.Email}? [y/n] ", out ConsoleKeyInfo confirm);
-				pending.Blocked = confirm.Key != ConsoleKey.Y;
-				if (existing != null)
-					m_user.Friends.Remove(existing);
+				// add a Freinds record to get notifications for him
+				if (existing == null)
+					m_user.AddFriend(pending);
 
+				if (!m_online.Contains(pending))
+					m_online.Add(pending);
+
+				Tuple<Point, ConsoleKeyInfo> confirm = await ConsoleWriteLogReadAsync($"Accept friend request from" +
+					$" {pending.Handle}, email address {pending.Email}? [y/n] ");
+				pending.Blocked = confirm.Item2.Key != ConsoleKey.Y;
+				m_user.Friends.Remove(existing);
+				m_user.Friends.Remove(pending);
 				m_user.AddFriend(pending);
 				SaveUser();
 				await SendCommandAsync(CommandNames.Verify, Id, HandleChannelName, from, SerializeUserData(m_user), !pending.Blocked);
 				if (!pending.Blocked ?? false)
 				{
-					if (!m_online.Contains(pending))
-						m_online.Add(pending);
 					await m_hubConnection.SendAsync(c_joinChannel, verify.Data);
 				}
 
-				m_console.SetCursorPosition(cursor.X, cursor.Y);
+				m_console.SetCursorPosition(confirm.Item1.X, confirm.Item1.Y);
 				existing = pending;
 			}
 			else
@@ -903,6 +904,14 @@ namespace SignalRConsole
 			State = States.Listening;
 		}
 
+		private async Task<ConsoleKeyInfo> ReadKeyAvailableAsync(Func<bool> enable)
+		{
+			while (!Console.KeyAvailable || !enable())
+				await Task.Delay(10);
+
+			return Console.ReadKey(intercept: true);
+		}
+
 		private void EraseLog()
 		{
 			if (m_console.ScriptMode)
@@ -938,13 +947,16 @@ namespace SignalRConsole
 			return cursor;
 		}
 
-		private Point ConsoleWriteLogRead(string line, out ConsoleKeyInfo confirm)
+		private async Task<Tuple<Point, ConsoleKeyInfo>> ConsoleWriteLogReadAsync(string line)
 		{
+			States state = State;
+			State = States.Busy;
 			Point cursor = MoveCursorToLog();
 			m_console.Write(line);
-			confirm = m_console.ReadKey();
+			ConsoleKeyInfo confirm = await ReadKeyAvailableAsync(() => true);
 			m_log.Add(line + confirm.KeyChar);
-			return cursor;
+			State = state;
+			return new Tuple<Point, ConsoleKeyInfo>(cursor, confirm);
 		}
 
 		private Point MoveCursorToLog()
