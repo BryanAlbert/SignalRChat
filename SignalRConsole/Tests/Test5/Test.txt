@@ -1,0 +1,6 @@
+test-harness Both online, Bruce adds Fred, Bruce offline, Fred accepts, Fred offline, Bruce online, Fred online: 
+start FredInput1.txt FredOutput.txt Fred
+start BruceInput1.txt BruceOutput.txt Bruce
+wait-all
+start BruceInput2.txt BruceOutput.txt Bruce
+start FredInput2.txt FredOutput.txt Fred

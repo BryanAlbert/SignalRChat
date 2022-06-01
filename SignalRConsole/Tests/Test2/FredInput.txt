@@ -1,7 +1,6 @@
 Fred
->menu-block wait for next input request, "Accept friend request" 
+>wait-for: Accept friend request from Bruce, email address bruce@hotmail.com? [y/n]
 Y
->menu-resume
 >wait-for: Your friend Bruce is offline.
 L
 X

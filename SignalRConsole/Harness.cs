@@ -66,13 +66,8 @@ namespace SignalRConsole
 		public string NextInputLine { get; private set; }
 		public string CurrentOutputLine
 		{
-			set => m_output.Add(value);
-			get
-			{
-				string output = m_output[0];
-				m_output.RemoveAt(0);
-				return output;
-			}
+			set { lock (m_lock) { m_output.Add(value); } }
+			get => m_output[m_output.Count - 1];
 		}
 
 		public bool KeyAvailable
@@ -207,12 +202,16 @@ namespace SignalRConsole
 
 		public bool OutputMatches(string line, bool useRegEx)
 		{
-			while(m_output.Count > 0)
+			lock (m_lock)
 			{
-				bool match = useRegEx ? Regex.Match(m_output[0], line).Success : m_output[0].Trim() == line;
-				m_output.RemoveAt(0);
-				if (match)
-					return true;
+				foreach (string output in m_output)
+				{
+					if (useRegEx ? Regex.Match(output, line).Success : output.Trim() == line)
+					{
+						m_output.Remove(line);
+						return true;
+					}
+				}
 			}
 
 			return false;
@@ -256,5 +255,6 @@ namespace SignalRConsole
 		private bool m_eof;
 		private StreamWriter m_outputStream;
 		private bool m_menuBlocked;
+		private readonly object m_lock = new object();
 	}
 }

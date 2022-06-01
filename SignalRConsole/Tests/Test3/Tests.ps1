@@ -2,6 +2,7 @@
 # Bruce online, adds Fred, Fred online, Fred accepts, lists, goes offline, Bruce lists, goes offline
 
 $Global:tests = "Test3"
+$global:errorCount = 0
 
 function Reset-Test
 {
@@ -21,12 +22,13 @@ function Run-Test
 	"Running script $script"
 	dotnet.exe .\SignalRConsole.dll $script
 	Push-Location $tests
+	$global:errorCount = 0
 	Compare-Files .\BruceControl.txt .\BruceOutput.txt
 	Compare-Files .\FredControl.txt .\FredOutput.txt
 	Compare-Files .\BruceControl.qkr .\Bruce.qkr.json
 	Compare-Files .\FredControl.qkr .\Fred.qkr.json
 
-	"Total error count: $errorCount"
+	"Total error count: $global:errorCount"
 	Pop-Location
 }
 
@@ -61,6 +63,6 @@ function Compare-Files($control, $file)
 	if ((((Compare-Object (Get-Content $control) (Get-Content $file))) | Measure-Object).Count -gt 0) {
 		"Error: $file has unexpected output:"
 		Compare-Object (Get-Content $control) (Get-Content $file)
-		$errorCount++
+		$global:errorCount++
 	}
 }
