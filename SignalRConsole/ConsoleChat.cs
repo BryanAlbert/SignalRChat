@@ -42,6 +42,8 @@ namespace SignalRConsole
 			}
 		}
 
+		public States PreviousState { get => m_states.Pop(); set => m_states.Push(value); }
+
 
 		public async Task<int> RunAsync(Harness console)
 		{
@@ -278,7 +280,7 @@ namespace SignalRConsole
 		{
 			if (to == Id || to == Handle)
 			{
-				States state = State;
+				PreviousState = State;
 				State = States.Busy;
 				ConnectionCommand command = DeserializeCommand(json);
 				switch (command.CommandName)
@@ -295,7 +297,7 @@ namespace SignalRConsole
 						break;
 				}
 
-				State = state;
+				State = PreviousState;
 			}
 		}
 
@@ -1017,6 +1019,7 @@ namespace SignalRConsole
 		private readonly List<User> m_users = new List<User>();
 		private readonly List<User> m_online = new List<User>();
 		private readonly List<string> m_log = new List<string>();
+		private readonly Stack<States> m_states = new Stack<States>();
 		private readonly JsonSerializerOptions m_serializerOptions = new JsonSerializerOptions()
 		{
 			WriteIndented = true
