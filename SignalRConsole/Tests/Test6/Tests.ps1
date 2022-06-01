@@ -2,6 +2,7 @@
 # Bruce, Fred and Mom online, Bruce and Fred befriend Mom, Bruce and Fred list, exit, Mom exits
 
 $Global:tests = "Test6"
+$global:errorCount = 0
 
 function Reset-Test
 {
@@ -18,7 +19,6 @@ function Reset-Test
 
 function Run-Test
 {
-	$errorCount = 0
 	$script = Join-Path $tests "Test.txt"
 	"Running script $script"
 	dotnet.exe .\SignalRConsole.dll $script
@@ -26,13 +26,14 @@ function Run-Test
 	
 	# Since Bruce and Fred add Mom asynchronously, we can't tell which will send the friend request first, 
 	# do MomOutput.txt may be different between test runs, so we don't keep a MomControl.txt file. 
+	$global:errorCount = 0
 	Compare-Files .\BruceControl.txt .\BruceOutput.txt
 	Compare-Files .\FredControl.txt .\FredOutput.txt
 	Compare-Files .\BruceControl.qkr .\Bruce.qkr.json
 	Compare-Files .\FredControl.qkr .\Fred.qkr.json
 	Compare-Files .\MomControl.qkr .\Mom.qkr.json
 
-	"Total error count: $errorCount"
+	"Total error count: $global:errorCount"
 	Pop-Location
 }
 
@@ -62,12 +63,13 @@ function Update-SignalRConsole
 	Get-ChildItem ..\bin\Debug\netcoreapp3.1\* -File | Copy-Item -Destination .
 }
 
+
 function Compare-Files($control, $file)
 {
 	"Comparing: $control with $file"
-	if ((((Compare-Object (Get-Content $control) (Get-Content $file))) | Measure-Object).Count -gt 0) {
+	if (((Compare-Object (Get-Content $control) (Get-Content $file)) | Measure-Object).Count -gt 0) {
 		"Error: $file has unexpected output:"
 		Compare-Object (Get-Content $control) (Get-Content $file)
-		$errorCount++
+		$global:errorCount++
 	}
 }

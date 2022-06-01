@@ -17,7 +17,6 @@ function Reset-Test
 
 function Run-Test
 {
-	$errorCount = 0
 	$script = Join-Path $tests "Test.txt"
 	"Running script $script"
 	dotnet.exe .\SignalRConsole.dll $script
@@ -57,10 +56,11 @@ function Update-SignalRConsole
 	Get-ChildItem ..\bin\Debug\netcoreapp3.1\* -File | Copy-Item -Destination .
 }
 
+
 function Compare-Files($control, $file)
 {
 	"Comparing: $control with $file"
-	if ((((Compare-Object (Get-Content $control) (Get-Content $file))) | Measure-Object).Count -gt 0) {
+	if (((Compare-Object (Get-Content $control) (Get-Content $file)) | Measure-Object).Count -gt 0) {
 		"Error: $file has unexpected output:"
 		Compare-Object (Get-Content $control) (Get-Content $file)
 		$global:errorCount++
