@@ -95,10 +95,17 @@ namespace SignalRConsole
 				
 				if (NextInputLine.StartsWith(c_waitForCommand))
 				{
-					if (OutputMatches(NextInputLine[c_waitForCommand.Length..]))
+					if (OutputMatches(NextInputLine[c_waitForCommand.Length..], false))
 						CueNextInputLine();
 
-					m_menuBlocked = NextInputLine.StartsWith(c_waitForCommand[0]);
+					return !(NextInputLine.StartsWith(c_waitForCommand[0]) || NextInputLine.StartsWith(c_waitForRegExCommand[0]));
+				}
+				else if (NextInputLine.StartsWith(c_waitForRegExCommand))
+				{
+					if (OutputMatches(NextInputLine[c_waitForRegExCommand.Length..], true))
+						CueNextInputLine();
+
+					return !(NextInputLine.StartsWith(c_waitForCommand[0]) || NextInputLine.StartsWith(c_waitForRegExCommand[0]));
 				}
 
 				return !m_menuBlocked;
@@ -156,6 +163,9 @@ namespace SignalRConsole
 
 		public void WriteLine(string value)
 		{
+			if (ScriptMode)
+				value = value.Trim('\n');
+
 			Console.WriteLine(m_tag != null ? $"{m_tag}: {value}" : value);
 			LogWriteLine(value);
 			CurrentOutputLine = value;
@@ -163,15 +173,23 @@ namespace SignalRConsole
 
 		public void Write(char value)
 		{
-			Console.Write(value);
-			LogWrite(value.ToString());
+			if (ScriptMode)
+				Console.WriteLine(value);
+			else
+				Console.Write(value);
+
+			m_outputStream?.Write(value.ToString());
 			CurrentOutputLine = value.ToString();
 		}
 
 		public void Write(string value)
 		{
-			Console.Write(m_tag != null ? $"{m_tag}: {value}" : value);
-			LogWrite(value);
+			if (ScriptMode)
+				Console.WriteLine(m_tag != null ? $"{m_tag}: {value}" : value);
+			else
+				Console.Write(m_tag != null ? $"{m_tag}: {value}" : value);
+
+			m_outputStream?.Write(value);
 			CurrentOutputLine = value;
 		}
 
@@ -184,13 +202,14 @@ namespace SignalRConsole
 		public void Close()
 		{
 			m_outputStream?.Close();
+			m_outputStream = null;
 		}
 
-		public bool OutputMatches(string line)
+		public bool OutputMatches(string line, bool useRegEx)
 		{
 			while(m_output.Count > 0)
 			{
-				bool match = Regex.Match(m_output[0], line).Success;
+				bool match = useRegEx ? Regex.Match(m_output[0], line).Success : m_output[0].Trim() == line;
 				m_output.RemoveAt(0);
 				if (match)
 					return true;
@@ -223,23 +242,19 @@ namespace SignalRConsole
 			m_outputStream?.WriteLine(line);
 		}
 
-		private void LogWrite(string line)
-		{
-			m_outputStream?.Write(line);
-		}
-
 
 		private const string c_menuBlockCommand = ">menu-block";
 		private const string c_menuResumeCommand = ">menu-resume";
 		private const string c_waitForCommand = ">wait-for: ";
+		private const string c_waitForRegExCommand = ">wait-for-regex: ";
 		private readonly List<string> m_args;
 		private readonly string m_inputStreamFilename;
-		private IEnumerator<string> m_inputStream;
-		private bool m_eof;
 		private readonly string m_tag;
 		private readonly string m_outputStreamFilename;
-		private readonly StreamWriter m_outputStream;
-		private bool m_menuBlocked;
 		private readonly List<string> m_output = new List<string>();
+		private IEnumerator<string> m_inputStream;
+		private bool m_eof;
+		private StreamWriter m_outputStream;
+		private bool m_menuBlocked;
 	}
 }

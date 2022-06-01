@@ -278,6 +278,8 @@ namespace SignalRConsole
 		{
 			if (to == Id || to == Handle)
 			{
+				States state = State;
+				State = States.Busy;
 				ConnectionCommand command = DeserializeCommand(json);
 				switch (command.CommandName)
 				{
@@ -292,6 +294,8 @@ namespace SignalRConsole
 						Debug.WriteLine($"Error in OnSentCommandAsync, unrecognized command: {command.CommandName}");
 						break;
 				}
+
+				State = state;
 			}
 		}
 
@@ -534,7 +538,8 @@ namespace SignalRConsole
 			while (false);
 
 			m_console.SetCursorPosition(cursor.Value.X, cursor.Value.Y);
-			State = States.Listening;
+			if (delete)
+				State = States.Listening;
 		}
 
 		private async Task ChatFriendAsync()
@@ -805,11 +810,12 @@ namespace SignalRConsole
 				m_user.Friends.Remove(pending);
 				m_user.AddFriend(pending);
 				SaveUser();
-				await SendCommandAsync(CommandNames.Verify, Id, HandleChannelName, from, SerializeUserData(m_user), !pending.Blocked);
+
+				if (m_online.Contains(pending))
+					await SendCommandAsync(CommandNames.Verify, Id, HandleChannelName, from, SerializeUserData(m_user), !pending.Blocked);
+
 				if (!pending.Blocked ?? false)
-				{
 					await m_hubConnection.SendAsync(c_joinChannel, verify.Data);
-				}
 
 				m_console.SetCursorPosition(confirm.Item1.X, confirm.Item1.Y);
 				existing = pending;
@@ -906,10 +912,10 @@ namespace SignalRConsole
 
 		private async Task<ConsoleKeyInfo> ReadKeyAvailableAsync(Func<bool> enable)
 		{
-			while (!Console.KeyAvailable || !enable())
+			while (!enable() || !m_console.KeyAvailable)
 				await Task.Delay(10);
 
-			return Console.ReadKey(intercept: true);
+			return m_console.ReadKey(intercept: true);
 		}
 
 		private void EraseLog()
@@ -949,13 +955,10 @@ namespace SignalRConsole
 
 		private async Task<Tuple<Point, ConsoleKeyInfo>> ConsoleWriteLogReadAsync(string line)
 		{
-			States state = State;
-			State = States.Busy;
 			Point cursor = MoveCursorToLog();
 			m_console.Write(line);
-			ConsoleKeyInfo confirm = await ReadKeyAvailableAsync(() => true);
+			ConsoleKeyInfo confirm = await ReadKeyAvailableAsync(() => State != States.Listening);
 			m_log.Add(line + confirm.KeyChar);
-			State = state;
 			return new Tuple<Point, ConsoleKeyInfo>(cursor, confirm);
 		}
 

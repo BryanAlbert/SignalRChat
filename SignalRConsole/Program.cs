@@ -22,14 +22,18 @@ namespace SignalRConsole
 					List<Task<int>> tasks = new List<Task<int>>();
 					foreach (string line in lines)
 					{
-						switch (line.Split(" ")[0])
+						if (line[0] == '#')
+							continue;
+
+						string command = line.Split(" ")[0];
+						switch (command)
 						{
 							case c_harness:
-								Console.WriteLine($"Processing test harness file {args[0]}: {line[(c_harness.Length + 1)..]}");
+								Console.WriteLine($"Program: Processing test harness file {args[0]}: {line[(c_harness.Length + 1)..]}");
 								break;
 							case c_start:
 								string commandLine = line[(c_start.Length + 1)..];
-								Console.WriteLine($"\nLaunching with command line: {commandLine}");
+								Console.WriteLine($"\nProgram: Launching with command line: {commandLine}");
 								ConsoleChat consoleChat = new ConsoleChat();
 								tasks.Add(Task.Run(async () => await consoleChat.RunAsync(new Harness(commandLine.Split(" "),
 									workingDirectory))));
@@ -38,28 +42,33 @@ namespace SignalRConsole
 								break;
 							case c_startWait:
 								commandLine = line[(c_startWait.Length + 1)..];
-								Console.WriteLine($"\nLaunching and waiting with command line: {commandLine}");
+								Console.WriteLine($"\nProgram: Launching and waiting with command line: {commandLine}");
 								await new ConsoleChat().RunAsync(new Harness(commandLine.Split(" "), workingDirectory));
 								break;
 							case c_startWaitFor:
+							case c_startWaitForRegex:
 								// requires the output to wait for in quotes before the rest of the command line
 								int start = line.IndexOf('"') + 1;
 								string waitForOutput = line[start..line.LastIndexOf('"')];
 								commandLine = line[(line.LastIndexOf('"') + 2)..];
-								Console.WriteLine($"\nLaunching with command line: {commandLine}");
+								Console.WriteLine($"\nProgram: Launching with command line: {commandLine}");
 								consoleChat = new ConsoleChat();
 								Harness harness = new Harness(commandLine.Split(' '), workingDirectory);
 								tasks.Add(Task.Run(async () => await consoleChat.RunAsync(harness)));
-								while (!harness.OutputMatches(waitForOutput))
+								while (!harness.OutputMatches(waitForOutput, command == c_startWaitForRegex))
 									await Task.Delay(10);
 								break;
+							case c_waitAll:
+								Task.WaitAll(tasks.ToArray());
+								break;
 							default:
-								Console.WriteLine($"Error: unknown command '{line.Split(" ")[0]}' in file {args[0]}");
+								Console.WriteLine($"Error in Program: unknown command '{command}' in file {args[0]}");
 								return -1;
 						}
 					}
 
 					Task.WaitAll(tasks.ToArray());
+					Console.WriteLine($"\nProgram: {args[0]} Finished running.");
 					return 0;
 				}
 			}
@@ -73,5 +82,7 @@ namespace SignalRConsole
 		private const string c_start = "start";
 		private const string c_startWait = "start-wait";
 		private const string c_startWaitFor = "start-wait-for:";
+		private const string c_startWaitForRegex = "start-wait-for-regex:";
+		private const string c_waitAll = "wait-all";
 	}
 }

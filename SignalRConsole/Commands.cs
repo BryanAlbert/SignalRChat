@@ -91,7 +91,14 @@ namespace SignalRConsole
 
 			private async Task SendCommandAsync()
 			{
-				await m_hubConnection.SendAsync(ConsoleChat.c_sendCommand, From, Channel, To, JsonSerializer.Serialize(this));
+				try
+				{
+					await m_hubConnection.SendAsync(ConsoleChat.c_sendCommand, From, Channel, To, JsonSerializer.Serialize(this));
+				}
+				catch (Exception exception)
+				{
+					Console.WriteLine($"Error in SendCommandAsync, exception: {exception.Message}");
+				}
 			}
 		}
 
