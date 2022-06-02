@@ -1,0 +1,2 @@
+test-harness Already friends
+start BruceInput.txt BruceOutput.txt Bruce

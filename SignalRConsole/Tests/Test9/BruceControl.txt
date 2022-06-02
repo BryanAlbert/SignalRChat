@@ -3,13 +3,10 @@ What is your handle (nickname)? Bruce
 Pick a command: a to add a friend, l to list friends, u to unfriend a friend,
 d to delete a user, c to chat, or x to exit
 Listening> A
-Busy...       What is your friend's handle? Mom
-What is your friend's email? jeanmariealbert@hotmail.com
-A friend request has been sent to Mom.
-Listening> Your (pending) friend Mom is online.
-You and Mom are now friends!
-L
+Busy...       What is your friend's handle? Fred
+Fred is already your friend!
+Listening> L
 Friends:
-Mom, Maroon (online)
+Fred, Green
 X
 Finished.
