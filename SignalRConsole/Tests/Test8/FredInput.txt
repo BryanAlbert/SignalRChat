@@ -1,0 +1,10 @@
+Fred
+A
+Bruce
+bruce@hotmail.com
+A
+Mom
+jeanmariealbert@hotmail.com
+>wait-for: Your friend Bruce is offline.
+L
+X

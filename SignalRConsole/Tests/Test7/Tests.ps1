@@ -24,15 +24,16 @@ function Run-Test
 	dotnet.exe .\SignalRConsole.dll $script
 	Push-Location $tests
 	
-	# Since Bruce and Fred add Mom asynchronously, we can't tell which will send the friend request first, 
-	# do MomOutput.txt may be different between test runs, so we don't keep a MomControl.txt file. 
+	# MomOutput.txt may be different between test runs, so we don't keep a MomControl.txt file. 
+	$global:warningCount = 0
 	$global:errorCount = 0
-	Compare-Files .\BruceControl.txt .\BruceOutput.txt
-	Compare-Files .\FredControl.txt .\FredOutput.txt
-	Compare-Files .\BruceControl.qkr .\Bruce.qkr.json
-	Compare-Files .\FredControl.qkr .\Fred.qkr.json
-	Compare-Files .\MomControl.qkr .\Mom.qkr.json
+	Compare-Files .\BruceControl.txt .\BruceOutput.txt $true
+	Compare-Files .\FredControl.txt .\FredOutput.txt $true
+	Compare-Files .\BruceControl.qkr .\Bruce.qkr.json $false
+	Compare-Files .\FredControl.qkr .\Fred.qkr.json $false
+	Compare-Files .\MomControl.qkr .\Mom.qkr.json $false
 
+	"Total warning count: $global:warningCount"
 	"Total error count: $global:errorCount"
 	Pop-Location
 }
@@ -64,12 +65,21 @@ function Update-SignalRConsole
 }
 
 
-function Compare-Files($control, $file)
+function Compare-Files($control, $file, $logFile)
 {
 	"Comparing: $control with $file"
 	if (((Compare-Object (Get-Content $control) (Get-Content $file)) | Measure-Object).Count -gt 0) {
-		"Error: $file has unexpected output:"
+		if ($logFile)
+		{
+			"Warning: $file has unexpected output:"
+			$global:warningCount++
+		}
+		else
+		{
+			"Error: $file has unexpected output:"
+			$global:errorCount++
+		}
+
 		Compare-Object (Get-Content $control) (Get-Content $file)
-		$global:errorCount++
 	}
 }

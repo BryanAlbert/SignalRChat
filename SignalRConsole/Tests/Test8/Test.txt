@@ -1,0 +1,5 @@
+test-harness Bruce adds Fred and Mom and goes offline, Fred comes on and adds Bruce and Mom, Bruce comes online, Mom comes online
+start-wait BruceInput1.txt BruceOutput.txt Bruce
+start-wait-for: "A friend request has been sent to Mom." FredInput.txt FredOutput.txt Fred
+start-wait-for: "You and Fred are now friends!" MomInput.txt MomOutput.txt Mom
+start BruceInput2.txt BruceOutput.txt Bruce

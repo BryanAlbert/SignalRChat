@@ -1,7 +1,6 @@
+# Bruce add Fred, add Mom, offline, Fred online, add Bruce, add Mom, Bruce online, Mom online
 
-# Bruce and Fred online, Bruce adds Fred, Bruce offline, Fred accepts, Fred offline, Bruce online, Fred online.
-
-$Global:tests = "Test5"
+$Global:tests = "Test8"
 
 function Reset-Test
 {
@@ -9,8 +8,10 @@ function Reset-Test
 	Push-Location $tests
 	Copy-Item .\BruceNoFriends.qkr .\Bruce.qkr.json
 	Copy-Item .\FredNoFriends.qkr .\Fred.qkr.json
+	Copy-Item .\MomNoFriends.qkr .\Mom.qkr.json
 	if (Test-Path .\BruceOutput.txt) { Remove-Item .\BruceOutput.txt }
 	if (Test-Path .\FredOutput.txt) { Remove-Item .\FredOutput.txt }
+	if (Test-Path .\MomOutput.txt) { Remove-Item .\MomOutput.txt}
 	Pop-Location
 }
 
@@ -22,10 +23,12 @@ function Run-Test
 	Push-Location $tests
 	$global:warningCount = 0
 	$global:errorCount = 0
-.	Compare-Files .\BruceControl.txt .\BruceOutput.txt $true
+	Compare-Files .\BruceControl.txt .\BruceOutput.txt $true
 	Compare-Files .\FredControl.txt .\FredOutput.txt $true
+	Compare-Files .\MomControl.txt .\MomOutput.txt $true
 	Compare-Files .\BruceControl.qkr .\Bruce.qkr.json $false
 	Compare-Files .\FredControl.qkr .\Fred.qkr.json $false
+	Compare-Files .\MomControl.qkr .\Mom.qkr.json $false
 
 	"Total warning count: $global:warningCount"
 	"Total error count: $global:errorCount"
@@ -49,6 +52,7 @@ function Update-ControlFiles
 	Copy-Item .\FredOutput.txt .\FredControl.txt
 	Copy-Item .\Bruce.qkr.json .\BruceControl.qkr
 	Copy-Item .\Fred.qkr.json .\FredControl.qkr
+	Copy-Item .\Mom.qkr.json .\MomControl.qkr
 	Pop-Location
 }
 

@@ -4,8 +4,8 @@ Pick a command: a to add a friend, l to list friends, u to unfriend a friend,
 d to delete a user, c to chat, or x to exit
 Listening> Busy...       Accept friend request from Bruce, email address bruce@hotmail.com? [y/n] Your (pending) friend Bruce is offline.
 Y
-You and Bruce are now friends!
-Listening> L
+Listening> You and Bruce are now friends!
+L
 Friends:
 Bruce, Red
 X
@@ -15,7 +15,7 @@ What is your handle (nickname)? Fred
 Pick a command: a to add a friend, l to list friends, u to unfriend a friend,
 d to delete a user, c to chat, or x to exit
 Listening> Your friend Bruce is online.
-Busy...       Listening> Your friend Bruce is offline.
+Your friend Bruce is offline.
 L
 Friends:
 Bruce, Red

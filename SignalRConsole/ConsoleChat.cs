@@ -280,8 +280,6 @@ namespace SignalRConsole
 		{
 			if (to == Id || to == Handle)
 			{
-				PreviousState = State;
-				State = States.Busy;
 				ConnectionCommand command = DeserializeCommand(json);
 				switch (command.CommandName)
 				{
@@ -296,9 +294,7 @@ namespace SignalRConsole
 						Debug.WriteLine($"Error in OnSentCommandAsync, unrecognized command: {command.CommandName}");
 						break;
 				}
-
-				State = PreviousState;
-			}
+			} 
 		}
 
 		private void OnLeftChannel(string channel, string user)
@@ -805,8 +801,11 @@ namespace SignalRConsole
 				if (!m_online.Contains(pending))
 					m_online.Add(pending);
 
+				PreviousState = State;
+				State = States.Busy;
 				Tuple<Point, ConsoleKeyInfo> confirm = await ConsoleWriteLogReadAsync($"Accept friend request from" +
 					$" {pending.Handle}, email address {pending.Email}? [y/n] ");
+				State = PreviousState;
 				pending.Blocked = confirm.Item2.Key != ConsoleKey.Y;
 				m_user.Friends.Remove(existing);
 				m_user.Friends.Remove(pending);

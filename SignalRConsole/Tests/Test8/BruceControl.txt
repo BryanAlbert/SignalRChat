@@ -3,11 +3,16 @@ What is your handle (nickname)? Bruce
 Pick a command: a to add a friend, l to list friends, u to unfriend a friend,
 d to delete a user, c to chat, or x to exit
 Listening> A
+Busy...       What is your friend's handle? Mom
+What is your friend's email? jeanmariealbert@hotmail.com
+A friend request has been sent to Mom.
+Listening> A
 Busy...       What is your friend's handle? Fred
 What is your friend's email? fred@gmail.com
 A friend request has been sent to Fred.
 Listening> L
 Friends:
+Mom, (pending)
 Fred, (pending)
 X
 Finished.
@@ -15,10 +20,14 @@ Initializing server and connecting to URL: https://localhost:5001/chathub
 What is your handle (nickname)? Bruce
 Pick a command: a to add a friend, l to list friends, u to unfriend a friend,
 d to delete a user, c to chat, or x to exit
-Listening> Busy...       Your (pending) friend Fred is online.
-Listening> Busy...       You and Fred are now friends!
-Listening> L
+Your (pending) friend Fred is online.
+Listening> Your (pending) friend Mom is online.
+Busy...       Accept friend request from Fred, email address fred@gmail.com? [y/n] Y
+Listening> You and Fred are now friends!
+You and Mom are now friends!
+L
 Friends:
+Mom, Maroon (online)
 Fred, Green (online)
 X
 Finished.

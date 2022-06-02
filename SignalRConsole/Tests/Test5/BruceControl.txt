@@ -6,8 +6,8 @@ Listening> A
 Busy...       What is your friend's handle? Fred
 What is your friend's email? fred@gmail.com
 A friend request has been sent to Fred.
-Listening> Busy...       Your (pending) friend Fred is online.
-Listening> L
+Listening> Your (pending) friend Fred is online.
+L
 Friends:
 Fred, Green (pending) (online)
 X
@@ -17,7 +17,7 @@ What is your handle (nickname)? Bruce
 Pick a command: a to add a friend, l to list friends, u to unfriend a friend,
 d to delete a user, c to chat, or x to exit
 Listening> Your (pending) friend Fred is online.
-Busy...       Listening> L
+L
 Friends:
 Fred, Green (online)
 X

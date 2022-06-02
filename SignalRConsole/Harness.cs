@@ -50,13 +50,14 @@ namespace SignalRConsole
 
 				if (m_args.Count > 0)
 				{
-					m_tag = NextArg();
-					Console.WriteLine($"Harness: User is {m_tag}");
+					Tag = NextArg();
+					Console.WriteLine($"Harness: User is {Tag}");
 				}
 			}
 		}
 
 
+		public string Tag { get; private set; }
 		public bool ScriptMode => m_inputStreamFilename != null;
 		public string WorkingDirectory { get; set; } = ".";
 		public int CursorLeft { get => Console.CursorLeft; set { Console.CursorLeft = value; } }
@@ -67,7 +68,7 @@ namespace SignalRConsole
 		public string CurrentOutputLine
 		{
 			set { lock (m_lock) { m_output.Add(value); } }
-			get => m_output[m_output.Count - 1];
+			get => m_output[^1];
 		}
 
 		public bool KeyAvailable
@@ -123,7 +124,7 @@ namespace SignalRConsole
 			if (ScriptMode)
 			{
 				LogWriteLine(NextInputLine);
-				Console.WriteLine(m_tag != null ? $"{m_tag}: {NextInputLine}" : NextInputLine);
+				Console.WriteLine(Tag != null ? $"{Tag}: {NextInputLine}" : NextInputLine);
 
 				if (Enum.TryParse(NextInputLine, out ConsoleKey info))
 				{
@@ -133,7 +134,7 @@ namespace SignalRConsole
 				}
 				else
 				{
-					Console.WriteLine($"{(m_tag != null ? $"{m_tag}: " : "")}Error: Failed to parse a ConsoleKey from" +
+					Console.WriteLine($"{(Tag != null ? $"{Tag}: " : "")}Error: Failed to parse a ConsoleKey from" +
 						$" '{NextInputLine}', manual input is requried.");
 					m_inputStream = null;
 				}
@@ -147,7 +148,7 @@ namespace SignalRConsole
 			if (ScriptMode)
 			{
 				string line = NextInputLine;
-				Console.WriteLine(m_tag != null ? $"{m_tag}: {NextInputLine}" : NextInputLine);
+				Console.WriteLine(Tag != null ? $"{Tag}: {NextInputLine}" : NextInputLine);
 				LogWriteLine(line);
 				CueNextInputLine();
 				return line;
@@ -161,7 +162,7 @@ namespace SignalRConsole
 			if (ScriptMode)
 				value = value.Trim('\n');
 
-			Console.WriteLine(m_tag != null ? $"{m_tag}: {value}" : value);
+			Console.WriteLine(Tag != null ? $"{Tag}: {value}" : value);
 			LogWriteLine(value);
 			CurrentOutputLine = value;
 		}
@@ -180,9 +181,9 @@ namespace SignalRConsole
 		public void Write(string value)
 		{
 			if (ScriptMode)
-				Console.WriteLine(m_tag != null ? $"{m_tag}: {value}" : value);
+				Console.WriteLine(Tag != null ? $"{Tag}: {value}" : value);
 			else
-				Console.Write(m_tag != null ? $"{m_tag}: {value}" : value);
+				Console.Write(Tag != null ? $"{Tag}: {value}" : value);
 
 			m_outputStream?.Write(value);
 			CurrentOutputLine = value;
@@ -224,7 +225,7 @@ namespace SignalRConsole
 			{
 				if (m_eof)
 				{
-					Console.WriteLine($"{(m_tag != null ? $"{m_tag} " : "")}Error: The file {m_inputStreamFilename}" +
+					Console.WriteLine($"{(Tag != null ? $"{Tag} " : "")}Error: The file {m_inputStreamFilename}" +
 						$" has run out of input, manual input is now required.");
 					m_inputStream = null;
 					break;
@@ -248,7 +249,6 @@ namespace SignalRConsole
 		private const string c_waitForRegExCommand = ">wait-for-regex: ";
 		private readonly List<string> m_args;
 		private readonly string m_inputStreamFilename;
-		private readonly string m_tag;
 		private readonly string m_outputStreamFilename;
 		private readonly List<string> m_output = new List<string>();
 		private IEnumerator<string> m_inputStream;

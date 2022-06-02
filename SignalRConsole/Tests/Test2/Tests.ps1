@@ -3,7 +3,6 @@
 # friends and exists, meanwhile Fred accepts, waits for Bruce to go offline, lists, exits
 
 $Global:tests = "Test2"
-$global:errorCount = 0
 
 function Reset-Test
 {
@@ -22,12 +21,14 @@ function Run-Test
 	"Running script $script"
 	dotnet.exe .\SignalRConsole.dll $script
 	Push-Location $tests
+	$global:warningCount = 0
 	$global:errorCount = 0
-	Compare-Files .\BruceControl.txt .\BruceOutput.txt
-	Compare-Files .\FredControl.txt .\FredOutput.txt
-	Compare-Files .\BruceControl.qkr .\Bruce.qkr.json
-	Compare-Files .\FredControl.qkr .\Fred.qkr.json
+	Compare-Files .\BruceControl.txt .\BruceOutput.txt $true
+	Compare-Files .\FredControl.txt .\FredOutput.txt $true
+	Compare-Files .\BruceControl.qkr .\Bruce.qkr.json $false
+	Compare-Files .\FredControl.qkr .\Fred.qkr.json $false
 
+	"Total warning count: $global:warningCount"
 	"Total error count: $global:errorCount"
 	Pop-Location
 }
@@ -58,12 +59,21 @@ function Update-SignalRConsole
 }
 
 
-function Compare-Files($control, $file)
+function Compare-Files($control, $file, $logFile)
 {
 	"Comparing: $control with $file"
 	if (((Compare-Object (Get-Content $control) (Get-Content $file)) | Measure-Object).Count -gt 0) {
-		"Error: $file has unexpected output:"
+		if ($logFile)
+		{
+			"Warning: $file has unexpected output:"
+			$global:warningCount++
+		}
+		else
+		{
+			"Error: $file has unexpected output:"
+			$global:errorCount++
+		}
+
 		Compare-Object (Get-Content $control) (Get-Content $file)
-		$global:errorCount++
 	}
 }
