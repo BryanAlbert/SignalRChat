@@ -1,6 +1,6 @@
-# Bruce online, unfriend Fred, Fred online
+# Bruce online, unfriend Fred, offline, Fred online, Bruce online
 
-$Global:tests = "Test14"
+$Global:tests = "Test15"
 
 function Reset-Test
 {

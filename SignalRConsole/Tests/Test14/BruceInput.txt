@@ -1,0 +1,6 @@
+Bruce
+U
+0
+>wait-for-regex: \(Sent unfriend command to .+\.\)
+L
+X

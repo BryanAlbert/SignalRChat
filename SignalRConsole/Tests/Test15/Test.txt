@@ -1,0 +1,4 @@
+test-harness Bruce online, unfriend Fred, offline, Fred online, Bruce online
+start-wait BruceInput1.txt BruceOutput.txt Bruce
+start FredInput.txt FredOutput.txt Fred
+start BruceInput2.txt BruceOutput.txt Bruce

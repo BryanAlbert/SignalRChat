@@ -253,6 +253,10 @@ namespace SignalRConsole
 				}
 
 				await SendCommandAsync(CommandNames.Hello, Id, channel, user, SerializeUserData(m_user), !friend?.Blocked);
+
+				// special message for triggering while scripting
+				if (m_console.ScriptMode && friend == null)
+					ConsoleWriteLogLine($"(Sent unfriend command to {user}.)");
 			}
 		}
 
