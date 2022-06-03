@@ -1,0 +1,4 @@
+test-harness Bruce add Fred, offline, Fred online, add Bruce, Bruce online
+start-wait BruceInput1.txt BruceOutput.txt Bruce
+start-wait-for: "A friend request has been sent to Bruce." FredInput.txt FredOutput.txt Fred
+start BruceInput2.txt BruceOutput.txt Bruce

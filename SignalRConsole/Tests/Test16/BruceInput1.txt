@@ -1,0 +1,9 @@
+Bruce
+A
+Fred
+fred@gmail.com
+>wait-for: Your (pending) friend Fred is online.
+U
+0
+L
+X
