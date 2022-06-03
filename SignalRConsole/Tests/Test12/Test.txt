@@ -1,0 +1,3 @@
+test-harness Bruce adds Fred, Fred says NO!
+start FredInput.txt FredOutput.txt Fred
+start BruceInput.txt BruceOutput.txt Bruce

@@ -1,0 +1,6 @@
+Fred
+>wait-for: Accept friend request from Bruce, email address bruce@hotmail.com? [y/n]
+N
+>wait-for: You and Bruce are not friends!
+L
+X

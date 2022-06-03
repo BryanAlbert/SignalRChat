@@ -489,14 +489,11 @@ namespace SignalRConsole
 				m_user.Friends, false);
 
 			if (result.Item2 != null)
-			{
 				await RemoveUserAsync(result.Item2, result.Item1);
-			}
 			else
-			{
 				m_console.SetCursorPosition(result.Item1.X, result.Item1.Y);
-				State = States.Listening;
-			}
+
+			State = States.Listening;
 		}
 
 		private async Task RemoveUserAsync(User friend = null, Point? cursor = null)
