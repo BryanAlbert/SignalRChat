@@ -50,6 +50,7 @@ function Update-ControlFiles
 	Push-Location $tests
 	Copy-Item .\BruceOutput.txt .\BruceControl.txt
 	Copy-Item .\FredOutput.txt .\FredControl.txt
+	Copy-Item .\MomOutput.txt .\MomControl.txt
 	Copy-Item .\Bruce.qkr.json .\BruceControl.qkr
 	Copy-Item .\Fred.qkr.json .\FredControl.qkr
 	Copy-Item .\Mom.qkr.json .\MomControl.qkr

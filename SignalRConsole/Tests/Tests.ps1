@@ -4,7 +4,7 @@ function Reset-Tests
     Get-ChildItem Test* -Directory | ForEach-Object {
         $testCount++
         . (Join-Path $_ Tests.ps1)
-        "`nResetting test fromn: $tests"
+        "`nResetting test from: $tests"
         Reset-Test
     }
 
@@ -19,7 +19,7 @@ function Run-Tests
     Get-ChildItem Test* -Directory | ForEach-Object {
         $testCount++
         . (Join-Path $_ Tests.ps1)
-        "`nRunning test fromn: $tests"
+        "`nRunning test from: $tests"
         Reset-Test
         Run-Test
         $global:totalWarningCount += $global:warningCount

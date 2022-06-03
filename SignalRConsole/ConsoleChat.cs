@@ -256,7 +256,7 @@ namespace SignalRConsole
 
 				// special message for triggering while scripting
 				if (m_console.ScriptMode && friend == null)
-					ConsoleWriteLogLine($"(Sent unfriend command to {user}.)");
+					ConsoleWriteLogLine($"(Sent unrecognized command to {user}.)");
 			}
 		}
 

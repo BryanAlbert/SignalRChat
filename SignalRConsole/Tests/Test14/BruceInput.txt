@@ -1,6 +1,6 @@
 Bruce
 U
 0
->wait-for-regex: \(Sent unfriend command to .+\.\)
+>wait-for-regex: \(Sent unrecognized command to .+\.\)
 L
 X
