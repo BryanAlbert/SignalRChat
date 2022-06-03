@@ -527,7 +527,7 @@ namespace SignalRConsole
 					if (delete)
 						ConsoleWriteLogLine($"User {friend.Handle} has been deleted.");
 					else
-						ConsoleWriteLogLine($"Your friend {friend.Handle} has been unfriended.");
+						ConsoleWriteLogLine($"{friend.Handle} has been unfriended.");
 				}
 			}
 			while (false);
@@ -748,6 +748,7 @@ namespace SignalRConsole
 					}
 					else if (existing.Blocked == false)
 					{
+						ConsoleWriteLogLine($"{existing.Handle} has unfriended you.");
 						await UnfriendAsync(existing);
 					}
 				}
