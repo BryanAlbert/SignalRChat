@@ -1,0 +1,4 @@
+Bruce
+>wait-for: (Sent unfriend command to Fred.)
+L
+X

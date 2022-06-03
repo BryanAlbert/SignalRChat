@@ -763,6 +763,10 @@ namespace SignalRConsole
 					{
 						// we unfriended him while he was away, send Hello with false
 						await SendCommandAsync(CommandNames.Hello, Id, pending.Id, pending.Id, SerializeUserData(m_user), false);
+
+						// special message for triggering while scripting
+						if (m_console.ScriptMode)
+							ConsoleWriteLogLine($"(Sent unfriend command to {pending.Handle}.)");
 					}
 					else if (!existing.Blocked.HasValue)
 					{
