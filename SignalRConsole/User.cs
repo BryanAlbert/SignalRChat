@@ -20,7 +20,7 @@ namespace SignalRConsole
 			this(handle, email)
 		{
 			Name = name;
-			Color = color;
+			FavoriteColor = color;
 			Id = id;
 		}
 
@@ -40,7 +40,7 @@ namespace SignalRConsole
 		public string Handle { get; set; }
 		public string Email { get; set; }
 		public string Name { get; set; }
-		public string Color { get; set; }
+		public string FavoriteColor { get; set; }
 		public string Id { get; set; }
 		public bool? Blocked { get; set; }
 		public List<User> Friends { get; set; }

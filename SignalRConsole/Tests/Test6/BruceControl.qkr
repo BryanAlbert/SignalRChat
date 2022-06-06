@@ -2,7 +2,7 @@
   "Handle": "Bruce",
   "Email": "bruce@hotmail.com",
   "Name": "Bruce Albert",
-  "Color": "Red",
+  "FavoriteColor": "Red",
   "Id": "brucef68-3c37-4aef-b8a6-1649659bbbc4",
   "Blocked": null,
   "Friends": [
@@ -10,7 +10,7 @@
       "Handle": "Mom",
       "Email": "jeanmariealbert@hotmail.com",
       "Name": "Jean Albert",
-      "Color": "Maroon",
+      "FavoriteColor": "Maroon",
       "Id": "momf0226023-3e64-4cd6-9b76-fed9ed8d7f3f",
       "Blocked": false,
       "Friends": []

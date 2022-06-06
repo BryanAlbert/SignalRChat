@@ -360,7 +360,9 @@ namespace SignalRConsole
 				m_console.WriteLine($"Hello {handle}!");
 			}
 
-			foreach (string fileName in Directory.EnumerateFiles(m_console.WorkingDirectory).Where(x => x.EndsWith(c_fileExtension)))
+			// if working folder is the executable folder, use .qkr.json extension so we don't try to load system files
+			foreach (string fileName in Directory.EnumerateFiles(m_console.WorkingDirectory).
+				Where(x => x.EndsWith(m_console.WorkingDirectory == "." ? c_fileExtension : "json")))
 			{
 				User user = JsonSerializer.Deserialize<User>(File.ReadAllText(fileName));
 				user.FileName = fileName;
@@ -478,7 +480,7 @@ namespace SignalRConsole
 			ConsoleWriteLogLine("Friends:");
 			foreach (User friend in m_user.Friends)
 			{
-				ConsoleWriteLogLine($"{friend.Handle},{(friend.Color != null ? $" {friend.Color}" : "")}" +
+				ConsoleWriteLogLine($"{friend.Handle},{(friend.FavoriteColor != null ? $" {friend.FavoriteColor}" : "")}" +
 					$"{(friend.Blocked.HasValue ? (friend.Blocked.Value ? " (blocked)" : "") : " (pending)")}" +
 					$"{(m_online.Any(x => x.Id == friend.Id) ? " (online)" : "")}");
 			}
@@ -866,11 +868,11 @@ namespace SignalRConsole
 			if (friend != null)
 			{
 				if (friend.Handle != updated.Handle || friend.Name != updated.Name ||
-					friend.Color != updated.Color || friend.Id != updated.Id)
+					friend.FavoriteColor != updated.FavoriteColor || friend.Id != updated.Id)
 				{
 					friend.Handle = updated.Handle;
 					friend.Name = updated.Name;
-					friend.Color = updated.Color;
+					friend.FavoriteColor = updated.FavoriteColor;
 					friend.Id = updated.Id;
 					SaveUser();
 				}
@@ -999,7 +1001,7 @@ namespace SignalRConsole
 		private string SerializeUserData(User user)
 		{
 			return $"{user.Handle}{c_delimiter}{user.Email}{c_delimiter}{user.Name}" +
-				$"{c_delimiter}{user.Color}{c_delimiter}{user.Id}";
+				$"{c_delimiter}{user.FavoriteColor}{c_delimiter}{user.Id}";
 		}
 
 		private User DeserializeUserData(string data)
