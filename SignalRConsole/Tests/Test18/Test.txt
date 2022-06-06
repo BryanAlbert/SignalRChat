@@ -1,0 +1,3 @@
+test-harness Blocked, Bruce adds Fred (blocked), unfriends, adds (blocked), fred unfriends, adds
+start FredInput.txt FredOutput.txt Fred
+start BruceInput.txt BruceOutput.txt Bruce

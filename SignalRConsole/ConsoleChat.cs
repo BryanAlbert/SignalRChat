@@ -254,9 +254,14 @@ namespace SignalRConsole
 
 				await SendCommandAsync(CommandNames.Hello, Id, channel, user, SerializeUserData(m_user), !friend?.Blocked);
 
-				// special message for triggering while scripting
-				if (m_console.ScriptMode && friend == null)
-					ConsoleWriteLogLine($"(Sent unrecognized command to {user}.)");
+				if (m_console.ScriptMode)
+				{
+					// special messages for triggering while scripting
+					if (friend == null)
+						ConsoleWriteLogLine($"(Sent unrecognized command to {user}.)");
+					else if (friend.Blocked == true)
+						ConsoleWriteLogLine($"(Sent blocked command to {user}.)");
+				}
 			}
 		}
 
