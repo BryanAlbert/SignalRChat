@@ -1,6 +1,6 @@
-$global:test = "Test1"
+$global:test = "Test01"
 
-function Describe-Test
+function Get-Description
 {
 	"`n${test}: Friends listing friends"
 	"
@@ -37,12 +37,25 @@ function Run-Test
 	Pop-Location
 }
 
-function Print-Files
+function Print-Files($inputFiles)
 {
-	"Results for $global:test"
 	Push-Location $global:test
-	Get-ChildItem *.qkr.json | ForEach-Object { $_.Name; Get-Content $_; "" }
-	Get-ChildItem *Output.txt | ForEach-Object { $_.Name; Get-Content $_; "" }
+	if ($null -ne $inputFiles)
+	{
+		"Input files for $($global:test):"
+		Get-ChildItem Test.txt, *Input*.txt | ForEach-Object {
+			$_.Name
+			Get-Content $_
+			""
+		}
+	}
+	else
+	{
+		"Output files for $($global:test):"
+		Get-ChildItem *.qkr.json | ForEach-Object { $_.Name; Get-Content $_; "" }
+		Get-ChildItem *Output.txt | ForEach-Object { $_.Name; Get-Content $_; "" }
+	}
+
 	Pop-Location
 }
 

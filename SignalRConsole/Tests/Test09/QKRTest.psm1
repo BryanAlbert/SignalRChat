@@ -1,6 +1,6 @@
 $global:test = "Test9"
 
-function Describe-Test
+function Get-Description
 {
 	"`n${test}: Bruce friends with Fred, adds Fred"
 	"

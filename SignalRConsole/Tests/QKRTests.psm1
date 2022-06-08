@@ -1,19 +1,19 @@
 # run Import-Module QKRTests.psm1 to load these functions, Remove-Module QKRTests 
 # to unload them: 
 
-function Describe-Tests($number)
+function Get-Descriptions($number)
 {
     if ($null -eq $number)
     {
         Get-ChildItem -Recurse QKRTest.psm1 | ForEach-Object {
             Import-Module -DisableNameChecking -Force $_
-            Describe-Test
+            Get-Description
         }
     }
     else
     {
         Load-Test $number $true
-        Describe-Test
+        Get-Description
     }
 }
 
@@ -64,3 +64,16 @@ function Run-Tests
     "Total error count across $testCount tests: $global:totalErrorCount"
 }
 
+function Start-Chat
+{
+    if (Test-Path $args[0])
+    {
+        "Launching dotnet.exe .\SignalRConsole.dll $($args[0])"
+        dotnet.exe .\SignalRConsole.dll $args[0]
+    }
+    else
+    {
+        "Launching dotnet.exe .\SignalRConsole.dll $global:test $args"
+        dotnet.exe .\SignalRConsole.dll $global:test $args
+    }
+}
