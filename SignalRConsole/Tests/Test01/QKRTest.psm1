@@ -1,37 +1,36 @@
+$global:test = "Test1"
 
-# Bruce, Fred and Mom online, Bruce and Fred befriend Mom, Bruce and Fred list, exit, Mom exits
-
-$Global:tests = "Test6"
+function Describe-Test
+{
+	"`n${test}: Friends listing friends"
+	"
+	Bruce online, Fred online, Bruce lists and goes offline, Fred lists and
+	goes offline.`n"	
+}
 
 function Reset-Test
 {
-	"Resetting $tests"
-	Push-Location $tests
-	Copy-Item .\BruceNoFriends.qkr .\Bruce.qkr.json
-	Copy-Item .\FredNoFriends.qkr .\Fred.qkr.json
-	Copy-Item .\MomNoFriends.qkr .\Mom.qkr.json
+	"Resetting $global:test"
+	Push-Location $global:test
+	Copy-Item .\BruceFriends.qkr .\Bruce.qkr.json
+	Copy-Item .\FredFriends.qkr .\Fred.qkr.json
 	if (Test-Path .\BruceOutput.txt) { Remove-Item .\BruceOutput.txt }
 	if (Test-Path .\FredOutput.txt) { Remove-Item .\FredOutput.txt }
-	if (Test-Path .\MomOutput.txt) { Remove-Item .\MomOutput.txt}
 	Pop-Location
 }
 
 function Run-Test
 {
-	$script = Join-Path $tests "Test.txt"
+	$script = Join-Path $global:test "Test.txt"
 	"Running script $script"
 	dotnet.exe .\SignalRConsole.dll $script
-	Push-Location $tests
-	
-	# Since Bruce and Fred add Mom asynchronously, we can't tell which will send the friend request first, 
-	# so MomOutput.txt may be different between test runs, so we don't keep a MomControl.txt file. 
+	Push-Location $global:test
 	$global:warningCount = 0
 	$global:errorCount = 0
 	Compare-Files .\BruceControl.txt .\BruceOutput.txt $true
 	Compare-Files .\FredControl.txt .\FredOutput.txt $true
 	Compare-Files .\BruceControl.qkr .\Bruce.qkr.json $false
 	Compare-Files .\FredControl.qkr .\Fred.qkr.json $false
-	Compare-Files .\MomControl.qkr .\Mom.qkr.json $false
 
 	"Total warning count: $global:warningCount"
 	"Total error count: $global:errorCount"
@@ -40,8 +39,8 @@ function Run-Test
 
 function Print-Files
 {
-	"Results for $tests"
-	Push-Location $tests
+	"Results for $global:test"
+	Push-Location $global:test
 	Get-ChildItem *.qkr.json | ForEach-Object { $_.Name; Get-Content $_; "" }
 	Get-ChildItem *Output.txt | ForEach-Object { $_.Name; Get-Content $_; "" }
 	Pop-Location
@@ -49,13 +48,12 @@ function Print-Files
 
 function Update-ControlFiles
 {
-	"Updating control files for $tests"
-	Push-Location $tests
+	"Updating control files for $global:test"
+	Push-Location $global:test
 	Copy-Item .\BruceOutput.txt .\BruceControl.txt
 	Copy-Item .\FredOutput.txt .\FredControl.txt
 	Copy-Item .\Bruce.qkr.json .\BruceControl.qkr
 	Copy-Item .\Fred.qkr.json .\FredControl.qkr
-	Copy-Item .\Mom.qkr.json .\MomControl.qkr
 	Pop-Location
 }
 

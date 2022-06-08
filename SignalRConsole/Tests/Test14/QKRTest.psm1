@@ -1,13 +1,19 @@
-# Bruce friend, Fred online, Bruce unfriend, Fred answers Y
+$global:test = "Test14"
 
-$Global:tests = "Test16"
+function Describe-Test
+{
+	"`n${test}: Bruce online, unfriend Fred, Fred online"
+	"
+	Bruce and Fred are friends, Bruce comes online, unfriends Fred, Fred comes online,
+	both list and go offline.`n"
+}
 
 function Reset-Test
 {
-	"Resetting $tests"
-	Push-Location $tests
-	Copy-Item .\BruceNoFriends.qkr .\Bruce.qkr.json
-	Copy-Item .\FredNoFriends.qkr .\Fred.qkr.json
+	"Resetting $test"
+	Push-Location $test
+	Copy-Item .\BruceFriends.qkr .\Bruce.qkr.json
+	Copy-Item .\FredFriends.qkr .\Fred.qkr.json
 	if (Test-Path .\BruceOutput.txt) { Remove-Item .\BruceOutput.txt }
 	if (Test-Path .\FredOutput.txt) { Remove-Item .\FredOutput.txt }
 	Pop-Location
@@ -15,10 +21,10 @@ function Reset-Test
 
 function Run-Test
 {
-	$script = Join-Path $tests "Test.txt"
+	$script = Join-Path $test "Test.txt"
 	"Running script $script"
 	dotnet.exe .\SignalRConsole.dll $script
-	Push-Location $tests
+	Push-Location $test
 	$global:warningCount = 0
 	$global:errorCount = 0
 	Compare-Files .\BruceControl.txt .\BruceOutput.txt $true
@@ -33,8 +39,8 @@ function Run-Test
 
 function Print-Files
 {
-	"Results for $tests"
-	Push-Location $tests
+	"Results for $test"
+	Push-Location $test
 	Get-ChildItem *.qkr.json | ForEach-Object { $_.Name; Get-Content $_; "" }
 	Get-ChildItem *Output.txt | ForEach-Object { $_.Name; Get-Content $_; "" }
 	Pop-Location
@@ -42,8 +48,8 @@ function Print-Files
 
 function Update-ControlFiles
 {
-	"Updating control files for $tests"
-	Push-Location $tests
+	"Updating control files for $test"
+	Push-Location $test
 	Copy-Item .\BruceOutput.txt .\BruceControl.txt
 	Copy-Item .\FredOutput.txt .\FredControl.txt
 	Copy-Item .\Bruce.qkr.json .\BruceControl.qkr

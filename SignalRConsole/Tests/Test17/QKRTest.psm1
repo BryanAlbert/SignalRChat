@@ -1,12 +1,17 @@
+$global:test = "Test17"
 
-# Bruce online, adds Fred, Fred online, Fred accepts, lists, goes offline, Bruce lists, goes offline
-
-$global:tests = "Test4"
+function Describe-Test
+{
+	"`n${test}: Bruce adds Fred, offline, Fred online, adds Bruce, Bruce online"
+	"
+	Bruce comes online, adds Fred, lists and goes offline, Fred comes online, adds Bruce,
+	Bruce comes online, accepts request, lists and goes offline, Fred lists and goes offline.`n"
+}
 
 function Reset-Test
 {
-	"Resetting $tests"
-	Push-Location $tests
+	"Resetting $test"
+	Push-Location $test
 	Copy-Item .\BruceNoFriends.qkr .\Bruce.qkr.json
 	Copy-Item .\FredNoFriends.qkr .\Fred.qkr.json
 	if (Test-Path .\BruceOutput.txt) { Remove-Item .\BruceOutput.txt }
@@ -16,10 +21,10 @@ function Reset-Test
 
 function Run-Test
 {
-	$script = Join-Path $tests "Test.txt"
+	$script = Join-Path $test "Test.txt"
 	"Running script $script"
 	dotnet.exe .\SignalRConsole.dll $script
-	Push-Location $tests
+	Push-Location $test
 	$global:warningCount = 0
 	$global:errorCount = 0
 	Compare-Files .\BruceControl.txt .\BruceOutput.txt $true
@@ -34,8 +39,8 @@ function Run-Test
 
 function Print-Files
 {
-	"Results for $tests"
-	Push-Location $tests
+	"Results for $test"
+	Push-Location $test
 	Get-ChildItem *.qkr.json | ForEach-Object { $_.Name; Get-Content $_; "" }
 	Get-ChildItem *Output.txt | ForEach-Object { $_.Name; Get-Content $_; "" }
 	Pop-Location
@@ -43,8 +48,8 @@ function Print-Files
 
 function Update-ControlFiles
 {
-	"Updating control files for $tests"
-	Push-Location $tests
+	"Updating control files for $test"
+	Push-Location $test
 	Copy-Item .\BruceOutput.txt .\BruceControl.txt
 	Copy-Item .\FredOutput.txt .\FredControl.txt
 	Copy-Item .\Bruce.qkr.json .\BruceControl.qkr
