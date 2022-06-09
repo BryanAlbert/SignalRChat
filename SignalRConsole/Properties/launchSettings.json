@@ -2,7 +2,7 @@
   "profiles": {
     "SignalRConsole": {
       "commandName": "Project",
-      "commandLineArgs": "C:\\Users\\bryan\\AppData\\Local\\Packages\\380534de-923a-4fc1-8a77-eb331c3f02d7_exfef3wb0y8fm\\LocalState\\"
+      "commandLineArgs": "..\\..\\..\\Tests\\Test05 Bruce"
     }
   }
 }

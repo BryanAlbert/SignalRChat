@@ -1,4 +1,4 @@
-$global:test = "Test9"
+$global:test = "Test09"
 
 function Get-Description
 {

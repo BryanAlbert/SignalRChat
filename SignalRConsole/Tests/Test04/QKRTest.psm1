@@ -4,8 +4,8 @@ function Get-Description
 {
 	"`n${test}: Bruce adds Fred, goes offline, Fred comes online, Bruce comes online"
 	"
-	Bruce online, adds Fred, goes offline, Fred comes online, accepts, Bruce lists, goes
-	offline, Fred lists, goes offline.`n"
+	Bruce online, adds Fred, lists, goes offline, Fred comes online, Bruce comes online,
+	Fred accepts, Bruce lists, goes offline, Fred lists, goes offline.`n"
 }
 
 function Reset-Test

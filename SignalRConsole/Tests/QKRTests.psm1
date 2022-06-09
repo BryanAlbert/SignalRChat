@@ -37,7 +37,7 @@ function Reset-Tests
     $testCount = 0
     Get-ChildItem Test* -Directory | ForEach-Object {
         $testCount++
-        . (Join-Path $_ Test.ps1)
+        Import-Module -DisableNameChecking -Force (Join-Path $_ QKRTest.psm1)
         "`nResetting test from: $test"
         Reset-Test
     }
@@ -52,7 +52,7 @@ function Run-Tests
     $testCount = 0
     Get-ChildItem Test* -Directory | ForEach-Object {
         $testCount++
-        . (Join-Path $_ Test.ps1)
+        Import-Module -DisableNameChecking -Force (Join-Path $_ QKRTest.psm1)
         "`nRunning test from: $test"
         Reset-Test
         Run-Test

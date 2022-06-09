@@ -225,13 +225,10 @@ namespace SignalRConsole
 							friend.HelloInitiated = true;
 							await m_hubConnection.SendAsync(c_leaveChannel, channel, Id);
 							await MonitorUserAsync(friend);
-							return;
 						}
-						else
-						{
-							// someone else joined a Handle channel we're monitoring, just ignore it
-							return;
-						}
+
+						// someone else joined a Handle channel we're monitoring, just ignore it
+						return;
 					}
 				}
 
