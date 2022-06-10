@@ -1,0 +1,27 @@
+{
+  "Version": 1,
+  "Id": "mom0c866-8cb0-4a10-ad96-dfe5f9ebd98e",
+  "Handle": "Mom",
+  "Name": "Jean Albert",
+  "FavoriteColor": "Maroon",
+  "Email": "jeanmariealbert@hotmail.com",
+  "Operators": [
+    {
+      "Name": "Addition",
+      "Tables": []
+    },
+    {
+      "Name": "Subtraction",
+      "Tables": []
+    },
+    {
+      "Name": "Multiplication",
+      "Tables": []
+    },
+    {
+      "Name": "Division",
+      "Tables": []
+    }
+  ],
+  "Friends": []
+}

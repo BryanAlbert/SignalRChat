@@ -1,6 +1,9 @@
 # run Import-Module QKRTests.psm1 to load these functions, Remove-Module QKRTests 
 # to unload them: 
 
+# target for cofiguring QKR with json racer files
+$global:qkrLocalState = "C:\Users\bryan\AppData\Local\Packages\380534de-923a-4fc1-8a77-eb331c3f02d7_exfef3wb0y8fm\LocalState\"
+
 function Get-Descriptions($number)
 {
     if ($null -eq $number)
@@ -20,7 +23,7 @@ function Get-Descriptions($number)
 function Load-Test($number, $discard)
 {
     if ($number -lt 10) { $number = "0$number" }
-	$testPath = Join-Path ".\Test$number" QKRTest.psm1
+	$testPath = Join-Path ".\Test-$number" QKRTest.psm1
 	"Loading $testPath"
     if ($null -eq $discard -or $discard -ne $true)
     {
@@ -35,7 +38,7 @@ function Load-Test($number, $discard)
 function Reset-Tests
 {
     $testCount = 0
-    Get-ChildItem Test* -Directory | ForEach-Object {
+    Get-ChildItem .\Test-* -Directory | ForEach-Object {
         $testCount++
         Import-Module -DisableNameChecking -Force (Join-Path $_ QKRTest.psm1)
         "`nResetting test from: $test"
@@ -50,7 +53,7 @@ function Run-Tests
     $global:totalWarningCount = 0
     $global:totalErrorCount = 0
     $testCount = 0
-    Get-ChildItem Test* -Directory | ForEach-Object {
+    Get-ChildItem .\Test-* -Directory | ForEach-Object {
         $testCount++
         Import-Module -DisableNameChecking -Force (Join-Path $_ QKRTest.psm1)
         "`nRunning test from: $test"
