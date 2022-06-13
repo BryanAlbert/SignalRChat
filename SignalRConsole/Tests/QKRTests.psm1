@@ -67,12 +67,45 @@ function Run-Tests
     "Total error count across $testCount tests: $global:totalErrorCount"
 }
 
+function Print-Files($inputFiles)
+{
+	Push-Location $global:test
+	if ($null -ne $inputFiles)
+	{
+		"Input files for $($global:test):"
+        Get-ChildItem *.qkr -Exclude *control.qkr | ForEach-Object {
+            $_.Name
+            Get-Content $_
+            ""
+        }
+        
+        Get-ChildItem Test.txt, *Input*.txt | ForEach-Object {
+			$_.Name
+			Get-Content $_
+			""
+		}
+	}
+	else
+	{
+		"Output files for $($global:test):"
+		Get-ChildItem *.qkr.json | ForEach-Object { $_.Name; Get-Content $_; "" }
+		Get-ChildItem *Output.txt | ForEach-Object { $_.Name; Get-Content $_; "" }
+	}
+
+	Pop-Location
+}
+
 function Start-Chat
 {
-    if (Test-Path $args[0])
+    if ($null -eq $args[0])
     {
-        "Launching dotnet.exe .\SignalRConsole.dll $($args[0])"
-        dotnet.exe .\SignalRConsole.dll $args[0]
+        "Launching dotnet.exe .\SignalRConsole.dll"
+        dotnet.exe .\SignalRConsole.dll
+    }
+    elseif (Test-Path $args[0])
+    {
+        "Launching dotnet.exe .\SignalRConsole.dll $args"
+        dotnet.exe .\SignalRConsole.dll $args
     }
     else
     {

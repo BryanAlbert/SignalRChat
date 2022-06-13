@@ -303,7 +303,7 @@ namespace SignalRConsole
 			} 
 		}
 
-		private void OnLeftChannel(string channel, string user)
+		private async Task OnLeftChannelAsync(string channel, string user)
 		{
 			string[] parts = ParseChannelName(channel);
 			Debug.WriteLine($"{user} has left the {string.Join('-', parts)} channel.");
@@ -314,6 +314,11 @@ namespace SignalRConsole
 				{
 					ConsoleWriteLogLine($"Your {(friend.Blocked.HasValue ? "" : "(pending) ")}friend {friend.Handle} is offline.");
 					m_online.Remove(friend);
+					if (ActiveChatFriend == friend)
+					{
+						await LeaveChatChannelAsync(send: true);
+						DisplayMenu();
+					}
 				}
 			}
 		}
@@ -328,7 +333,7 @@ namespace SignalRConsole
 			_ = m_hubConnection.On(c_joinedChannel, (Action<string, string>) (async (c, u) => await OnJoinedChannelAsync(c, u)));
 			_ = m_hubConnection.On(c_sentMessage, (Action<string, string>) ((f, m) => OnSentMessage(f, m)));
 			_ = m_hubConnection.On(c_sentCommand, (Action<string, string, string>) (async (f, t, c) => await OnSentCommandAsync(f, t, c)));
-			_ = m_hubConnection.On(c_leftChannel, (Action<string, string>) ((c, u) => OnLeftChannel(c, u)));
+			_ = m_hubConnection.On(c_leftChannel, (Action<string, string>) (async (c, u) => await OnLeftChannelAsync(c, u)));
 
 			try
 			{
@@ -786,7 +791,8 @@ namespace SignalRConsole
 				}
 				else
 				{
-					await SendCommandAsync(CommandNames.Verify, Id, MakeHandleChannelName(existing), from, SerializeUserData(m_user), null);
+					await SendCommandAsync(CommandNames.Verify, Id, MakeHandleChannelName(existing ?? pending),
+						from, SerializeUserData(m_user), null);
 				}
 			}
 
@@ -804,7 +810,7 @@ namespace SignalRConsole
 			User pending = update.Item2;
 			if (!verify.Flag.HasValue)
 			{
-				// add a Freinds record to get notifications for him
+				// add a Friends record to get notifications for him
 				if (existing == null)
 					m_user.AddFriend(pending);
 

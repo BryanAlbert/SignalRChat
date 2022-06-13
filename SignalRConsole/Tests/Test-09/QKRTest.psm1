@@ -34,15 +34,6 @@ function Run-Test
 	Pop-Location
 }
 
-function Print-Files
-{
-	"Results for $test"
-	Push-Location $test
-	Get-ChildItem *.qkr.json | ForEach-Object { $_.Name; Get-Content $_; "" }
-	Get-ChildItem *Output.txt | ForEach-Object { $_.Name; Get-Content $_; "" }
-	Pop-Location
-}
-
 function Update-ControlFiles
 {
 	"Updating control files for $test"

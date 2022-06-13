@@ -46,28 +46,6 @@ function Run-Test
 	Pop-Location
 }
 
-function Print-Files($inputFiles)
-{
-	Push-Location $global:test
-	if ($null -ne $inputFiles)
-	{
-		"Input files for $($global:test):"
-		Get-ChildItem Test.txt, *Input*.txt | ForEach-Object {
-			$_.Name
-			Get-Content $_
-			""
-		}
-	}
-	else
-	{
-		"Output files for $($global:test):"
-		Get-ChildItem *.qkr.json | ForEach-Object { $_.Name; Get-Content $_; "" }
-		Get-ChildItem *Output.txt | ForEach-Object { $_.Name; Get-Content $_; "" }
-	}
-
-	Pop-Location
-}
-
 function Update-ControlFiles
 {
 	"Updating control files for $test"
