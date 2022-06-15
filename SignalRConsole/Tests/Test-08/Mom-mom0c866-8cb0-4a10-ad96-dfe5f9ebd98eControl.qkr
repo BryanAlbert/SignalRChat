@@ -1,0 +1,48 @@
+{
+  "Version": 1,
+  "Id": "mom0c866-8cb0-4a10-ad96-dfe5f9ebd98e",
+  "Handle": "Mom",
+  "Name": "Jean Albert",
+  "FavoriteColor": "Maroon",
+  "Email": "jeanmariealbert@hotmail.com",
+  "Operators": [
+    {
+      "Name": "Addition",
+      "Tables": []
+    },
+    {
+      "Name": "Subtraction",
+      "Tables": []
+    },
+    {
+      "Name": "Multiplication",
+      "Tables": []
+    },
+    {
+      "Name": "Division",
+      "Tables": []
+    }
+  ],
+  "Friends": [
+    {
+      "Handle": "Fred",
+      "Name": "Fred Sanson",
+      "BluetoothDeviceName": null,
+      "BluetoothId": null,
+      "Blocked": false,
+      "Color": "Green",
+      "Email": "fred@gmail.com",
+      "Id": "fredac24-3f25-41e0-84f2-3f34f54d072e"
+    },
+    {
+      "Handle": "Bruce",
+      "Name": "Bruce Albert",
+      "BluetoothDeviceName": null,
+      "BluetoothId": null,
+      "Blocked": false,
+      "Color": "Red",
+      "Email": "bruce@hotmail.com",
+      "Id": "brucef68-3c37-4aef-b8a6-1649659bbbc4"
+    }
+  ]
+}

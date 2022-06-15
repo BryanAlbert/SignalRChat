@@ -8,17 +8,17 @@ Y
 Listening> You and Bruce are now friends!
 L
 Friends:
-Bruce, Red
+Bruce, Bruce Albert, Red
 X
 Finished.
 Initializing server and connecting to URL: https://localhost:5001/chathub
 What is your handle (nickname)? Fred
 Pick a command: a to add a friend, l to list friends, u to unfriend a friend,
 d to delete a user, c to chat, or x to exit
-Listening> Your friend Bruce is online.
-Your friend Bruce is offline.
+Your friend Bruce is online.
+Listening> Your friend Bruce is offline.
 L
 Friends:
-Bruce, Red
+Bruce, Bruce Albert, Red
 X
 Finished.

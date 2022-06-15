@@ -5,10 +5,11 @@ function Get-Description
 	"`n${test}: Bruce adds Fred, goes offline, Fred comes online, Bruce comes online"
 	"
 	Bruce online, adds Fred, lists, goes offline, Fred comes online, Bruce comes online,
-	Fred accepts, Bruce lists, goes offline, Fred lists, goes offline.`n"
+	Fred accepts, Bruce lists, goes offline, Fred lists, goes offline. Uses BruceInput1.txt
+	and BruceInput2.txt`n"
 }
 
-function Reset-Test
+function Reset-Test($showDescription)
 {
 	"Resetting $test"
 	Push-Location $test
@@ -19,6 +20,11 @@ function Reset-Test
 	if (Test-Path .\BruceOutput.txt) { Remove-Item .\BruceOutput.txt }
 	if (Test-Path .\FredOutput.txt) { Remove-Item .\FredOutput.txt }
 	Pop-Location
+
+	if ($null -eq $showDescription -or $showDescription)
+    {
+		Get-Description
+	}
 }
 
 function Run-Test
@@ -26,6 +32,11 @@ function Run-Test
 	$script = Join-Path $test "Test.txt"
 	"Running script $script"
 	dotnet.exe .\SignalRConsole.dll $script
+	Check-Test $false
+}
+
+function Check-Test($checkQkr)
+{
 	Push-Location $test
 	$global:warningCount = 0
 	$global:errorCount = 0
@@ -34,19 +45,35 @@ function Run-Test
 	Compare-Files .\BruceControl.qkr .\Bruce.qkr.json $false
 	Compare-Files .\FredControl.qkr .\Fred.qkr.json $false
 
+	if ($null -eq $checkQkr -or $checkQkr)
+	{
+		Compare-Files .\Bruce-brucef68-3c37-4aef-b8a6-1649659bbbc4Control.qkr (Join-Path $global:qkrLocalState Bruce-brucef68-3c37-4aef-b8a6-1649659bbbc4.json)
+		Compare-Files .\Fred-fredac24-3f25-41e0-84f2-3f34f54d072eControl.qkr (Join-Path $global:qkrLocalState Fred-fredac24-3f25-41e0-84f2-3f34f54d072e.json)
+	}
+
 	"Total warning count: $global:warningCount"
 	"Total error count: $global:errorCount"
 	Pop-Location
 }
 
-function Update-ControlFiles
+function Update-ControlFiles($updateQkr)
 {
-	"Updating control files for $test"
-	Push-Location $test
-	Copy-Item .\BruceOutput.txt .\BruceControl.txt
-	Copy-Item .\FredOutput.txt .\FredControl.txt
-	Copy-Item .\Bruce.qkr.json .\BruceControl.qkr
-	Copy-Item .\Fred.qkr.json .\FredControl.qkr
+	Push-Location $global:test
+	if ($updateQkr -eq $true)
+	{
+		"Updating QKR control files for $test from $global:qkrLocalState"
+		Copy-Item (Join-Path $global:qkrLocalState Bruce-brucef68-3c37-4aef-b8a6-1649659bbbc4.json) .\Bruce-brucef68-3c37-4aef-b8a6-1649659bbbc4Control.qkr 
+		Copy-Item (Join-Path $global:qkrLocalState Fred-fredac24-3f25-41e0-84f2-3f34f54d072e.json) .\Fred-fredac24-3f25-41e0-84f2-3f34f54d072eControl.qkr 
+	}
+	else
+	{
+		"Updating control files for $global:test"
+		Copy-Item .\BruceOutput.txt .\BruceControl.txt
+		Copy-Item .\FredOutput.txt .\FredControl.txt
+		Copy-Item .\Bruce.qkr.json .\BruceControl.qkr
+		Copy-Item .\Fred.qkr.json .\FredControl.qkr
+	}
+
 	Pop-Location
 }
 
@@ -71,6 +98,6 @@ function Compare-Files($control, $file, $logFile)
 			$global:errorCount++
 		}
 
-		Compare-Object (Get-Content $control) (Get-Content $file)
+		Compare-Object (Get-Content $control) (Get-Content $file) | Format-Table -Property SideIndicator, InputObject
 	}
 }

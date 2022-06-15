@@ -6,6 +6,6 @@ Listening> Your friend Bruce is online.
 Your friend Bruce is offline.
 L
 Friends:
-Bruce, Red
+Bruce, Bruce Albert, Red
 X
 Finished.

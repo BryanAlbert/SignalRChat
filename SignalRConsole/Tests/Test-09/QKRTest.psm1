@@ -64,6 +64,6 @@ function Compare-Files($control, $file, $logFile)
 			$global:errorCount++
 		}
 
-		Compare-Object (Get-Content $control) (Get-Content $file)
+		Compare-Object (Get-Content $control) (Get-Content $file) | Format-Table -Property SideIndicator, InputObject
 	}
 }

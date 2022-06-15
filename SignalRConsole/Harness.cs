@@ -185,7 +185,7 @@ namespace SignalRConsole
 			else
 				Console.Write(Tag != null ? $"{Tag}: {value}" : value);
 
-			m_outputStream?.Write(value);
+			m_outputStream?.WriteLine(value);
 			CurrentOutputLine = value;
 		}
 

@@ -9,7 +9,7 @@ A friend request has been sent to Fred.
 Listening> Your (pending) friend Fred is online.
 L
 Friends:
-Fred, Green (pending) (online)
+Fred, Fred Sanson, Green (pending) (online)
 X
 Finished.
 Initializing server and connecting to URL: https://localhost:5001/chathub
@@ -19,6 +19,6 @@ d to delete a user, c to chat, or x to exit
 Listening> Your (pending) friend Fred is online.
 L
 Friends:
-Fred, Green (online)
+Fred, Fred Sanson, Green (online)
 X
 Finished.

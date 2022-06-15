@@ -8,6 +8,6 @@ Listening> You and Bruce are now friends!
 Your friend Bruce is offline.
 L
 Friends:
-Bruce, Red
+Bruce, Bruce Albert, Red
 X
 Finished.

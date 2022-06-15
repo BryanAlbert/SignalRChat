@@ -41,8 +41,7 @@ function Reset-Tests
     Get-ChildItem .\Test-* -Directory | ForEach-Object {
         $testCount++
         Import-Module -DisableNameChecking -Force (Join-Path $_ QKRTest.psm1)
-        "`nResetting test from: $test"
-        Reset-Test
+        Reset-Test $false
     }
 
     "Reset $testCount tests."
@@ -93,6 +92,20 @@ function Print-Files($inputFiles)
 	}
 
 	Pop-Location
+}
+
+function Test-QKRas($user, $number)
+{
+    if ($null -eq $number)
+    {
+        "Calling Start-Chat in $test for $user"
+        Start-Chat (Join-Path $test ($user + "Input.txt")) (Join-Path $test ($user + "Output.txt")) $user
+    }
+    else
+    {
+        "Calling Start-Chat in $test for $user, input script number $number"
+        Start-Chat (Join-Path $test ($user + "Input$number.txt")) (Join-Path $test ($user + "Output.txt")) $user
+    }
 }
 
 function Start-Chat

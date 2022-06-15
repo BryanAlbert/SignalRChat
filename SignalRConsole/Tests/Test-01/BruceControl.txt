@@ -5,6 +5,6 @@ d to delete a user, c to chat, or x to exit
 Listening> Your friend Fred is online.
 L
 Friends:
-Fred, Green (online)
+Fred, Fred Sanson, Green (online)
 X
 Finished.

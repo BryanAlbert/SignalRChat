@@ -482,7 +482,8 @@ namespace SignalRConsole
 			ConsoleWriteLogLine("Friends:");
 			foreach (User friend in m_user.Friends)
 			{
-				ConsoleWriteLogLine($"{friend.Handle},{(friend.FavoriteColor != null ? $" {friend.FavoriteColor}" : "")}" +
+				ConsoleWriteLogLine($"{friend.Handle}, {friend.Name ?? friend.Email}," +
+					$"{(friend.FavoriteColor != null ? $" {friend.FavoriteColor}" : "")}" +
 					$"{(friend.Blocked.HasValue ? (friend.Blocked.Value ? " (blocked)" : "") : " (pending)")}" +
 					$"{(m_online.Any(x => x.Id == friend.Id) ? " (online)" : "")}");
 			}

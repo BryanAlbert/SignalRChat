@@ -1,0 +1,19 @@
+{
+  "Handle": "Fred",
+  "Email": "fred@gmail.com",
+  "Name": "Fred Sanson",
+  "FavoriteColor": "Green",
+  "Id": "8e53bd1e-cf18-47b0-a34f-cc6bd2e0a6ce",
+  "Blocked": null,
+  "Friends": [
+    {
+      "Handle": "Bruce",
+      "Email": "bruce@hotmail.com",
+      "Name": null,
+      "FavoriteColor": null,
+      "Id": null,
+      "Blocked": null,
+      "Friends": []
+    }
+  ]
+}

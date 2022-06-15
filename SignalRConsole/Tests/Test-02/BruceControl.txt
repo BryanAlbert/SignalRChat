@@ -10,6 +10,6 @@ Listening> Your (pending) friend Fred is online.
 You and Fred are now friends!
 L
 Friends:
-Fred, Green (online)
+Fred, Fred Sanson, Green (online)
 X
 Finished.
