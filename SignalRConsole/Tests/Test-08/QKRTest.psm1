@@ -1,6 +1,6 @@
 $global:test = "Test-08"
 
-function Get-Description
+function Get-Description($qkr)
 {
 	"`n${test}: Bruce adds Fred and Mom and goes offline, Fred comes on and adds Bruce
 	and Mom, Bruce comes online, Mom comes online
@@ -8,15 +8,19 @@ function Get-Description
 	Bruce comes online, adds Fred and Mom, goes offline, Fred comes online and adds Bruce
 	and Mom, Bruce and Mom come online, everyone accepts, Bruce lists and goes offline,
 	Fred lists and goes offline, Mom lists and goes offline. Uses BruceInput1.txt and
-	BruceInput2.txt.
+	BruceInput2.txt.`n"
 
-	To test QKR, run Test-QKRas Bruce 1 in one console and wait for it to finish. Run
+	if ($null -eq $qkr -or $qkr)
+	{
+	"`tTo test QKR, run Test-QKRas Bruce 1 in one console and wait for it to finish. Run
 	Test-QKRas Fred in another console, log in as Mom on QKR and accept friend request,
 	then run Test-QKRas Bruce 2 in the first console. Accept friend request in QKR.
-	Test intermediate output with Check-QKRTest 1. Log in as Bruce on QKR and add Mom
-	and Fred then pop back to Home. Run Test-QKRas Fred in one console and Test-QKRas
-	Mom in the other then log in again in QKR and accpet the friend request then pop
-	back to Home. Run Check-QKRTest 2 to validate the test.`n"
+	Test intermediate output with Check-QKRTest 1.
+	
+	Next, log in as Bruce on QKR and add Mom and Fred then pop back to Home. Run Test-QKRas
+	Fred in one console and Test-QKRas Mom in the other then log in again in QKR and accpet
+	the friend request then pop back to Home. Run Check-QKRTest 2 to validate the test.`n"
+	}
 }
 
 function Reset-Test($showDescription)
@@ -29,14 +33,22 @@ function Reset-Test($showDescription)
 	Copy-Item .\Bruce-brucef68-3c37-4aef-b8a6-1649659bbbc4.qkr (Join-Path $global:qkrLocalState Bruce-brucef68-3c37-4aef-b8a6-1649659bbbc4.json)
 	Copy-Item .\Fred-fredac24-3f25-41e0-84f2-3f34f54d072e.qkr (Join-Path $global:qkrLocalState Fred-fredac24-3f25-41e0-84f2-3f34f54d072e.json)
 	Copy-Item .\Mom-mom0c866-8cb0-4a10-ad96-dfe5f9ebd98e.qkr (Join-Path $global:qkrLocalState Mom-mom0c866-8cb0-4a10-ad96-dfe5f9ebd98e.json)
-	if (Test-Path .\BruceOutput.txt) { Remove-Item .\BruceOutput.txt }
-	if (Test-Path .\FredOutput.txt) { Remove-Item .\FredOutput.txt }
-	if (Test-Path .\MomOutput.txt) { Remove-Item .\MomOutput.txt}
+	if (Test-Path .\BruceOutput.txt) {
+		Remove-Item .\BruceOutput.txt
+	}
+
+	if (Test-Path .\FredOutput.txt) {
+		Remove-Item .\FredOutput.txt
+	}
+
+	if (Test-Path .\MomOutput.txt) {
+		Remove-Item .\MomOutput.txt
+	}
+
 	Pop-Location
 
-	if ($null -eq $showDescription -or $showDescription)
-    {
-		Get-Description
+	if ($null -eq $showDescription -or $showDescription) {
+		Get-Description $true
 	}
 }
 
@@ -44,6 +56,7 @@ function Run-Test
 {
 	$script = Join-Path $test "Test.txt"
 	"Running script $script"
+	Get-Description $false
 	dotnet.exe .\SignalRConsole.dll $script
 	Check-Test
 }
@@ -51,17 +64,19 @@ function Run-Test
 function Check-Test
 {
 	Push-Location $test
-	$global:warningCount = 0
-	$global:errorCount = 0
-	Compare-Files .\BruceControl.txt .\BruceOutput.txt $true
-	Compare-Files .\FredControl.txt .\FredOutput.txt $true
-	Compare-Files .\MomControl.txt .\MomOutput.txt $true
+	$script:warningCount = 0
+	$script:errorCount = 0
 	Compare-Files .\BruceControl.qkr .\Bruce.qkr.json $false
 	Compare-Files .\FredControl.qkr .\Fred.qkr.json $false
 	Compare-Files .\MomControl.qkr .\Mom.qkr.json $false
+	Compare-Files .\BruceControl.txt .\BruceOutput.txt $true
+	Compare-Files .\FredControl.txt .\FredOutput.txt $true
+	Compare-Files .\MomControl.txt .\MomOutput.txt $true
 
-	"Total warning count: $global:warningCount"
-	"Total error count: $global:errorCount"
+	"Warning count: $script:warningCount"
+	"Error count: $script:errorCount"
+	$global:totalWarningCount += $script:warningCount
+	$global:totalErrorCount += $script:errorCount
 	Pop-Location
 }
 
@@ -72,8 +87,10 @@ function Check-QKRTest($stage)
 {
 	Push-Location $test
 	
-	$global:warningCount = 0
-	$global:errorCount = 0
+	$script:warningCount = 0
+	$script:errorCount = 0
+	$tempWarningList = $global:warningList
+	$tempErrorList = $global:errorList
 	switch ($stage) {
 		1 {
 			Compare-Files .\BruceControl.qkr .\Bruce.qkr.json $false
@@ -94,14 +111,16 @@ function Check-QKRTest($stage)
 		}
 	}
 
-	"Total warning count: $global:warningCount"
-	"Total error count: $global:errorCount"
+	"Warning count: $script:warningCount"
+	"Error count: $script:errorCount"
+	$global:warningList = $tempWarningList
+	$global:errorList = $tempErrorList
 	Pop-Location
 }
 
 function Update-ControlFiles($updateQkr)
 {
-	Push-Location $global:test
+	Push-Location $test
 	if ($updateQkr -eq $true)
 	{
 		"Updating QKR control files for $test"
@@ -116,13 +135,13 @@ function Update-ControlFiles($updateQkr)
 	}
 	else
 	{
-		"Updating control files for $global:test"
-		Copy-Item .\BruceOutput.txt .\BruceControl.txt
-		Copy-Item .\FredOutput.txt .\FredControl.txt
-		Copy-Item .\MomOutput.txt .\MomControl.txt
+		"Updating control files for $test"
 		Copy-Item .\Bruce.qkr.json .\BruceControl.qkr
 		Copy-Item .\Fred.qkr.json .\FredControl.qkr
 		Copy-Item .\Mom.qkr.json .\MomControl.qkr
+		Copy-Item .\BruceOutput.txt .\BruceControl.txt
+		Copy-Item .\FredOutput.txt .\FredControl.txt
+		Copy-Item .\MomOutput.txt .\MomControl.txt
 	}
 	
 	Pop-Location
@@ -133,20 +152,22 @@ function Update-SignalRConsole
 	Get-ChildItem ..\bin\Debug\netcoreapp3.1\* -File | Copy-Item -Destination .
 }
 
-
 function Compare-Files($control, $file, $logFile)
 {
 	"Comparing: $control with $file"
-	if (((Compare-Object (Get-Content $control) (Get-Content $file)) | Measure-Object).Count -gt 0) {
+	if (((Compare-Object (Get-Content $control) (Get-Content $file)) | Measure-Object).Count -gt 0)
+	{
 		if ($logFile)
 		{
 			"Warning: $file has unexpected output:"
-			$global:warningCount++
+			$script:warningCount++
+			$global:warningList += $test
 		}
 		else
 		{
 			"Error: $file has unexpected output:"
-			$global:errorCount++
+			$script:errorCount++
+			$global:errorList += $test
 		}
 
 		Compare-Object (Get-Content $control) (Get-Content $file) | Format-Table -Property SideIndicator, InputObject

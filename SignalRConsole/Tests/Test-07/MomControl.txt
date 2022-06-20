@@ -7,12 +7,12 @@ Listening>
 (Sent unrecognized command to Fred.)
 (Sent unrecognized command to Bruce.)
 Busy...       
-Accept friend request from Fred, email address fred@gmail.com? [y/n] 
-Busy...  
 Accept friend request from Bruce, email address bruce@hotmail.com? [y/n] 
 Y
-Busy...  
+Listening> 
+Busy...       
 You and Bruce are now friends!
+Accept friend request from Fred, email address fred@gmail.com? [y/n] 
 Y
 Listening> 
 You and Fred are now friends!

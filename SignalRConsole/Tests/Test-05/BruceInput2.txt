@@ -1,4 +1,4 @@
 Bruce
->wait-for: Your (pending) friend Fred is online.
+>wait-for: Your friend Fred is offline.
 L
 X

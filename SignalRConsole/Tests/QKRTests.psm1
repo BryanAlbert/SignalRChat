@@ -10,13 +10,13 @@ function Get-Descriptions($number)
     {
         Get-ChildItem -Recurse QKRTest.psm1 | ForEach-Object {
             Import-Module -DisableNameChecking -Force $_
-            Get-Description
+            Get-Description $false
         }
     }
     else
     {
         Load-Test $number $true
-        Get-Description
+        Get-Description $true
     }
 }
 
@@ -25,12 +25,10 @@ function Load-Test($number, $discard)
     if ($number -lt 10) { $number = "0$number" }
 	$testPath = Join-Path ".\Test-$number" QKRTest.psm1
 	"Loading $testPath"
-    if ($null -eq $discard -or $discard -ne $true)
-    {
+    if ($null -eq $discard -or $discard -ne $true) {
         Import-Module -DisableNameChecking -Global -Force $testPath
     }
-    else
-    {
+    else {
         Import-Module -DisableNameChecking -Force $testPath
     }
 }
@@ -45,25 +43,34 @@ function Reset-Tests
     }
 
     "Reset $testCount tests."
+    $global:test = $null
+    Remove-Module QKRTest
 }
 
 function Run-Tests
 {
     $global:totalWarningCount = 0
     $global:totalErrorCount = 0
+    $global:warningList = @("Warnings in: ")
+    $global:errorList = @("Errors in: ")
     $testCount = 0
     Get-ChildItem .\Test-* -Directory | ForEach-Object {
         $testCount++
         Import-Module -DisableNameChecking -Force (Join-Path $_ QKRTest.psm1)
         "`nRunning test from: $test"
-        Reset-Test
+        Reset-Test $false
         Run-Test
-        $global:totalWarningCount += $global:warningCount
-        $global:totalErrorCount += $global:errorCount
     }
 
     "`nTotal warning count across $testCount tests: $global:totalWarningCount"
+    if ($global:totalWarningCount -gt 0) {
+        [string]::Join(", ", $global:warningList).Replace(" , ", " ")
+    }
+
     "Total error count across $testCount tests: $global:totalErrorCount"
+    if ($global:totalErrorCount -gt 0) {
+        [string]::Join(", ", $global:errorList).Replace(" , ", " ")
+    }
 }
 
 function Print-Files($inputFiles)

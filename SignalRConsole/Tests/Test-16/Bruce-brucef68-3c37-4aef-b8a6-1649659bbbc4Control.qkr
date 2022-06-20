@@ -1,0 +1,27 @@
+{
+  "Version": 1,
+  "Id": "brucef68-3c37-4aef-b8a6-1649659bbbc4",
+  "Handle": "Bruce",
+  "Name": "Bruce Albert",
+  "FavoriteColor": "Red",
+  "Email": "bruce@hotmail.com",
+  "Operators": [
+    {
+      "Name": "Addition",
+      "Tables": []
+    },
+    {
+      "Name": "Subtraction",
+      "Tables": []
+    },
+    {
+      "Name": "Multiplication",
+      "Tables": []
+    },
+    {
+      "Name": "Division",
+      "Tables": []
+    }
+  ],
+  "Friends": []
+}

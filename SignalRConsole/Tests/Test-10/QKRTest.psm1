@@ -1,11 +1,17 @@
 $global:test = "Test-10"
 
-function Get-Description
+function Get-Description($qkr)
 {
-	"`n${test}: Bruce pending friends with Fred, adds Fred"
-	"
+	"`n${test}: Bruce pending friends with Fred, adds Fred
+
 	Bruce pending friendship with Fred, comes online and adds Fred, gets a message,
 	lists and goes offline.`n"
+
+	if ($null -eq $qkr -or $qkr)
+	{
+	"`tTo test QKR, log in as Bruce on QKR and add Fred, verify message and
+	pop to Home. Check results with Check-Test.`n"
+	}
 }
 
 function Reset-Test($showDescription)
@@ -14,13 +20,14 @@ function Reset-Test($showDescription)
 	Push-Location $test
 	Copy-Item .\BruceFriends.qkr .\Bruce.qkr.json
 	Copy-Item .\Bruce-brucef68-3c37-4aef-b8a6-1649659bbbc4.qkr (Join-Path $global:qkrLocalState Bruce-brucef68-3c37-4aef-b8a6-1649659bbbc4.json)
-	if (Test-Path .\BruceOutput.txt) { Remove-Item .\BruceOutput.txt }
+	if (Test-Path .\BruceOutput.txt) {
+		Remove-Item .\BruceOutput.txt
+	}
 
 	Pop-Location
 
-	if ($null -eq $showDescription -or $showDescription)
-    {
-		Get-Description
+	if ($null -eq $showDescription -or $showDescription) {
+		Get-Description $true
 	}
 }
 
@@ -28,6 +35,7 @@ function Run-Test
 {
 	$script = Join-Path $test "Test.txt"
 	"Running script $script"
+	Get-Description $false
 	dotnet.exe .\SignalRConsole.dll $script
 	Check-Test $false
 }
@@ -35,25 +43,30 @@ function Run-Test
 function Check-Test($checkQkr)
 {
 	Push-Location $test
-	$global:warningCount = 0
-	$global:errorCount = 0
-	Compare-Files .\BruceControl.txt .\BruceOutput.txt $true
+	$script:warningCount = 0
+	$script:errorCount = 0
 	Compare-Files .\BruceControl.qkr .\Bruce.qkr.json $false
-
+	
 	if ($null -eq $checkQkr -or $checkQkr)
 	{
 		Compare-Files .\Bruce-brucef68-3c37-4aef-b8a6-1649659bbbc4Control.qkr (Join-Path $global:qkrLocalState Bruce-brucef68-3c37-4aef-b8a6-1649659bbbc4.json)
 		Compare-Files .\Fred-fredac24-3f25-41e0-84f2-3f34f54d072eControl.qkr (Join-Path $global:qkrLocalState Fred-fredac24-3f25-41e0-84f2-3f34f54d072e.json)
 	}
+	else
+	{
+		Compare-Files .\BruceControl.txt .\BruceOutput.txt $true
+	}
 
-	"Total warning count: $global:warningCount"
-	"Total error count: $global:errorCount"
+	"Warning count: $script:warningCount"
+	"Error count: $script:errorCount"
+	$global:totalWarningCount += $script:warningCount
+	$global:totalErrorCount += $script:errorCount
 	Pop-Location
 }
 
 function Update-ControlFiles($updateQkr)
 {
-	Push-Location $global:test
+	Push-Location $test
 	if ($updateQkr -eq $true)
 	{
 		"Updating QKR control files for $test from $global:qkrLocalState"
@@ -62,7 +75,7 @@ function Update-ControlFiles($updateQkr)
 	}
 	else
 	{
-		"Updating control files for $global:test"
+		"Updating control files for $test"
 		Copy-Item .\BruceOutput.txt .\BruceControl.txt
 		Copy-Item .\Bruce.qkr.json .\BruceControl.qkr
 	}
@@ -75,20 +88,22 @@ function Update-SignalRConsole
 	Get-ChildItem ..\bin\Debug\netcoreapp3.1\* -File | Copy-Item -Destination .
 }
 
-
 function Compare-Files($control, $file, $logFile)
 {
 	"Comparing: $control with $file"
-	if (((Compare-Object (Get-Content $control) (Get-Content $file)) | Measure-Object).Count -gt 0) {
+	if (((Compare-Object (Get-Content $control) (Get-Content $file)) | Measure-Object).Count -gt 0)
+	{
 		if ($logFile)
 		{
 			"Warning: $file has unexpected output:"
-			$global:warningCount++
+			$script:warningCount++
+			$global:warningList += $test
 		}
 		else
 		{
 			"Error: $file has unexpected output:"
-			$global:errorCount++
+			$script:errorCount++
+			$global:errorList += $test
 		}
 
 		Compare-Object (Get-Content $control) (Get-Content $file) | Format-Table -Property SideIndicator, InputObject
