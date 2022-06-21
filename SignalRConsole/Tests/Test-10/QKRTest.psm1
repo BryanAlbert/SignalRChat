@@ -9,8 +9,8 @@ function Get-Description($qkr)
 
 	if ($null -eq $qkr -or $qkr)
 	{
-	"`tTo test QKR, log in as Bruce on QKR and add Fred, verify message and
-	pop to Home. Check results with Check-Test.`n"
+	"`tTo test QKR, log in as Bruce on QKR and add Fred, verify the status message
+	and pop to Home. Check results with Check-Test.`n"
 	}
 }
 
@@ -47,13 +47,10 @@ function Check-Test($checkQkr)
 	$script:errorCount = 0
 	Compare-Files .\BruceControl.qkr .\Bruce.qkr.json $false
 	
-	if ($null -eq $checkQkr -or $checkQkr)
-	{
+	if ($null -eq $checkQkr -or $checkQkr) {
 		Compare-Files .\Bruce-brucef68-3c37-4aef-b8a6-1649659bbbc4Control.qkr (Join-Path $global:qkrLocalState Bruce-brucef68-3c37-4aef-b8a6-1649659bbbc4.json)
-		Compare-Files .\Fred-fredac24-3f25-41e0-84f2-3f34f54d072eControl.qkr (Join-Path $global:qkrLocalState Fred-fredac24-3f25-41e0-84f2-3f34f54d072e.json)
 	}
-	else
-	{
+	else {
 		Compare-Files .\BruceControl.txt .\BruceOutput.txt $true
 	}
 
@@ -71,7 +68,6 @@ function Update-ControlFiles($updateQkr)
 	{
 		"Updating QKR control files for $test from $global:qkrLocalState"
 		Copy-Item (Join-Path $global:qkrLocalState Bruce-brucef68-3c37-4aef-b8a6-1649659bbbc4.json) .\Bruce-brucef68-3c37-4aef-b8a6-1649659bbbc4Control.qkr 
-		Copy-Item (Join-Path $global:qkrLocalState Fred-fredac24-3f25-41e0-84f2-3f34f54d072e.json) .\Fred-fredac24-3f25-41e0-84f2-3f34f54d072eControl.qkr 
 	}
 	else
 	{

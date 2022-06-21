@@ -14,8 +14,8 @@ function Get-Description($qkr)
 	and add Bruce, then run Test-QKRas Bruce 2, check QKR status and pop to Home.
 	
 	Next, log in as Bruce on QKR, add Fred then pop to Home. Run Test-QKRas Fred,
-	log in again as Bruce and accept friend request. Verify status then pop back
-	to Home. Run Check-Test to validate the test.`n"
+	log in again as Bruce and accept friend request. Verify that Fred has exited, 
+	then verify status and pop back to Home. Run Check-Test to validate the test.`n"
 	}
 }
 

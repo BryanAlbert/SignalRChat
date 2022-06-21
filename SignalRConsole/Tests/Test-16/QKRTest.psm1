@@ -12,7 +12,7 @@ function Get-Description($qkr)
 	{
 	"`tTo test QKR, run Test-QKRas Bruce 1, log in as Fred on QKR, when Bruce finishes,
 	accept the friend request and pop back to Home. Log in as Fred again then run
-	Test-QKRas Bruce 2, verify unfriended message and pop back to Home.
+	Test-QKRas Bruce 2, verify the Status message and pop back to Home.
 
 	Next, log in as Bruce on QKR, add Fred, then run Test-QKRas Fred 1. Unfriend
 	Fred, pop back to Home, log in as Bruce again, run Test-QKRas Fred 2 then pop

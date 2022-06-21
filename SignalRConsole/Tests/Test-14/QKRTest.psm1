@@ -10,11 +10,10 @@ function Get-Description($qkr)
 	if ($null -eq $qkr -or $qkr)
 	{
 	"`tTo test QKR, run Test-QKRas Bruce and wait for the unfriended message, then log in
-	as Fred on QKR. Verify unfriended message then pop back to Home.
+	as Fred on QKR. Verify the Status message then pop back to Home.
 	
-	Next, log in as Bruce on QKR and unfriend Fred. Run Test-QKRas Fred. Verify
-	unfriended message in QKR and pop back to Home. Run Check-Test to validate
-	the test.`n"
+	Next, log in as Bruce on QKR and unfriend Fred. Run Test-QKRas Fred. Verify the
+	Status message in QKR and pop back to Home. Run Check-Test to validate the test.`n"
 	}
 }
 

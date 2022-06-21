@@ -14,12 +14,14 @@ function Get-Description($qkr)
 	{
 	"`tTo test QKR, run Test-QKRas Bruce 1 in one console and wait for it to finish. Run
 	Test-QKRas Fred in another console, log in as Mom on QKR and accept friend request,
-	then run Test-QKRas Bruce 2 in the first console. Accept friend request in QKR.
-	Test intermediate output with Check-QKRTest 1.
+	then run Test-QKRas Bruce 2 in the first console. Accept friend request in QKR, verify
+	that Bruce and Fred have finished and pop to Home. Test intermediate output with
+	Check-QKRTest 1.
 	
 	Next, log in as Bruce on QKR and add Mom and Fred then pop back to Home. Run Test-QKRas
-	Fred in one console and Test-QKRas Mom in the other then log in again in QKR and accpet
-	the friend request then pop back to Home. Run Check-QKRTest 2 to validate the test.`n"
+	Fred in one console and Test-QKRas Mom in the other then log in as Bruce again in QKR.
+	Accpet the friend request then pop back to Home. Verify that Mom and Fred have exited
+	and run Check-QKRTest 2 to validate the test.`n"
 	}
 }
 

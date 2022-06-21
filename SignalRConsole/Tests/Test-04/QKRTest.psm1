@@ -11,10 +11,10 @@ function Get-Description($qkr)
 	if ($null -eq $qkr -or $qkr)
 	{
 	"`tTo test QKR, run Test-QKRas Bruce 1. When it finishes, log in as Fred on QKR, run 
-	Test-QKRas Bruce 2, accept friend request and pop to Home.
+	Test-QKRas Bruce 2, accept friend request, verify Bruce exits and pop to Home.
 	
 	Next log in as Bruce on QKR, add Fred then pop to Home. Run Test-QKRas Fred, log in as
-	Fred again and pop to Home. Check results with Check-Test.`n"
+	Bruce again, pop to Home and verify that Fred exits. Check results with Check-Test.`n"
 	}
 }
 
