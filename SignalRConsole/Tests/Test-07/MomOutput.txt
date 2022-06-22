@@ -1,31 +1,26 @@
 Initializing server and connecting to URL: https://localhost:5001/chathub
 What is your handle (nickname)? 
-Fred
+Mom
 Pick a command: a to add a friend, l to list friends, u to unfriend a friend,
 d to delete a user, c to chat, or x to exit
 Listening> 
-(Sent blocked command to Bruce.)
-U
+(Sent unrecognized command to Bruce.)
+(Sent unrecognized command to Fred.)
 Busy...       
-Friends:
-0: Bruce
-Whom would you like to unfriend (number, Enter to abort): 
-0
-Bruce has been unfriended.
-Listening> 
-A
-Busy...       
-What is your friend's handle? 
-Bruce
-What is your friend's email? 
-bruce@hotmail.com
-A friend request has been sent to Bruce.
-Listening> 
-Your (pending) friend Bruce is online.
+Accept friend request from Fred, email address fred@gmail.com? [y/n] 
+Busy...  
+Accept friend request from Bruce, email address bruce@hotmail.com? [y/n] 
+Y
+Busy...  
 You and Bruce are now friends!
+Y
+Listening> 
+You and Fred are now friends!
 Your friend Bruce is offline.
+Your friend Fred is offline.
 L
 Friends:
 Bruce, Bruce Albert, bruce@hotmail.com, Red
+Fred, Fred Sanson, fred@gmail.com, Green
 X
 Finished.

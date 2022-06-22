@@ -5,5 +5,15 @@
   "FavoriteColor": "Green",
   "Id": "fredac24-3f25-41e0-84f2-3f34f54d072e",
   "Blocked": null,
-  "Friends": []
+  "Friends": [
+    {
+      "Handle": "Bruce",
+      "Email": "bruce@hotmail.com",
+      "Name": "Bruce Albert",
+      "FavoriteColor": "Red",
+      "Id": "brucef68-3c37-4aef-b8a6-1649659bbbc4",
+      "Blocked": true,
+      "Friends": []
+    }
+  ]
 }

@@ -12,7 +12,7 @@
       "Name": "Bruce Albert",
       "FavoriteColor": "Red",
       "Id": "brucef68-3c37-4aef-b8a6-1649659bbbc4",
-      "Blocked": true,
+      "Blocked": false,
       "Friends": []
     }
   ]

@@ -4,14 +4,16 @@ Bruce
 Pick a command: a to add a friend, l to list friends, u to unfriend a friend,
 d to delete a user, c to chat, or x to exit
 Listening> 
-A
+Your friend Fred is online.
+U
 Busy...       
-What is your friend's handle? 
-Fred
-You already asked Fred to be your friend and we're waiting for a response.
+Friends:
+0: Fred
+Whom would you like to unfriend (number, Enter to abort): 
+0
+Fred has been unfriended.
 Listening> 
 L
-Friends:
-Fred, Fred Sanson, fred@gmail.com, Green (pending)
+You have no friends.
 X
 Finished.

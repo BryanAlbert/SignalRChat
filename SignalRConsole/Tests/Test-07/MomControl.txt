@@ -5,7 +5,6 @@ Pick a command: a to add a friend, l to list friends, u to unfriend a friend,
 d to delete a user, c to chat, or x to exit
 Listening> 
 (Sent unrecognized command to Fred.)
-(Sent unrecognized command to Fred.)
 (Sent unrecognized command to Bruce.)
 Busy...       
 Accept friend request from Fred, email address fred@gmail.com? [y/n] 
@@ -21,7 +20,7 @@ Your friend Bruce is offline.
 Your friend Fred is offline.
 L
 Friends:
-Bruce, Bruce Albert, Red
-Fred, Fred Sanson, Green
+Bruce, Bruce Albert, bruce@hotmail.com, Red
+Fred, Fred Sanson, fred@gmail.com, Green
 X
 Finished.

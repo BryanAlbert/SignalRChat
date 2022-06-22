@@ -16,6 +16,6 @@ Your (pending) friend Fred is online.
 You and Fred are now friends!
 L
 Friends:
-Fred, Fred Sanson, Green (online)
+Fred, Fred Sanson, fred@gmail.com, Green (online)
 X
 Finished.

@@ -5,5 +5,15 @@
   "FavoriteColor": "Green",
   "Id": "fredac24-3f25-41e0-84f2-3f34f54d072e",
   "Blocked": null,
-  "Friends": []
+  "Friends": [
+    {
+      "Handle": "Mom",
+      "Email": "jeanmariealbert@hotmail.com",
+      "Name": "Jean Albert",
+      "FavoriteColor": "Maroon",
+      "Id": "mom0c866-8cb0-4a10-ad96-dfe5f9ebd98e",
+      "Blocked": false,
+      "Friends": []
+    }
+  ]
 }

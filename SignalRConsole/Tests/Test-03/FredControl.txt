@@ -13,6 +13,6 @@ You and Bruce are now friends!
 Your friend Bruce is offline.
 L
 Friends:
-Bruce, Bruce Albert, Red
+Bruce, Bruce Albert, bruce@hotmail.com, Red
 X
 Finished.

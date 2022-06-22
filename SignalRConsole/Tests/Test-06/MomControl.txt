@@ -10,6 +10,7 @@ Accept friend request from Bruce, email address bruce@hotmail.com? [y/n]
 Y
 Listening> 
 You and Bruce are now friends!
+Your friend Bruce is offline.
 (Sent unrecognized command to Fred.)
 Busy...       
 Accept friend request from Fred, email address fred@gmail.com? [y/n] 
@@ -17,10 +18,9 @@ Y
 Listening> 
 You and Fred are now friends!
 Your friend Fred is offline.
-Your friend Bruce is offline.
 L
 Friends:
-Bruce, Bruce Albert, Red
-Fred, Fred Sanson, Green
+Bruce, Bruce Albert, bruce@hotmail.com, Red
+Fred, Fred Sanson, fred@gmail.com, Green
 X
 Finished.
