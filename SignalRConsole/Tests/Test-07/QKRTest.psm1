@@ -29,16 +29,8 @@ function Reset-Test($showDescription)
 	Copy-Item .\Bruce-brucef68-3c37-4aef-b8a6-1649659bbbc4.qkr (Join-Path $global:qkrLocalState Bruce-brucef68-3c37-4aef-b8a6-1649659bbbc4.json)
 	Copy-Item .\Fred-fredac24-3f25-41e0-84f2-3f34f54d072e.qkr (Join-Path $global:qkrLocalState Fred-fredac24-3f25-41e0-84f2-3f34f54d072e.json)
 	Copy-Item .\Mom-mom0c866-8cb0-4a10-ad96-dfe5f9ebd98e.qkr (Join-Path $global:qkrLocalState Mom-mom0c866-8cb0-4a10-ad96-dfe5f9ebd98e.json)
-	if (Test-Path .\BruceOutput.txt) {
-		Remove-Item .\BruceOutput.txt
-	}
-
-	if (Test-Path .\FredOutput.txt) {
-		Remove-Item .\FredOutput.txt
-	}
-
-	if (Test-Path .\MomOutput.txt) {
-		Remove-Item .\MomOutput.txt
+	Get-ChildItem *Output.txt | ForEach-Object {
+		Remove-Item $_
 	}
 	
 	Pop-Location

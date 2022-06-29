@@ -20,9 +20,10 @@ function Reset-Test($showDescription)
 	Push-Location $test
 	Copy-Item .\BruceFriends.qkr .\Bruce.qkr.json
 	Copy-Item .\Bruce-brucef68-3c37-4aef-b8a6-1649659bbbc4.qkr (Join-Path $global:qkrLocalState Bruce-brucef68-3c37-4aef-b8a6-1649659bbbc4.json)
-	if (Test-Path .\BruceOutput.txt) {
-		Remove-Item .\BruceOutput.txt
+	Get-ChildItem *Output.txt | ForEach-Object {
+		Remove-Item $_
 	}
+
 	Pop-Location
 
 	if ($null -eq $showDescription -or $showDescription) {

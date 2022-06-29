@@ -24,12 +24,8 @@ function Reset-Test($showDescription)
 	Copy-Item .\BruceFriends.qkr .\Bruce.qkr.json
 	Copy-Item .\FredFriends.qkr .\Fred.qkr.json
 	Copy-Item .\Fred-fredac24-3f25-41e0-84f2-3f34f54d072e.qkr (Join-Path $global:qkrLocalState Fred-fredac24-3f25-41e0-84f2-3f34f54d072e.json)
-	if (Test-Path .\BruceOutput.txt) {
-		Remove-Item .\BruceOutput.txt
-	}
-
-	if (Test-Path .\FredOutput.txt) {
-		Remove-Item .\FredOutput.txt
+	Get-ChildItem *Output.txt | ForEach-Object {
+		Remove-Item $_
 	}
 
 	Pop-Location
