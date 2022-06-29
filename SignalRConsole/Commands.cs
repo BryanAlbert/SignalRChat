@@ -35,10 +35,10 @@ namespace SignalRConsole
 					Flag = flag
 				};
 
-				if (name != CommandNames.Hello && name != CommandNames.Verify)
+				if (name != CommandNames.Hello && name != CommandNames.Verify && name != CommandNames.Merge)
 				{
-					Debug.WriteLine($"Error: SendCommand called with string  and bool is only valid for the" +
-						$" {CommandNames.Hello} and {CommandNames.Verify} commands, called with: {name}");
+					Debug.WriteLine($"Error: SendCommand called with string  and bool is only valid for the {CommandNames.Hello}," +
+						$" {CommandNames.Verify} and {CommandNames.Merge} commands, called with: {name}");
 				}
 				else
 				{
@@ -85,7 +85,8 @@ namespace SignalRConsole
 			{
 				Unrecognized,
 				Hello,
-				Verify
+				Verify,
+				Merge
 			}
 
 

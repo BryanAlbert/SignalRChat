@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
 namespace SignalRConsole
@@ -16,18 +17,26 @@ namespace SignalRConsole
 			Friends = new List<User>();
 		}
 
-		public User(string handle, string email, string name, string color, string id) :
+		public User(string handle, string email, string name, string color, string fileName) : this(handle, email)
+		{
+			Handle = handle;
+			Email = email;
+			Name = name;
+			FavoriteColor = color;
+			FileName = fileName;
+			Id = Guid.NewGuid().ToString();
+			CreationDate = DateTime.UtcNow.ToString("s");
+			ModifiedDate = CreationDate;
+		}
+
+		public User(string handle, string email, string name, string color, string id, string creationDate, string modifiedDate) :
 			this(handle, email)
 		{
 			Name = name;
 			FavoriteColor = color;
 			Id = id;
-		}
-
-		public User(string handle, string email, string name, string color, string id, string fileName) :
-			this(handle, email, name, color, id)
-		{
-			FileName = fileName;
+			CreationDate = creationDate;
+			ModifiedDate = modifiedDate;
 		}
 
 
@@ -42,6 +51,8 @@ namespace SignalRConsole
 		public string Name { get; set; }
 		public string FavoriteColor { get; set; }
 		public string Id { get; set; }
+		public string CreationDate { get; set; }
+		public string ModifiedDate { get; set; }
 		public bool? Blocked { get; set; }
 		public List<User> Friends { get; set; }
 

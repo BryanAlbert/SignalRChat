@@ -160,6 +160,7 @@ namespace SignalRConsole
 
 		private string RegistrationToken { get; set; }
 		private string Handle => m_user?.Handle;
+		private string Name => m_user?.Name;
 		private string Id => m_user?.Id;
 		private string Email => m_user?.Email;
 		private string FileName => m_user.FileName;
@@ -184,81 +185,81 @@ namespace SignalRConsole
 
 		private async Task OnJoinedChannelAsync(string channel, string user)
 		{
-			if (user != Id && user != Handle)
-			{
-				User friend = null;
-				Debug.WriteLine($"{user} has joined the {string.Join('-', ParseChannelName(channel))} channel.");
-				if (channel == IdChannelName || channel == HandleChannelName)
-				{
-					friend = m_user.Friends.FirstOrDefault(x => channel == IdChannelName ? x.Id == user : x.Handle == user);
-				}
-				else if (channel == ChatChannelName)
-				{
-					if (State == States.Listening)
-					{
-						await SendCommandAsync(CommandNames.Hello, Id, channel, user, SerializeUserData(m_user), true);
-						ActiveChatChannelName = channel;
-						ActiveChatFriend = m_user.Friends.FirstOrDefault(x => x.Id == user);
-						_ = await MessageLoopAsync();
-					}
-					else
-					{
-						await SendCommandAsync(CommandNames.Hello, Id, channel, user, SerializeUserData(m_user), false);
-					}
+			if (user == Id)
+				return;
 
-					return;
+			User friend = null;
+			Debug.WriteLine($"{user} has joined the {string.Join('-', ParseChannelName(channel))} channel.");
+			if (channel == IdChannelName || channel == HandleChannelName)
+			{
+				friend = m_user.Friends.FirstOrDefault(x => channel == IdChannelName ? x.Id == user : x.Handle == user);
+			}
+			else if (channel == ChatChannelName)
+			{
+				if (State == States.Listening)
+				{
+					await SendCommandAsync(CommandNames.Hello, Id, channel, user, SerializeUserData(m_user), true);
+					ActiveChatChannelName = channel;
+					ActiveChatFriend = m_user.Friends.FirstOrDefault(x => x.Id == user);
+					_ = await MessageLoopAsync();
 				}
 				else
 				{
-					if (channel == user)
-					{
-						// a friend joined his own channel (and is now online)
-						friend = m_user.Friends.FirstOrDefault(x => x.Id == channel);
-					}
-					else
-					{
-						string[] parts = ParseChannelName(channel);
-						friend = m_user.Friends.FirstOrDefault(x => x.Email == parts[0] && x.Handle == parts[1]);
-						if (friend != null && user == parts[1] && !friend.HelloInitiated)
-						{
-							// pending friend joined his Handle channel, we leave and rejoin to signal him to send Hello with null
-							friend.HelloInitiated = true;
-							await m_hubConnection.SendAsync(c_leaveChannel, channel, Id);
-							await MonitorUserAsync(friend);
-						}
-
-						// someone else joined a Handle channel we're monitoring, just ignore it
-						return;
-					}
+					await SendCommandAsync(CommandNames.Hello, Id, channel, user, SerializeUserData(m_user), false);
 				}
 
-				// since we expect two JoinedChannel messages (one for our channel, one for the friend's channel)
-				// we need to lock here so that we don't add the user to the online list twice
-				lock (m_lock)
+				return;
+			}
+			else
+			{
+				if (channel == user)
 				{
-					if (friend != null && (!friend.Blocked ?? true) && !m_online.Contains(friend))
-					{
-						ConsoleWriteLogLine($"Your {(friend.Blocked.HasValue ? "" : "(pending) ")}friend {friend.Handle} is online.");
-						m_online.Add(friend);
-					}
+					// a friend joined his own channel (and is now online)
+					friend = m_user.Friends.FirstOrDefault(x => x.Id == channel);
 				}
-
-				if (friend?.HelloInitiated ?? false)
+				else
 				{
-					friend.HelloInitiated = false;
+					string[] parts = ParseChannelName(channel);
+					friend = m_user.Friends.FirstOrDefault(x => x.Email == parts[0] && x.Handle == parts[1]);
+					if (friend != null && user == parts[1] && !friend.HelloInitiated)
+					{
+						// pending friend joined his Handle channel, we leave and rejoin to signal him to send Hello with null
+						friend.HelloInitiated = true;
+						await m_hubConnection.SendAsync(c_leaveChannel, channel, Id);
+						await MonitorUserAsync(friend);
+					}
+
+					// someone else joined a Handle channel we're monitoring, just ignore it
 					return;
 				}
+			}
 
-				await SendCommandAsync(CommandNames.Hello, Id, channel, user, SerializeUserData(m_user), !friend?.Blocked);
-
-				if (m_console.ScriptMode)
+			// since we expect two JoinedChannel messages (one for our channel, one for the friend's channel)
+			// we need to lock here so that we don't add the user to the online list twice
+			lock (m_lock)
+			{
+				if (friend != null && (!friend.Blocked ?? true) && !m_online.Contains(friend))
 				{
-					// special messages for triggering while scripting
-					if (friend == null)
-						ConsoleWriteLogLine($"(Sent unrecognized command to {user}.)");
-					else if (friend.Blocked == true)
-						ConsoleWriteLogLine($"(Sent blocked command to {user}.)");
+					ConsoleWriteLogLine($"Your {(friend.Blocked.HasValue ? "" : "(pending) ")}friend {friend.Handle} is online.");
+					m_online.Add(friend);
 				}
+			}
+
+			if (friend?.HelloInitiated ?? false)
+			{
+				friend.HelloInitiated = false;
+				return;
+			}
+
+			await SendCommandAsync(CommandNames.Hello, Id, channel, user, SerializeUserData(m_user), !friend?.Blocked);
+
+			if (m_console.ScriptMode)
+			{
+				// special messages for triggering while scripting
+				if (friend == null)
+					ConsoleWriteLogLine($"(Sent unrecognized command to {user}.)");
+				else if (friend.Blocked == true)
+					ConsoleWriteLogLine($"(Sent blocked command to {user}.)");
 			}
 		}
 
@@ -294,6 +295,9 @@ namespace SignalRConsole
 						break;
 					case CommandNames.Verify:
 						await VerifyFriendAsync(from, command);
+						break;
+					case CommandNames.Merge:
+						MergeAccounts(command);
 						break;
 					case CommandNames.Unrecognized:
 					default:
@@ -384,11 +388,13 @@ namespace SignalRConsole
 				if (!GetData("What is your favorite color? ", out string color))
 					return false;
 
-				m_user = new User(handle, email, name, color, Guid.NewGuid().ToString(), $"{handle}{c_fileExtension}");
+				m_user = new User(handle, email, name, color, Path.Combine(m_console.WorkingDirectory, $"{handle}{c_fileExtension}"));
 				m_users.Add(m_user);
 				SaveUser();
 			}
 
+			m_console.WriteLine($"Name: {Name}, Email: {Email}, Favorite color: {m_user.FavoriteColor}, Id: {Id},");
+			m_console.WriteLine($"Creation Date: {m_user.CreationDate}, Modified Date: {m_user.ModifiedDate}");
 			return true;
 		}
 
@@ -642,6 +648,78 @@ namespace SignalRConsole
 			return success;
 		}
 
+		private async Task SendMergeAsync(User pending)
+		{
+			DateTime.TryParse(m_user.CreationDate, out DateTime myCreated);
+			DateTime.TryParse(pending.CreationDate, out DateTime created);
+
+			if (Id == pending.Id ? myCreated != created : myCreated < created)
+			{
+				ConsoleWriteLogLine($"{pending.Handle} is online on another device, sending merge data...");
+				await SendCommandAsync(CommandNames.Merge, Id, pending.Id, pending.Id,
+					JsonSerializer.Serialize(m_user), null);
+			}
+			
+			if (myCreated == DateTime.MinValue || created == DateTime.MinValue)
+			{
+				ConsoleWriteLogLine($"Error in CheckSendMerge, could not parse DateTime from {m_user.CreationDate}" +
+					$" and/or {pending.CreationDate}");
+			}
+		}
+
+		private void MergeAccounts(ConnectionCommand merge)
+		{
+			User user = JsonSerializer.Deserialize<User>(merge.Data);
+			DateTime.TryParse(m_user.CreationDate, out DateTime myCreated);
+			DateTime.TryParse(user.CreationDate, out DateTime created);
+			if (myCreated == created)
+				return;
+
+			DateTime.TryParse(m_user.ModifiedDate, out DateTime myModified);
+			DateTime.TryParse(user.ModifiedDate, out DateTime modified);
+			bool save = m_user.Id != user.Id || myModified < modified && (m_user.Name != user.Name ||
+				m_user.Handle != user.Handle || m_user.Email != user.Email || m_user.FavoriteColor != user.FavoriteColor);
+			ConsoleWriteLogLine($"{Handle} is online on another device, merging data...");
+
+			if (save)
+			{
+				m_user.Id = user.Id;
+				m_user.Name = user.Name;
+				m_user.Handle = user.Handle;
+				m_user.Email = user.Email;
+				m_user.FavoriteColor = user.FavoriteColor;
+			}
+
+			foreach (User friend in user.Friends)
+			{
+				User myFriend = m_user.Friends.FirstOrDefault(x => x.Id == friend.Id);
+				if (myFriend == null)
+				{
+					m_user.AddFriend(friend);
+					save = true;
+				}
+				else
+				{
+					if (DateTime.TryParse(myFriend.ModifiedDate, out myModified) &&
+						DateTime.TryParse(friend.ModifiedDate, out modified))
+					{
+						if (myModified < modified)
+						{
+							m_user.Friends.Remove(myFriend);
+							m_user.AddFriend(friend);
+							save = true;
+						}
+					}
+				}
+			}
+
+			if (save)
+			{
+				ConsoleWriteLogLine($"Merged data from {Handle}.");
+				SaveUser();
+			}
+		}
+
 		private async Task LeaveChatChannelAsync(bool send)
 		{
 			if (send)
@@ -659,7 +737,8 @@ namespace SignalRConsole
 
 		private void SaveUser()
 		{
-			File.WriteAllText($"{FileName}", JsonSerializer.Serialize(m_user, m_serializerOptions));
+			m_user.ModifiedDate = DateTime.UtcNow.ToString("s");
+			File.WriteAllText(FileName, JsonSerializer.Serialize(m_user, m_serializerOptions));
 		}
 
 		private async Task MonitorChannelsAsync()
@@ -752,7 +831,11 @@ namespace SignalRConsole
 			Tuple<User, User> update = UpdateFriendData(hello.Data);
 			User existing = update.Item1;
 			User pending = update.Item2;
-			if (hello.Flag == false || (!hello.Flag.HasValue && existing?.Blocked == false))
+			if (from == Id || pending.Handle == Handle && pending.Name == Name && pending.Email == Email)
+			{
+				await SendMergeAsync(pending);
+			}
+			else if (hello.Flag == false || (!hello.Flag.HasValue && existing?.Blocked == false))
 			{
 				if (existing != null)
 				{
@@ -879,6 +962,8 @@ namespace SignalRConsole
 					friend.Name = updated.Name;
 					friend.FavoriteColor = updated.FavoriteColor;
 					friend.Id = updated.Id;
+					friend.CreationDate = updated.CreationDate;
+					friend.ModifiedDate = updated.ModifiedDate;
 					SaveUser();
 				}
 			}
@@ -1006,13 +1091,14 @@ namespace SignalRConsole
 		private string SerializeUserData(User user)
 		{
 			return $"{user.Handle}{c_delimiter}{user.Email}{c_delimiter}{user.Name}" +
-				$"{c_delimiter}{user.FavoriteColor}{c_delimiter}{user.Id}";
+				$"{c_delimiter}{user.FavoriteColor}{c_delimiter}{user.Id}{c_delimiter}" +
+				$"{user.CreationDate}{c_delimiter}{user.ModifiedDate}";
 		}
 
 		private User DeserializeUserData(string data)
 		{
 			string[] parts = data.Split(c_delimiter);
-			return new User(parts[0], parts[1], parts[2], parts[3], parts[4]);
+			return new User(parts[0], parts[1], parts[2], parts[3], parts[4], parts[5], parts[6]);
 		}
 
 		private string[] ParseChannelName(string channelName)
