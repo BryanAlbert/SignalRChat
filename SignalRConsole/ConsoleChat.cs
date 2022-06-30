@@ -393,8 +393,8 @@ namespace SignalRConsole
 				SaveUser();
 			}
 
-			m_console.WriteLine($"Name: {Name}, Email: {Email}, Favorite color: {m_user.FavoriteColor}, Id: {Id},");
-			m_console.WriteLine($"Creation Date: {m_user.CreationDate}, Modified Date: {m_user.ModifiedDate}");
+			m_console.WriteLine($"Name: {Name}, Email: {Email}, Favorite color: {m_user.Color}, Id: {Id},");
+			m_console.WriteLine($"Creation Date: {m_user.Created}, Modified Date: {m_user.Modified}");
 			return true;
 		}
 
@@ -490,7 +490,7 @@ namespace SignalRConsole
 			{
 				ConsoleWriteLogLine($"{friend.Handle},{(friend.Name != null ? $" {friend.Name}," : "")}" +
 					$"{(friend.Email != null ? $" {friend.Email}," : "")}" +
-					$"{(friend.FavoriteColor != null ? $" {friend.FavoriteColor}" : "")}" +
+					$"{(friend.Color != null ? $" {friend.Color}" : "")}" +
 					$"{(friend.Blocked.HasValue ? (friend.Blocked.Value ? " (blocked)" : "") : " (pending)")}" +
 					$"{(m_online.Any(x => x.Id == friend.Id) ? " (online)" : "")}");
 			}
@@ -650,8 +650,8 @@ namespace SignalRConsole
 
 		private async Task SendMergeAsync(User pending)
 		{
-			DateTime.TryParse(m_user.CreationDate, out DateTime myCreated);
-			DateTime.TryParse(pending.CreationDate, out DateTime created);
+			DateTime.TryParse(m_user.Created, out DateTime myCreated);
+			DateTime.TryParse(pending.Created, out DateTime created);
 
 			if (Id == pending.Id ? myCreated != created : myCreated < created)
 			{
@@ -662,23 +662,23 @@ namespace SignalRConsole
 			
 			if (myCreated == DateTime.MinValue || created == DateTime.MinValue)
 			{
-				ConsoleWriteLogLine($"Error in CheckSendMerge, could not parse DateTime from {m_user.CreationDate}" +
-					$" and/or {pending.CreationDate}");
+				ConsoleWriteLogLine($"Error in CheckSendMerge, could not parse DateTime from {m_user.Created}" +
+					$" and/or {pending.Created}");
 			}
 		}
 
 		private void MergeAccounts(ConnectionCommand merge)
 		{
 			User user = JsonSerializer.Deserialize<User>(merge.Data);
-			DateTime.TryParse(m_user.CreationDate, out DateTime myCreated);
-			DateTime.TryParse(user.CreationDate, out DateTime created);
+			DateTime.TryParse(m_user.Created, out DateTime myCreated);
+			DateTime.TryParse(user.Created, out DateTime created);
 			if (myCreated == created)
 				return;
 
-			DateTime.TryParse(m_user.ModifiedDate, out DateTime myModified);
-			DateTime.TryParse(user.ModifiedDate, out DateTime modified);
+			DateTime.TryParse(m_user.Modified, out DateTime myModified);
+			DateTime.TryParse(user.Modified, out DateTime modified);
 			bool save = m_user.Id != user.Id || myModified < modified && (m_user.Name != user.Name ||
-				m_user.Handle != user.Handle || m_user.Email != user.Email || m_user.FavoriteColor != user.FavoriteColor);
+				m_user.Handle != user.Handle || m_user.Email != user.Email || m_user.Color != user.Color);
 			ConsoleWriteLogLine($"{Handle} is online on another device, merging data...");
 
 			if (save)
@@ -687,7 +687,7 @@ namespace SignalRConsole
 				m_user.Name = user.Name;
 				m_user.Handle = user.Handle;
 				m_user.Email = user.Email;
-				m_user.FavoriteColor = user.FavoriteColor;
+				m_user.Color = user.Color;
 			}
 
 			foreach (User friend in user.Friends)
@@ -700,8 +700,8 @@ namespace SignalRConsole
 				}
 				else
 				{
-					if (DateTime.TryParse(myFriend.ModifiedDate, out myModified) &&
-						DateTime.TryParse(friend.ModifiedDate, out modified))
+					if (DateTime.TryParse(myFriend.Modified, out myModified) &&
+						DateTime.TryParse(friend.Modified, out modified))
 					{
 						if (myModified < modified)
 						{
@@ -737,7 +737,7 @@ namespace SignalRConsole
 
 		private void SaveUser()
 		{
-			m_user.ModifiedDate = DateTime.UtcNow.ToString("s");
+			m_user.Modified = DateTime.UtcNow.ToString("s");
 			File.WriteAllText(FileName, JsonSerializer.Serialize(m_user, m_serializerOptions));
 		}
 
@@ -956,14 +956,14 @@ namespace SignalRConsole
 			if (friend != null)
 			{
 				if (friend.Handle != updated.Handle || friend.Name != updated.Name ||
-					friend.FavoriteColor != updated.FavoriteColor || friend.Id != updated.Id)
+					friend.Color != updated.Color || friend.Id != updated.Id)
 				{
 					friend.Handle = updated.Handle;
 					friend.Name = updated.Name;
-					friend.FavoriteColor = updated.FavoriteColor;
+					friend.Color = updated.Color;
 					friend.Id = updated.Id;
-					friend.CreationDate = updated.CreationDate;
-					friend.ModifiedDate = updated.ModifiedDate;
+					friend.Created = updated.Created;
+					friend.Modified = updated.Modified;
 					SaveUser();
 				}
 			}
@@ -1091,8 +1091,8 @@ namespace SignalRConsole
 		private string SerializeUserData(User user)
 		{
 			return $"{user.Handle}{c_delimiter}{user.Email}{c_delimiter}{user.Name}" +
-				$"{c_delimiter}{user.FavoriteColor}{c_delimiter}{user.Id}{c_delimiter}" +
-				$"{user.CreationDate}{c_delimiter}{user.ModifiedDate}";
+				$"{c_delimiter}{user.Color}{c_delimiter}{user.Id}{c_delimiter}" +
+				$"{user.Created}{c_delimiter}{user.Modified}";
 		}
 
 		private User DeserializeUserData(string data)
