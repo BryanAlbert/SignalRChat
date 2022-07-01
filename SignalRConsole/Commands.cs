@@ -23,7 +23,7 @@ namespace SignalRConsole
 				m_hubConnection = hubConnection;
 			}
 
-			public static async Task SendCommandAsync(CommandNames name, string from, string channel, string to, string data, bool? flag)
+			public static async Task SendCommandAsync(CommandNames name, string from, string channel, string to, User friend, bool? flag)
 			{
 				ConnectionCommand command = new ConnectionCommand()
 				{
@@ -31,7 +31,7 @@ namespace SignalRConsole
 					Channel = channel,
 					From = from,
 					To = to,
-					Data = data,
+					Data = friend,
 					Flag = flag
 				};
 
@@ -48,7 +48,7 @@ namespace SignalRConsole
 
 
 			public string Command { get; set; }
-			public string Data { get; set; }
+			public User Data { get; set; }
 			public bool? Flag { get; set; }
 
 			[JsonIgnore]

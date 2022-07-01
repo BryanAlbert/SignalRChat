@@ -10,17 +10,29 @@ namespace SignalRConsole
 		{
 		}
 
-		public User(string handle, string email, string name, string color, string fileName) : base(handle, email)
+		public User(string handle, string email, string name, string color) : base(handle, email)
 		{
-			Handle = handle;
-			Email = email;
 			Name = name;
 			Color = color;
-			FileName = fileName;
+		}
+
+		public User(string handle, string email, string name, string color, string fileName) :
+			this(handle, email, name, color)
+		{
 			Id = Guid.NewGuid().ToString();
 			Created = DateTime.UtcNow.ToString("s");
 			Modified = Created;
+			FileName = fileName;
 			Friends = new List<Friend>();
+		}
+
+		// returns a Friend (no Friends list)
+		public User(User user) : this(user.Handle, user.Email, user.Name, user.Color)
+		{
+			Id = user.Id;
+			Created = user.Created;
+			Modified = user.Modified;
+			Blocked = user.Blocked;
 		}
 
 

@@ -195,16 +195,14 @@ namespace SignalRConsole
 			{
 				if (State == States.Listening)
 				{
-					await SendCommandAsync(CommandNames.Hello, Id, channel, user,
-						JsonSerializer.Serialize((Friend) m_user), true);
+					await SendCommandAsync(CommandNames.Hello, Id, channel, user, new User(m_user), true);
 					ActiveChatChannelName = channel;
 					ActiveChatFriend = m_user.Friends.FirstOrDefault(x => x.Id == user);
 					_ = await MessageLoopAsync();
 				}
 				else
 				{
-					await SendCommandAsync(CommandNames.Hello, Id, channel, user,
-						JsonSerializer.Serialize((Friend) m_user), false);
+					await SendCommandAsync(CommandNames.Hello, Id, channel, user, new User(m_user), false);
 				}
 
 				return;
@@ -250,8 +248,7 @@ namespace SignalRConsole
 				return;
 			}
 
-			await SendCommandAsync(CommandNames.Hello, Id, channel, user, JsonSerializer.Serialize((Friend) m_user),
-				!friend?.Blocked);
+			await SendCommandAsync(CommandNames.Hello, Id, channel, user, new User(m_user), !friend?.Blocked);
 
 			if (m_console.ScriptMode)
 			{
@@ -514,7 +511,7 @@ namespace SignalRConsole
 			if (result.Item2 != null)
 			{
 				await SendCommandAsync(CommandNames.Hello, Id, result.Item2.Id, result.Item2.Id,
-					JsonSerializer.Serialize((Friend) m_user), false);
+					new User(m_user), false);
 				await UnfriendAsync(result.Item2);
 				ConsoleWriteLogLine($"{result.Item2.Handle} has been unfriended.");
 			}
@@ -621,8 +618,7 @@ namespace SignalRConsole
 			if (Id == pending.Id ? myCreated != created : myCreated < created)
 			{
 				ConsoleWriteLogLine($"{pending.Handle} is online on another device, sending merge data...");
-				await SendCommandAsync(CommandNames.Merge, Id, pending.Id, pending.Id,
-					JsonSerializer.Serialize(m_user), null);
+				await SendCommandAsync(CommandNames.Merge, Id, pending.Id, pending.Id, m_user, null);
 			}
 			
 			if (myCreated == DateTime.MinValue || created == DateTime.MinValue)
@@ -634,7 +630,7 @@ namespace SignalRConsole
 
 		private void MergeAccounts(ConnectionCommand merge)
 		{
-			User user = JsonSerializer.Deserialize<User>(merge.Data);
+			User user = merge.Data;
 			DateTime.TryParse(m_user.Created, out DateTime myCreated);
 			DateTime.TryParse(user.Created, out DateTime created);
 			if (myCreated == created)
@@ -690,7 +686,7 @@ namespace SignalRConsole
 			if (send)
 			{
 				await SendCommandAsync(CommandNames.Hello, Id, ActiveChatChannelName, ActiveChatFriend.Id,
-					JsonSerializer.Serialize((Friend) m_user), false);
+					new User(m_user), false);
 			}
 
 			if (ActiveChatChannelName != ChatChannelName)
@@ -766,8 +762,7 @@ namespace SignalRConsole
 				else
 				{
 					await m_hubConnection.SendAsync(c_leaveChannel, ActiveChatChannelName, Id);
-					ConsoleWriteLogLine($"{JsonSerializer.Deserialize<Friend>(DeserializeCommand(command.Data).Data).Handle}" +
-						$" can't chat at the moment.");
+					ConsoleWriteLogLine($"{command.Data.Handle} can't chat at the moment.");
 					State = States.Listening;
 				}
 			}
@@ -825,8 +820,7 @@ namespace SignalRConsole
 					if (existing == null)
 					{
 						// we unfriended him while he was away, send Hello with false
-						await SendCommandAsync(CommandNames.Hello, Id, pending.Id, pending.Id,
-							JsonSerializer.Serialize((Friend) m_user), false);
+						await SendCommandAsync(CommandNames.Hello, Id, pending.Id, pending.Id, new User(m_user), false);
 
 						// special message for triggering while scripting
 						if (m_console.ScriptMode)
@@ -837,14 +831,13 @@ namespace SignalRConsole
 						// he accepted our friend request while we were away
 						existing.Blocked = false;
 						SaveUser();
-						await SendCommandAsync(CommandNames.Hello, Id, existing.Id, existing.Id,
-							JsonSerializer.Serialize((Friend) m_user), true);
+						await SendCommandAsync(CommandNames.Hello, Id, existing.Id, existing.Id, new User(m_user), true);
 					}
 				}
 				else
 				{
 					await SendCommandAsync(CommandNames.Verify, Id, MakeHandleChannelName(existing ?? pending),
-						from, JsonSerializer.Serialize((Friend) m_user), null);
+						from, new User(m_user), null);
 				}
 			}
 
@@ -882,8 +875,8 @@ namespace SignalRConsole
 
 				if (m_online.Contains(pending))
 				{
-					await SendCommandAsync(CommandNames.Verify, Id, HandleChannelName, from,
-						JsonSerializer.Serialize((Friend) m_user), !pending.Blocked);
+					await SendCommandAsync(CommandNames.Verify, Id, HandleChannelName, from, new User(m_user),
+						!pending.Blocked);
 				}
 
 				if (!pending.Blocked ?? false)
@@ -917,9 +910,8 @@ namespace SignalRConsole
 			SaveUser();
 		}
 
-		private Tuple<Friend, Friend> UpdateFriendData(string data)
+		private Tuple<Friend, Friend> UpdateFriendData(Friend updated)
 		{
-			Friend updated = JsonSerializer.Deserialize<Friend>(data);
 			Friend friend = m_user.Friends.FirstOrDefault(x => x.Id == updated.Id) ??
 				m_user.Friends.FirstOrDefault(x => x.Email == updated.Email && x.Handle == updated.Handle);
 
