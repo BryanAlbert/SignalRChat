@@ -76,9 +76,6 @@ namespace SignalRConsole
 						case ConsoleKey.U:
 							await UnfriendFriendAsync();
 							continue;
-						case ConsoleKey.D:
-							await RemoveUserAsync();
-							continue;
 						case ConsoleKey.C:
 							await ChatFriendAsync();
 							continue;
@@ -109,7 +106,7 @@ namespace SignalRConsole
 			try
 			{
 				_ = MoveCursorToLog();
-				foreach (User friend in m_user.Friends.Where(x => x.Blocked != true))
+				foreach (Friend friend in m_user.Friends.Where(x => x.Blocked != true))
 					await m_hubConnection.SendAsync(c_leaveChannel, friend.Id ?? MakeHandleChannelName(friend), Id);
 
 				await m_hubConnection.SendAsync(c_leaveChannel, IdChannelName, Id);
@@ -168,7 +165,7 @@ namespace SignalRConsole
 		private string IdChannelName => m_user.Id;
 		private string ChatChannelName => MakeChatChannelName(m_user);
 		private string ActiveChatChannelName { get; set; }
-		private User ActiveChatFriend { get; set; }
+		private Friend ActiveChatFriend { get; set; }
 		private int NextLine { get; set; }
 		private int PromptLine { get; set; }
 
@@ -188,7 +185,7 @@ namespace SignalRConsole
 			if (user == Id)
 				return;
 
-			User friend = null;
+			Friend friend = null;
 			Debug.WriteLine($"{user} has joined the {string.Join('-', ParseChannelName(channel))} channel.");
 			if (channel == IdChannelName || channel == HandleChannelName)
 			{
@@ -198,14 +195,16 @@ namespace SignalRConsole
 			{
 				if (State == States.Listening)
 				{
-					await SendCommandAsync(CommandNames.Hello, Id, channel, user, SerializeUserData(m_user), true);
+					await SendCommandAsync(CommandNames.Hello, Id, channel, user,
+						JsonSerializer.Serialize((Friend) m_user), true);
 					ActiveChatChannelName = channel;
 					ActiveChatFriend = m_user.Friends.FirstOrDefault(x => x.Id == user);
 					_ = await MessageLoopAsync();
 				}
 				else
 				{
-					await SendCommandAsync(CommandNames.Hello, Id, channel, user, SerializeUserData(m_user), false);
+					await SendCommandAsync(CommandNames.Hello, Id, channel, user,
+						JsonSerializer.Serialize((Friend) m_user), false);
 				}
 
 				return;
@@ -226,7 +225,7 @@ namespace SignalRConsole
 						// pending friend joined his Handle channel, we leave and rejoin to signal him to send Hello with null
 						friend.HelloInitiated = true;
 						await m_hubConnection.SendAsync(c_leaveChannel, channel, Id);
-						await MonitorUserAsync(friend);
+						await MonitorFriendAsync(friend);
 					}
 
 					// someone else joined a Handle channel we're monitoring, just ignore it
@@ -251,7 +250,8 @@ namespace SignalRConsole
 				return;
 			}
 
-			await SendCommandAsync(CommandNames.Hello, Id, channel, user, SerializeUserData(m_user), !friend?.Blocked);
+			await SendCommandAsync(CommandNames.Hello, Id, channel, user, JsonSerializer.Serialize((Friend) m_user),
+				!friend?.Blocked);
 
 			if (m_console.ScriptMode)
 			{
@@ -313,7 +313,7 @@ namespace SignalRConsole
 			Debug.WriteLine($"{user} has left the {string.Join('-', parts)} channel.");
 			if (channel == IdChannelName)
 			{
-				User friend = m_user.Friends.FirstOrDefault(u => u.Id == user);
+				Friend friend = m_user.Friends.FirstOrDefault(u => u.Id == user);
 				if (friend != null && (!friend.Blocked ?? true))
 				{
 					ConsoleWriteLogLine($"Your {(friend.Blocked.HasValue ? "" : "(pending) ")}friend {friend.Handle} is offline.");
@@ -447,7 +447,7 @@ namespace SignalRConsole
 					continue;
 				}
 
-				User friend = m_user.Friends.FirstOrDefault(x => x.Handle == handle);
+				Friend friend = m_user.Friends.FirstOrDefault(x => x.Handle == handle);
 				if (friend != null)
 				{
 					if (!friend.Blocked.HasValue)
@@ -464,11 +464,11 @@ namespace SignalRConsole
 				if (string.IsNullOrEmpty(email))
 					break;
 
-				friend = new User(handle, email);
+				friend = new Friend(handle, email);
 				m_user.AddFriend(friend);
 				SaveUser();
 				ConsoleWriteLogLine($"A friend request has been sent to {handle}.");
-				await MonitorUserAsync(friend);
+				await MonitorFriendAsync(friend);
 				break;
 			}
 
@@ -486,11 +486,13 @@ namespace SignalRConsole
 			}
 
 			ConsoleWriteLogLine("Friends:");
-			foreach (User friend in m_user.Friends)
+			foreach (Friend friend in m_user.Friends)
 			{
 				ConsoleWriteLogLine($"{friend.Handle},{(friend.Name != null ? $" {friend.Name}," : "")}" +
 					$"{(friend.Email != null ? $" {friend.Email}," : "")}" +
-					$"{(friend.Color != null ? $" {friend.Color}" : "")}" +
+					$"{(friend.Color != null ? $" {friend.Color}," : "")}" +
+					$"{(friend.Created != null ? $" Created: {friend.Created}" :"")}" +
+					$"{(friend.Modified != null ? $" Modified: {friend.Modified}" :"")}" +
 					$"{(friend.Blocked.HasValue ? (friend.Blocked.Value ? " (blocked)" : "") : " (pending)")}" +
 					$"{(m_online.Any(x => x.Id == friend.Id) ? " (online)" : "")}");
 			}
@@ -506,56 +508,19 @@ namespace SignalRConsole
 			}
 
 			State = States.Busy;
-			Tuple<Point, User> result = await ChooseFriendAsync($"Whom would you like to unfriend (number, Enter to abort): ",
-				m_user.Friends, false);
+			Tuple<Point, Friend> result = await ChooseFriendAsync($"Whom would you like to unfriend" +
+				$" (number, Enter to abort): ", m_user.Friends);
 
 			if (result.Item2 != null)
-				await RemoveUserAsync(result.Item2, result.Item1);
-			else
-				m_console.SetCursorPosition(result.Item1.X, result.Item1.Y);
+			{
+				await SendCommandAsync(CommandNames.Hello, Id, result.Item2.Id, result.Item2.Id,
+					JsonSerializer.Serialize((Friend) m_user), false);
+				await UnfriendAsync(result.Item2);
+				ConsoleWriteLogLine($"{result.Item2.Handle} has been unfriended.");
+			}
 
+			m_console.SetCursorPosition(result.Item1.X, result.Item1.Y);
 			State = States.Listening;
-		}
-
-		private async Task RemoveUserAsync(User friend = null, Point? cursor = null)
-		{
-			bool delete = friend == null;
-			if (delete)
-			{
-				EraseLog();
-				State = States.Busy;
-				Tuple<Point, User> result = await ChooseFriendAsync($"Whom would you like to delete (number, Enter to abort): ",
-					m_users, true);
-				cursor = result.Item1;
-				friend = result.Item2;
-			}
-
-			do
-			{
-				if (friend != null)
-				{
-					if (delete)
-					{
-						Tuple<Point, ConsoleKeyInfo> result = await ConsoleWriteLogReadAsync($"Are you sure you want to delete {friend.Handle}? ");
-						if (result.Item2.Key != ConsoleKey.Y)
-							break;
-
-						File.Delete($"{friend.FileName}");
-					}
-
-					await SendCommandAsync(CommandNames.Hello, Id, friend.Id, friend.Id, SerializeUserData(m_user), false);
-					await UnfriendAsync(friend);
-					if (delete)
-						ConsoleWriteLogLine($"User {friend.Handle} has been deleted.");
-					else
-						ConsoleWriteLogLine($"{friend.Handle} has been unfriended.");
-				}
-			}
-			while (false);
-
-			m_console.SetCursorPosition(cursor.Value.X, cursor.Value.Y);
-			if (delete)
-				State = States.Listening;
 		}
 
 		private async Task ChatFriendAsync()
@@ -575,8 +540,8 @@ namespace SignalRConsole
 			}
 
 			State = States.Busy;
-			Tuple<Point, User> result = await ChooseFriendAsync("Whom would you like to chat with? (number, Enter to abort): ",
-				m_online, false);
+			Tuple<Point, Friend> result = await ChooseFriendAsync("Whom would you like to chat with?" +
+				" (number, Enter to abort): ", m_online);
 			m_console.SetCursorPosition(result.Item1.X, result.Item1.Y);
 
 			if (result.Item2 != null)
@@ -648,7 +613,7 @@ namespace SignalRConsole
 			return success;
 		}
 
-		private async Task SendMergeAsync(User pending)
+		private async Task SendMergeAsync(Friend pending)
 		{
 			DateTime.TryParse(m_user.Created, out DateTime myCreated);
 			DateTime.TryParse(pending.Created, out DateTime created);
@@ -690,9 +655,9 @@ namespace SignalRConsole
 				m_user.Color = user.Color;
 			}
 
-			foreach (User friend in user.Friends)
+			foreach (Friend friend in user.Friends)
 			{
-				User myFriend = m_user.Friends.FirstOrDefault(x => x.Id == friend.Id);
+				Friend myFriend = m_user.Friends.FirstOrDefault(x => x.Id == friend.Id);
 				if (myFriend == null)
 				{
 					m_user.AddFriend(friend);
@@ -725,7 +690,7 @@ namespace SignalRConsole
 			if (send)
 			{
 				await SendCommandAsync(CommandNames.Hello, Id, ActiveChatChannelName, ActiveChatFriend.Id,
-					SerializeUserData(m_user), false);
+					JsonSerializer.Serialize((Friend) m_user), false);
 			}
 
 			if (ActiveChatChannelName != ChatChannelName)
@@ -750,26 +715,26 @@ namespace SignalRConsole
 
 		private async Task MonitorFriendsAsync()
 		{
-			foreach (User user in m_user.Friends.Where(u => u.Blocked != true))
-				await MonitorUserAsync(user);
+			foreach (Friend friend in m_user.Friends.Where(u => u.Blocked != true))
+				await MonitorFriendAsync(friend);
 		}
 
-		private async Task MonitorUserAsync(User user)
+		private async Task MonitorFriendAsync(Friend friend)
 		{
-			if (!user.Blocked.HasValue || user.Id == null)
-				await m_hubConnection.SendAsync(c_joinChannel, MakeHandleChannelName(user), Handle);
+			if (!friend.Blocked.HasValue || friend.Id == null)
+				await m_hubConnection.SendAsync(c_joinChannel, MakeHandleChannelName(friend), Handle);
 			else
-				await m_hubConnection.SendAsync(c_joinChannel, user.Id, Id);
+				await m_hubConnection.SendAsync(c_joinChannel, friend.Id, Id);
 		}
 
-		private async Task<Tuple<Point, User>> ChooseFriendAsync(string prompt, List<User> users, bool delete)
+		private async Task<Tuple<Point, Friend>> ChooseFriendAsync(string prompt, List<Friend> friends)
 		{
-			ConsoleWriteLogLine($"{(delete ? "Users:" : "Friends:")}");
+			ConsoleWriteLogLine("Friends:");
 			int index;
-			for (index = 0; index < users.Count; index++)
+			for (index = 0; index < friends.Count; index++)
 			{
-				User user = users[index];
-				ConsoleWriteLogLine($"{string.Format("{0:X}", index)}: {user.Handle}{(delete ? $" ({user.FileName})" : "")}");
+				Friend friend = friends[index];
+				ConsoleWriteLogLine($"{string.Format("{0:X}", index)}: {friend.Handle}");
 			}
 
 			Tuple<Point, ConsoleKeyInfo> result = await ConsoleWriteLogReadAsync(prompt);
@@ -777,16 +742,16 @@ namespace SignalRConsole
 			while (true)
 			{
 				if (result.Item2.Key == ConsoleKey.Enter)
-					return new Tuple<Point, User>(result.Item1, null);
+					return new Tuple<Point, Friend>(result.Item1, null);
 
-				User user = int.TryParse(result.Item2.KeyChar.ToString(), NumberStyles.HexNumber, CultureInfo.InvariantCulture,
-					out index) && index >= 0 && index < users.Count ? users[index] : null;
+				Friend friend = int.TryParse(result.Item2.KeyChar.ToString(), NumberStyles.HexNumber, CultureInfo.InvariantCulture,
+					out index) && index >= 0 && index < friends.Count ? friends[index] : null;
 
-				if (user != null)
-					return new Tuple<Point, User>(result.Item1, user);
+				if (friend != null)
+					return new Tuple<Point, Friend>(result.Item1, friend);
 
 				result = await ConsoleWriteLogReadAsync($"{result.Item2.KeyChar} not valid, enter a number between 1 and" +
-					$" {Math.Min(users.Count, 9)}, please try again: ");
+					$" {Math.Min(friends.Count, 9)}, please try again: ");
 			}
 		}
 
@@ -801,7 +766,7 @@ namespace SignalRConsole
 				else
 				{
 					await m_hubConnection.SendAsync(c_leaveChannel, ActiveChatChannelName, Id);
-					ConsoleWriteLogLine($"{DeserializeUserData(DeserializeCommand(command.Data).Data).Handle}" +
+					ConsoleWriteLogLine($"{JsonSerializer.Deserialize<Friend>(DeserializeCommand(command.Data).Data).Handle}" +
 						$" can't chat at the moment.");
 					State = States.Listening;
 				}
@@ -828,9 +793,9 @@ namespace SignalRConsole
 
 		private async Task CheckFriendshipAsync(string from, ConnectionCommand hello)
 		{
-			Tuple<User, User> update = UpdateFriendData(hello.Data);
-			User existing = update.Item1;
-			User pending = update.Item2;
+			Tuple<Friend, Friend> update = UpdateFriendData(hello.Data);
+			Friend existing = update.Item1;
+			Friend pending = update.Item2;
 			if (from == Id || pending.Handle == Handle && pending.Name == Name && pending.Email == Email)
 			{
 				await SendMergeAsync(pending);
@@ -860,7 +825,8 @@ namespace SignalRConsole
 					if (existing == null)
 					{
 						// we unfriended him while he was away, send Hello with false
-						await SendCommandAsync(CommandNames.Hello, Id, pending.Id, pending.Id, SerializeUserData(m_user), false);
+						await SendCommandAsync(CommandNames.Hello, Id, pending.Id, pending.Id,
+							JsonSerializer.Serialize((Friend) m_user), false);
 
 						// special message for triggering while scripting
 						if (m_console.ScriptMode)
@@ -871,13 +837,14 @@ namespace SignalRConsole
 						// he accepted our friend request while we were away
 						existing.Blocked = false;
 						SaveUser();
-						await SendCommandAsync(CommandNames.Hello, Id, existing.Id, existing.Id, SerializeUserData(m_user), true);
+						await SendCommandAsync(CommandNames.Hello, Id, existing.Id, existing.Id,
+							JsonSerializer.Serialize((Friend) m_user), true);
 					}
 				}
 				else
 				{
 					await SendCommandAsync(CommandNames.Verify, Id, MakeHandleChannelName(existing ?? pending),
-						from, SerializeUserData(m_user), null);
+						from, JsonSerializer.Serialize((Friend) m_user), null);
 				}
 			}
 
@@ -890,9 +857,9 @@ namespace SignalRConsole
 
 		private async Task VerifyFriendAsync(string from, ConnectionCommand verify)
 		{
-			Tuple<User, User> update = UpdateFriendData(verify.Data);
-			User existing = update.Item1;
-			User pending = update.Item2;
+			Tuple<Friend, Friend> update = UpdateFriendData(verify.Data);
+			Friend existing = update.Item1;
+			Friend pending = update.Item2;
 			if (!verify.Flag.HasValue)
 			{
 				// add a Friends record to get notifications for him
@@ -914,7 +881,10 @@ namespace SignalRConsole
 				SaveUser();
 
 				if (m_online.Contains(pending))
-					await SendCommandAsync(CommandNames.Verify, Id, HandleChannelName, from, SerializeUserData(m_user), !pending.Blocked);
+				{
+					await SendCommandAsync(CommandNames.Verify, Id, HandleChannelName, from,
+						JsonSerializer.Serialize((Friend) m_user), !pending.Blocked);
+				}
 
 				if (!pending.Blocked ?? false)
 					await m_hubConnection.SendAsync(c_joinChannel, verify.Data);
@@ -939,7 +909,7 @@ namespace SignalRConsole
 				ConsoleWriteLogLine($"You and {existing.Handle} are {(existing.Blocked.Value ? "not" : "now")} friends!");
 		}
 
-		private async Task UnfriendAsync(User friend)
+		private async Task UnfriendAsync(Friend friend)
 		{
 			await m_hubConnection.SendAsync(c_leaveChannel, friend.Id ?? MakeHandleChannelName(friend), Id);
 			_ = m_online.Remove(friend);
@@ -947,10 +917,10 @@ namespace SignalRConsole
 			SaveUser();
 		}
 
-		private Tuple<User, User> UpdateFriendData(string data)
+		private Tuple<Friend, Friend> UpdateFriendData(string data)
 		{
-			User updated = DeserializeUserData(data);
-			User friend = m_user.Friends.FirstOrDefault(x => x.Id == updated.Id) ??
+			Friend updated = JsonSerializer.Deserialize<Friend>(data);
+			Friend friend = m_user.Friends.FirstOrDefault(x => x.Id == updated.Id) ??
 				m_user.Friends.FirstOrDefault(x => x.Email == updated.Email && x.Handle == updated.Handle);
 
 			if (friend != null)
@@ -968,7 +938,7 @@ namespace SignalRConsole
 				}
 			}
 
-			return new Tuple<User, User>(friend, updated);
+			return new Tuple<Friend, Friend>(friend, updated);
 		}
 
 		private async Task<bool> WaitAsync(string message, int intervalms = 100, int timeouts = 10)
@@ -1008,7 +978,7 @@ namespace SignalRConsole
 		private void DisplayMenu()
 		{
 			m_console.WriteLine("\nPick a command: a to add a friend, l to list friends, u to unfriend a friend,");
-			m_console.WriteLine("d to delete a user, c to chat, or x to exit");
+			m_console.WriteLine("c to chat, or x to exit");
 			PromptLine = m_console.CursorTop;
 			NextLine = PromptLine + 2;
 			State = States.Listening;
@@ -1073,9 +1043,9 @@ namespace SignalRConsole
 			return cursor;
 		}
 
-		private string MakeHandleChannelName(User user)
+		private string MakeHandleChannelName(Friend friend)
 		{
-			return $"{user.Email}{c_delimiter}{user.Handle}";
+			return $"{friend.Email}{c_delimiter}{friend.Handle}";
 		}
 
 		private string MakeHandleChannelName(string name, string email)
@@ -1083,22 +1053,9 @@ namespace SignalRConsole
 			return $"{email}{c_delimiter}{name}";
 		}
 
-		private string MakeChatChannelName(User user)
+		private string MakeChatChannelName(Friend friend)
 		{
-			return $"{user.Id}{c_delimiter}{c_chatChannelName}";
-		}
-
-		private string SerializeUserData(User user)
-		{
-			return $"{user.Handle}{c_delimiter}{user.Email}{c_delimiter}{user.Name}" +
-				$"{c_delimiter}{user.Color}{c_delimiter}{user.Id}{c_delimiter}" +
-				$"{user.Created}{c_delimiter}{user.Modified}";
-		}
-
-		private User DeserializeUserData(string data)
-		{
-			string[] parts = data.Split(c_delimiter);
-			return new User(parts[0], parts[1], parts[2], parts[3], parts[4], parts[5], parts[6]);
+			return $"{friend.Id}{c_delimiter}{c_chatChannelName}";
 		}
 
 		private string[] ParseChannelName(string channelName)
@@ -1120,7 +1077,7 @@ namespace SignalRConsole
 		private readonly object m_lock = new object();
 		private bool m_waitForEnter;
 		private readonly List<User> m_users = new List<User>();
-		private readonly List<User> m_online = new List<User>();
+		private readonly List<Friend> m_online = new List<Friend>();
 		private readonly List<string> m_log = new List<string>();
 		private readonly Stack<States> m_states = new Stack<States>();
 		private readonly JsonSerializerOptions m_serializerOptions = new JsonSerializerOptions()
