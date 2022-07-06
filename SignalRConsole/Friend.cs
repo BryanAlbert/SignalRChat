@@ -2,7 +2,7 @@
 
 namespace SignalRConsole
 {
-	public class Friend
+	public class Friend : Arithmetic
 	{
 		public Friend()
 		{
@@ -14,15 +14,14 @@ namespace SignalRConsole
 			Email = email;
 		}
 
+		public Friend(User user) : base(user)
+		{
+		}
 
-		public string Id { get; set; }
-		public string Email { get; set; }
-		public string Name { get; set; }
-		public string Handle { get; set; }
-		public string Color { get; set; }
-		public string Created { get; set; }
-		public string Modified { get; set; }
+
 		public bool? Blocked { get; set; }
+		public string BluetoothId { get; set; }
+		public string BluetoothDeviceName { get; set; }
 
 		[JsonIgnore]
 		public bool HelloInitiated { get; set; }

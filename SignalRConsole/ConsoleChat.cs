@@ -195,14 +195,14 @@ namespace SignalRConsole
 			{
 				if (State == States.Listening)
 				{
-					await SendCommandAsync(CommandNames.Hello, Id, channel, user, new User(m_user), true);
+					await SendCommandAsync(CommandNames.Hello, Id, channel, user, new Friend(m_user), true);
 					ActiveChatChannelName = channel;
 					ActiveChatFriend = m_user.Friends.FirstOrDefault(x => x.Id == user);
 					_ = await MessageLoopAsync();
 				}
 				else
 				{
-					await SendCommandAsync(CommandNames.Hello, Id, channel, user, new User(m_user), false);
+					await SendCommandAsync(CommandNames.Hello, Id, channel, user, new Friend(m_user), false);
 				}
 
 				return;
@@ -248,7 +248,7 @@ namespace SignalRConsole
 				return;
 			}
 
-			await SendCommandAsync(CommandNames.Hello, Id, channel, user, new User(m_user), !friend?.Blocked);
+			await SendCommandAsync(CommandNames.Hello, Id, channel, user, new Friend(m_user), !friend?.Blocked);
 
 			if (m_console.ScriptMode)
 			{
@@ -511,7 +511,7 @@ namespace SignalRConsole
 			if (result.Item2 != null)
 			{
 				await SendCommandAsync(CommandNames.Hello, Id, result.Item2.Id, result.Item2.Id,
-					new User(m_user), false);
+					new Friend(m_user), false);
 				await UnfriendAsync(result.Item2);
 				ConsoleWriteLogLine($"{result.Item2.Handle} has been unfriended.");
 			}
@@ -686,7 +686,7 @@ namespace SignalRConsole
 			if (send)
 			{
 				await SendCommandAsync(CommandNames.Hello, Id, ActiveChatChannelName, ActiveChatFriend.Id,
-					new User(m_user), false);
+					new Friend(m_user), false);
 			}
 
 			if (ActiveChatChannelName != ChatChannelName)
@@ -762,7 +762,7 @@ namespace SignalRConsole
 				else
 				{
 					await m_hubConnection.SendAsync(c_leaveChannel, ActiveChatChannelName, Id);
-					ConsoleWriteLogLine($"{command.Data.Handle} can't chat at the moment.");
+					ConsoleWriteLogLine($"{command.Friend.Handle} can't chat at the moment.");
 					State = States.Listening;
 				}
 			}
@@ -788,7 +788,7 @@ namespace SignalRConsole
 
 		private async Task CheckFriendshipAsync(string from, ConnectionCommand hello)
 		{
-			Tuple<Friend, Friend> update = UpdateFriendData(hello.Data);
+			Tuple<Friend, Friend> update = UpdateFriendData(hello.Friend);
 			Friend existing = update.Item1;
 			Friend pending = update.Item2;
 			if (from == Id || pending.Handle == Handle && pending.Name == Name && pending.Email == Email)
@@ -820,7 +820,7 @@ namespace SignalRConsole
 					if (existing == null)
 					{
 						// we unfriended him while he was away, send Hello with false
-						await SendCommandAsync(CommandNames.Hello, Id, pending.Id, pending.Id, new User(m_user), false);
+						await SendCommandAsync(CommandNames.Hello, Id, pending.Id, pending.Id, new Friend(m_user), false);
 
 						// special message for triggering while scripting
 						if (m_console.ScriptMode)
@@ -831,13 +831,13 @@ namespace SignalRConsole
 						// he accepted our friend request while we were away
 						existing.Blocked = false;
 						SaveUser();
-						await SendCommandAsync(CommandNames.Hello, Id, existing.Id, existing.Id, new User(m_user), true);
+						await SendCommandAsync(CommandNames.Hello, Id, existing.Id, existing.Id, new Friend(m_user), true);
 					}
 				}
 				else
 				{
 					await SendCommandAsync(CommandNames.Verify, Id, MakeHandleChannelName(existing ?? pending),
-						from, new User(m_user), null);
+						from, new Friend(m_user), null);
 				}
 			}
 
@@ -850,7 +850,7 @@ namespace SignalRConsole
 
 		private async Task VerifyFriendAsync(string from, ConnectionCommand verify)
 		{
-			Tuple<Friend, Friend> update = UpdateFriendData(verify.Data);
+			Tuple<Friend, Friend> update = UpdateFriendData(verify.Friend);
 			Friend existing = update.Item1;
 			Friend pending = update.Item2;
 			if (!verify.Flag.HasValue)
@@ -875,12 +875,12 @@ namespace SignalRConsole
 
 				if (m_online.Contains(pending))
 				{
-					await SendCommandAsync(CommandNames.Verify, Id, HandleChannelName, from, new User(m_user),
+					await SendCommandAsync(CommandNames.Verify, Id, HandleChannelName, from, new Friend(m_user),
 						!pending.Blocked);
 				}
 
 				if (!pending.Blocked ?? false)
-					await m_hubConnection.SendAsync(c_joinChannel, verify.Data);
+					await m_hubConnection.SendAsync(c_joinChannel, verify.Friend);
 
 				m_console.SetCursorPosition(confirm.Item1.X, confirm.Item1.Y);
 				existing = pending;
@@ -894,7 +894,7 @@ namespace SignalRConsole
 				if (verify.Flag == false)
 				{
 					_ = m_online.Remove(existing);
-					await m_hubConnection.SendAsync(c_leaveChannel, verify.Data, Handle);
+					await m_hubConnection.SendAsync(c_leaveChannel, verify.Friend, Handle);
 				}
 			}
 
@@ -1043,6 +1043,11 @@ namespace SignalRConsole
 		private string MakeHandleChannelName(string name, string email)
 		{
 			return $"{email}{c_delimiter}{name}";
+		}
+
+		private string MakeChatChannelName(User user)
+		{
+			return $"{user.Id}{c_delimiter}{c_chatChannelName}";
 		}
 
 		private string MakeChatChannelName(Friend friend)

@@ -4,7 +4,7 @@ using System.Text.Json.Serialization;
 
 namespace SignalRConsole
 {
-	public class User : Friend
+	public class User : Arithmetic
 	{
 		public User()
 		{
@@ -26,18 +26,10 @@ namespace SignalRConsole
 			Friends = new List<Friend>();
 		}
 
-		// returns a Friend (no Friends list)
-		public User(User user) : this(user.Handle, user.Email, user.Name, user.Color)
-		{
-			Id = user.Id;
-			Created = user.Created;
-			Modified = user.Modified;
-			Blocked = user.Blocked;
-		}
-
 
 		public double Version => c_dataVersion;
 		public List<Friend> Friends { get; set; }
+		public List<OperatorTables> Operators { get; set; }
 
 		[JsonIgnore]
 		public string FileName { get; set; }

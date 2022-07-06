@@ -23,7 +23,7 @@ namespace SignalRConsole
 				m_hubConnection = hubConnection;
 			}
 
-			public static async Task SendCommandAsync(CommandNames name, string from, string channel, string to, User friend, bool? flag)
+			public static async Task SendCommandAsync(CommandNames name, string from, string channel, string to, Friend friend, bool? flag)
 			{
 				ConnectionCommand command = new ConnectionCommand()
 				{
@@ -31,14 +31,37 @@ namespace SignalRConsole
 					Channel = channel,
 					From = from,
 					To = to,
-					Data = friend,
+					Friend = friend,
 					Flag = flag
 				};
 
-				if (name != CommandNames.Hello && name != CommandNames.Verify && name != CommandNames.Merge)
+				if (name != CommandNames.Hello && name != CommandNames.Verify)
 				{
 					Debug.WriteLine($"Error: SendCommand called with string  and bool is only valid for the {CommandNames.Hello}," +
-						$" {CommandNames.Verify} and {CommandNames.Merge} commands, called with: {name}");
+						$" and {CommandNames.Verify} commands, called with: {name}");
+				}
+				else
+				{
+					await command.SendCommandAsync();
+				}
+			}
+
+			public static async Task SendCommandAsync(CommandNames name, string from, string channel, string to, User user, bool? flag)
+			{
+				ConnectionCommand command = new ConnectionCommand()
+				{
+					Command = name.ToString(),
+					Channel = channel,
+					From = from,
+					To = to,
+					Data = user,
+					Flag = flag
+				};
+
+				if (name != CommandNames.Hello && name != CommandNames.Merge)
+				{
+					Debug.WriteLine($"Error: SendCommand called with string  and bool is only valid for the {CommandNames.Merge}" +
+						$" command, called with: {name}");
 				}
 				else
 				{
@@ -48,6 +71,7 @@ namespace SignalRConsole
 
 
 			public string Command { get; set; }
+			public Friend Friend { get; set; }
 			public User Data { get; set; }
 			public bool? Flag { get; set; }
 
