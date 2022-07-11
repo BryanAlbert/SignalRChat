@@ -294,7 +294,7 @@ namespace SignalRConsole
 						await VerifyFriendAsync(from, command);
 						break;
 					case CommandNames.Merge:
-						MergeAccounts(command);
+						await MergeAccountsAsync(command);
 						break;
 					case CommandNames.Unrecognized:
 					default:
@@ -617,7 +617,7 @@ namespace SignalRConsole
 
 			if (Id == pending.Id ? myCreated != created : myCreated < created)
 			{
-				ConsoleWriteLogLine($"{pending.Handle} is online on another device, sending merge data...");
+				ConsoleWriteLogLine($"{pending.Handle} is online on another device, sending tables...");
 				await SendCommandAsync(CommandNames.Merge, Id, pending.Id, pending.Id, m_user, null);
 			}
 			
@@ -628,7 +628,7 @@ namespace SignalRConsole
 			}
 		}
 
-		private void MergeAccounts(ConnectionCommand merge)
+		private async Task MergeAccountsAsync(ConnectionCommand merge)
 		{
 			User user = merge.Data;
 			DateTime.TryParse(m_user.Created, out DateTime myCreated);
@@ -638,9 +638,10 @@ namespace SignalRConsole
 
 			DateTime.TryParse(m_user.Modified, out DateTime myModified);
 			DateTime.TryParse(user.Modified, out DateTime modified);
-			bool save = m_user.Id != user.Id || myModified < modified && (m_user.Name != user.Name ||
+			bool firstMerge = m_user.Id != user.Id;
+			bool save = firstMerge || myModified < modified && (m_user.Name != user.Name ||
 				m_user.Handle != user.Handle || m_user.Email != user.Email || m_user.Color != user.Color);
-			ConsoleWriteLogLine($"{Handle} is online on another device, merging data...");
+			ConsoleWriteLogLine($"{Handle} is online on another device, merging received tables...");
 
 			if (save)
 			{
@@ -651,6 +652,20 @@ namespace SignalRConsole
 				m_user.Color = user.Color;
 			}
 
+			save = MergeFriends(save, user);
+			save = MergeTables(save, user);
+
+			if (save)
+			{
+				ConsoleWriteLogLine($"Merged tables from {Handle}.");
+				SaveUser();
+				if (firstMerge)
+					await SendCommandAsync(CommandNames.Merge, Id, user.Id, user.Id, m_user, null);
+			}
+		}
+
+		private bool MergeFriends(bool save, User user)
+		{
 			foreach (Friend friend in user.Friends)
 			{
 				Friend myFriend = m_user.Friends.FirstOrDefault(x => x.Id == friend.Id);
@@ -661,8 +676,8 @@ namespace SignalRConsole
 				}
 				else
 				{
-					if (DateTime.TryParse(myFriend.Modified, out myModified) &&
-						DateTime.TryParse(friend.Modified, out modified))
+					if (DateTime.TryParse(myFriend.Modified, out DateTime myModified) &&
+						DateTime.TryParse(friend.Modified, out DateTime modified))
 					{
 						if (myModified < modified)
 						{
@@ -674,11 +689,102 @@ namespace SignalRConsole
 				}
 			}
 
-			if (save)
+			return save;
+		}
+
+		private bool MergeTables(bool save, User user)
+		{
+			if (!m_user.MergeIndex?.ContainsKey(user.DeviceId) ?? true)
+				m_user.MergeIndex[user.DeviceId] = 0;
+
+			foreach (OperatorTables math in user.Operators)
 			{
-				ConsoleWriteLogLine($"Merged data from {Handle}.");
-				SaveUser();
+				OperatorTables myOperator = m_user.Operators.FirstOrDefault(x => x.Name == math.Name);
+				foreach (FactTable table in math.Tables)
+				{
+					FactTable myTable = myOperator.Tables.FirstOrDefault(x => x.Base == table.Base);
+					if (myTable == null)
+					{
+						foreach (Card card in table.Cards)
+							MergeCards(save, card, null);
+
+						myOperator.Tables.Add(table);
+						save = true;
+					}
+					else
+					{
+						foreach (Card card in table.Cards)
+						{
+							Card myCard = myTable.Cards.FirstOrDefault(x => x.Fact.First == card.Fact.First && x.Fact.Second == card.Fact.Second);
+							if (myCard == null)
+							{
+								MergeCards(save, card, null);
+								myTable.Cards.Add(card);
+								save = true;
+							}
+							else
+							{
+								save = MergeCards(save, card, myCard);
+								myCard.BestTime = card.BestTime == 0 || myCard.BestTime == 0 ?
+									Math.Max(card.BestTime, myCard.BestTime) :
+									Math.Min(card.BestTime, myCard.BestTime);
+							}
+						}
+					}
+				}
 			}
+
+			foreach (OperatorTables math in m_user.Operators)
+				foreach (FactTable myTables in math.Tables)
+					foreach (Card myCard in myTables.Cards.Where(x => x.MergeQuizzed == 0))
+						save = MergeCards(save, myCard, null);
+
+			return save;
+		}
+
+		private static bool MergeCards(bool save, Card card, Card myCard)
+		{
+			if (myCard == null)
+			{
+				card.MergeQuizzed = card.Quizzed;
+				card.MergeCorrect = card.Correct;
+				card.MergeTime =  card.TotalTime;
+				save = true;
+			}
+			else if (myCard.MergeQuizzed == 0 && card.MergeQuizzed > 0)
+			{
+				// the new device has merged our data and sent us a Merge command, set our Merged values to his
+				myCard.MergeQuizzed = myCard.Quizzed = card.Quizzed;
+				myCard.MergeCorrect = myCard.Correct = card.Correct;
+				myCard.MergeTime = myCard.TotalTime = card.TotalTime;
+				myCard.BestTime = card.BestTime;
+				save = true;
+			}
+			else
+			{
+				int merge = myCard.Quizzed + card.Quizzed - myCard.MergeQuizzed;
+				if (merge != myCard.MergeQuizzed)
+				{
+					myCard.MergeQuizzed = myCard.Quizzed = merge;
+					save = true;
+				}
+
+				merge = myCard.Correct + card.Correct - myCard.MergeCorrect;
+				if (merge != myCard.MergeCorrect)
+				{
+					myCard.MergeCorrect = myCard.Correct = merge;
+					save = true;
+				}
+
+				merge = myCard.TotalTime + card.TotalTime - myCard.MergeTime;
+				if (merge != myCard.MergeTime)
+				{
+					myCard.MergeTime = myCard.TotalTime = merge;
+					save = true;
+				}
+			}
+
+			return save;
 		}
 
 		private async Task LeaveChatChannelAsync(bool send)

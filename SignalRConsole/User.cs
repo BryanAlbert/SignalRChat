@@ -19,17 +19,25 @@ namespace SignalRConsole
 		public User(string handle, string email, string name, string color, string fileName) :
 			this(handle, email, name, color)
 		{
-			Id = Guid.NewGuid().ToString();
+			Id = DeviceId = Guid.NewGuid().ToString();
 			Created = DateTime.UtcNow.ToString("s");
 			Modified = Created;
 			FileName = fileName;
 			Friends = new List<Friend>();
+			MergeIndex = new Dictionary<string, int>();
+			Operators = new List<OperatorTables>();
+			Operators.Add(new OperatorTables() { Name = "Addition", Tables = new List<FactTable>() });
+			Operators.Add(new OperatorTables() { Name = "Subtraction", Tables = new List<FactTable>() });
+			Operators.Add(new OperatorTables() { Name = "Multiplication", Tables = new List<FactTable>() });
+			Operators.Add(new OperatorTables() { Name = "Division", Tables = new List<FactTable>() });
 		}
 
 
 		public double Version => c_dataVersion;
+		public string DeviceId { get; set; }
 		public List<Friend> Friends { get; set; }
 		public List<OperatorTables> Operators { get; set; }
+		public Dictionary<string, int> MergeIndex { get; set; }
 
 		[JsonIgnore]
 		public string FileName { get; set; }

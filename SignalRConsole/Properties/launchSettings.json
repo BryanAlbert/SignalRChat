@@ -2,7 +2,7 @@
   "profiles": {
     "SignalRConsole": {
       "commandName": "Project",
-      "commandLineArgs": ".\\New\\ Mia"
+      "commandLineArgs": ".\\Old\\ Mia"
     }
   }
 }
