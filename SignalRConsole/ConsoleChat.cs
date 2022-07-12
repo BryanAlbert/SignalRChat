@@ -390,7 +390,8 @@ namespace SignalRConsole
 				SaveUser();
 			}
 
-			m_console.WriteLine($"Name: {Name}, Email: {Email}, Favorite color: {m_user.Color}, Id: {Id},");
+			m_console.WriteLine($"Name: {Name}, Email: {Email}, Favorite color: {m_user.Color},");
+			m_console.WriteLine($"Id: {Id}, Device Id: {m_user.DeviceId},");
 			m_console.WriteLine($"Creation Date: {m_user.Created}, Modified Date: {m_user.Modified}");
 			return true;
 		}
@@ -694,8 +695,20 @@ namespace SignalRConsole
 
 		private bool MergeTables(bool save, User user)
 		{
-			if (!m_user.MergeIndex?.ContainsKey(user.DeviceId) ?? true)
-				m_user.MergeIndex[user.DeviceId] = 0;
+			int myMergeIndex = 0;
+			if (m_user.MergeIndex.ContainsKey(user.DeviceId))
+			{
+				myMergeIndex = m_user.MergeIndex[user.DeviceId];
+			}
+			else
+			{
+				myMergeIndex = m_user.MergeIndex.Values.Count == 0 ?  0 : m_user.MergeIndex.Values.Max();
+				m_user.MergeIndex[user.DeviceId] = myMergeIndex;
+			}
+
+			int mergeIndex = 0;
+			if (user.MergeIndex.ContainsKey(m_user.DeviceId))
+				mergeIndex = user.MergeIndex[m_user.DeviceId];
 
 			foreach (OperatorTables math in user.Operators)
 			{
@@ -706,7 +719,7 @@ namespace SignalRConsole
 					if (myTable == null)
 					{
 						foreach (Card card in table.Cards)
-							MergeCards(save, card, null);
+							MergeCards(save, card, mergeIndex, null, 0);
 
 						myOperator.Tables.Add(table);
 						save = true;
@@ -718,13 +731,13 @@ namespace SignalRConsole
 							Card myCard = myTable.Cards.FirstOrDefault(x => x.Fact.First == card.Fact.First && x.Fact.Second == card.Fact.Second);
 							if (myCard == null)
 							{
-								MergeCards(save, card, null);
+								MergeCards(save, card, mergeIndex, null, 0);
 								myTable.Cards.Add(card);
 								save = true;
 							}
 							else
 							{
-								save = MergeCards(save, card, myCard);
+								save = MergeCards(save, card, mergeIndex, myCard, myMergeIndex);
 								myCard.BestTime = card.BestTime == 0 || myCard.BestTime == 0 ?
 									Math.Max(card.BestTime, myCard.BestTime) :
 									Math.Min(card.BestTime, myCard.BestTime);
@@ -736,55 +749,67 @@ namespace SignalRConsole
 
 			foreach (OperatorTables math in m_user.Operators)
 				foreach (FactTable myTables in math.Tables)
-					foreach (Card myCard in myTables.Cards.Where(x => x.MergeQuizzed == 0))
-						save = MergeCards(save, myCard, null);
+					foreach (Card myCard in myTables.Cards.Where(x => x.MergeQuizzed[myMergeIndex] == 0))
+						save = MergeCards(save, myCard, mergeIndex, null, 0);
 
 			return save;
 		}
 
-		private static bool MergeCards(bool save, Card card, Card myCard)
+		private static bool MergeCards(bool save, Card card, int mergeIndex, Card myCard, int myMergeIndex)
 		{
 			if (myCard == null)
 			{
-				card.MergeQuizzed = card.Quizzed;
-				card.MergeCorrect = card.Correct;
-				card.MergeTime =  card.TotalTime;
+				InitializeMergeProperties(card, mergeIndex);
+				card.MergeQuizzed[mergeIndex] = card.Quizzed;
+				card.MergeCorrect[mergeIndex] = card.Correct;
+				card.MergeTime[mergeIndex] =  card.TotalTime;
 				save = true;
 			}
-			else if (myCard.MergeQuizzed == 0 && card.MergeQuizzed > 0)
+			else if (myCard.MergeQuizzed == null && card.MergeQuizzed != null)
 			{
 				// the new device has merged our data and sent us a Merge command, set our Merged values to his
-				myCard.MergeQuizzed = myCard.Quizzed = card.Quizzed;
-				myCard.MergeCorrect = myCard.Correct = card.Correct;
-				myCard.MergeTime = myCard.TotalTime = card.TotalTime;
+				InitializeMergeProperties(myCard, myMergeIndex);
+				myCard.MergeQuizzed[myMergeIndex] = myCard.Quizzed = card.Quizzed;
+				myCard.MergeCorrect[myMergeIndex] = myCard.Correct = card.Correct;
+				myCard.MergeTime[myMergeIndex] = myCard.TotalTime = card.TotalTime;
 				myCard.BestTime = card.BestTime;
 				save = true;
 			}
 			else
 			{
-				int merge = myCard.Quizzed + card.Quizzed - myCard.MergeQuizzed;
-				if (merge != myCard.MergeQuizzed)
+				int merge = myCard.Quizzed + card.Quizzed - myCard.MergeQuizzed[myMergeIndex];
+				if (merge != myCard.MergeQuizzed[myMergeIndex])
 				{
-					myCard.MergeQuizzed = myCard.Quizzed = merge;
+					myCard.MergeQuizzed[myMergeIndex] = myCard.Quizzed = merge;
 					save = true;
 				}
 
-				merge = myCard.Correct + card.Correct - myCard.MergeCorrect;
-				if (merge != myCard.MergeCorrect)
+				merge = myCard.Correct + card.Correct - myCard.MergeCorrect[myMergeIndex];
+				if (merge != myCard.MergeCorrect[myMergeIndex])
 				{
-					myCard.MergeCorrect = myCard.Correct = merge;
+					myCard.MergeCorrect[myMergeIndex] = myCard.Correct = merge;
 					save = true;
 				}
 
-				merge = myCard.TotalTime + card.TotalTime - myCard.MergeTime;
-				if (merge != myCard.MergeTime)
+				merge = myCard.TotalTime + card.TotalTime - myCard.MergeTime[myMergeIndex];
+				if (merge != myCard.MergeTime[myMergeIndex])
 				{
-					myCard.MergeTime = myCard.TotalTime = merge;
+					myCard.MergeTime[myMergeIndex] = myCard.TotalTime = merge;
 					save = true;
 				}
 			}
 
 			return save;
+		}
+
+		private static void InitializeMergeProperties(Card card, int mergeIndex)
+		{
+			if (card.MergeQuizzed == null)
+			{
+				card.MergeQuizzed = new int[++mergeIndex];
+				card.MergeCorrect = new int[mergeIndex];
+				card.MergeTime = new int[mergeIndex];
+			}
 		}
 
 		private async Task LeaveChatChannelAsync(bool send)
