@@ -67,6 +67,9 @@ namespace SignalRConsole
 				{
 					switch (menu.Key)
 					{
+						case ConsoleKey.T:
+							PrintTables();
+							continue;
 						case ConsoleKey.A:
 							await AddFriendAsync();
 							continue;
@@ -105,6 +108,7 @@ namespace SignalRConsole
 
 			try
 			{
+				EraseLog();
 				_ = MoveCursorToLog();
 				foreach (Friend friend in m_user.Friends.Where(x => x.Blocked != true))
 					await m_hubConnection.SendAsync(c_leaveChannel, friend.Id ?? MakeHandleChannelName(friend), Id);
@@ -367,9 +371,16 @@ namespace SignalRConsole
 			foreach (string fileName in Directory.EnumerateFiles(m_console.WorkingDirectory).
 				Where(x => x.EndsWith(m_console.WorkingDirectory == "." ? c_fileExtension : "json")))
 			{
-				User user = JsonSerializer.Deserialize<User>(File.ReadAllText(fileName));
-				user.FileName = fileName;
-				m_users.Add(user);
+				try
+				{
+					User user = JsonSerializer.Deserialize<User>(File.ReadAllText(fileName));
+					user.FileName = fileName;
+					m_users.Add(user);
+				}
+				catch (Exception exception)
+				{
+					m_console.WriteLine($"Exception loading {fileName}: {exception.Message}");
+				}
 			}
 
 			m_user = m_users.FirstOrDefault(u => u.Handle == handle);
@@ -494,6 +505,15 @@ namespace SignalRConsole
 					$"{(friend.Blocked.HasValue ? (friend.Blocked.Value ? " (blocked)" : "") : " (pending)")}" +
 					$"{(m_online.Any(x => x.Id == friend.Id) ? " (online)" : "")}");
 			}
+		}
+
+		private void PrintTables()
+		{
+			EraseLog();
+			if (m_user.Operators.Any(x => x.Tables.Count > 0))
+				ConsoleWriteLogLine(JsonSerializer.Serialize(m_user.Operators, m_serializerOptions));
+			else
+				ConsoleWriteLogLine($"{Handle} has no tables.");
 		}
 
 		private async Task UnfriendFriendAsync()
@@ -749,7 +769,7 @@ namespace SignalRConsole
 
 			foreach (OperatorTables math in m_user.Operators)
 				foreach (FactTable myTables in math.Tables)
-					foreach (Card myCard in myTables.Cards.Where(x => x.MergeQuizzed[myMergeIndex] == 0))
+					foreach (Card myCard in myTables.Cards.Where(x => x.MergeQuizzed == null))
 						save = MergeCards(save, myCard, mergeIndex, null, 0);
 
 			return save;
@@ -777,6 +797,8 @@ namespace SignalRConsole
 			}
 			else
 			{
+				InitializeMergeProperties(card, mergeIndex);
+				InitializeMergeProperties(myCard, myMergeIndex);
 				int merge = myCard.Quizzed + card.Quizzed - myCard.MergeQuizzed[myMergeIndex];
 				if (merge != myCard.MergeQuizzed[myMergeIndex])
 				{
@@ -1100,8 +1122,8 @@ namespace SignalRConsole
 
 		private void DisplayMenu()
 		{
-			m_console.WriteLine("\nPick a command: a to add a friend, l to list friends, u to unfriend a friend,");
-			m_console.WriteLine("c to chat, or x to exit");
+			m_console.WriteLine("\nPick a command: t to list tables, a to add a friend, l to list friends,");
+			m_console.WriteLine("u to unfriend a friend, c to chat, or x to exit");
 			PromptLine = m_console.CursorTop;
 			NextLine = PromptLine + 2;
 			State = States.Listening;

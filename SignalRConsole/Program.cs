@@ -8,6 +8,26 @@ namespace SignalRConsole
 {
 	public class Program
 	{
+		/// <summary>
+		/// Entry point for the SignalRChat application.
+		/// </summary>
+		/// <param name="args">The following arguments are supported:</param>
+		/// (none): Ask for user Handle, load json from the current directory.
+		/// Handle: Load json files and open the user whose Handle matches Handle, else
+		///		create a new user with Handle Handle: Mia
+		/// Folder: Run from the directory Folder: .\Test-01\
+		/// Folder Handle: Load user with Handle (see above) in directory Folder:
+		///		.\Test-01\ Mia
+		/// (Test harness file path): Load the test-harness file specified by the path, setting 
+		///		the working directory to the file's parent folder: .\Test-01\Test.txt
+		/// (Script file path): Load the script file specified by the path, setting the working
+		///		directory to the file's parent folder: MiaInput.txt (when specified in a test harnes
+		///		file, the working folder is that file's parent directory)
+		/// Folder InputFileName OutputFileName Tag: Run the commands in the script file 
+		///		InputFileName, writes output to OutputFileName, both relative to Folder, console
+		///		output is prepended with Tag: Old MiaInput.txt MiaOutput.txt Old. If this command
+		///		line is specified in a test harness file, Folder is relative to that file's parent directory
+		/// <returns>0 for success, negative values for various errors.</returns>
 		private static async Task<int> Main(string[] args)
 		{
 			do

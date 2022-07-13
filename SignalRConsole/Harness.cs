@@ -9,23 +9,27 @@ namespace SignalRConsole
 	{
 		public Harness(string[] args, string workingDirectory = null)
 		{
+			m_args = new List<string>(args);
 			if (workingDirectory != null)
 			{
 				WorkingDirectory = workingDirectory.Length > Environment.CurrentDirectory.Length &&
 					Environment.CurrentDirectory.StartsWith(Environment.CurrentDirectory) ?
 						workingDirectory[(Environment.CurrentDirectory.Length + 1)..] :
 						workingDirectory;
+				
+				if (m_args.Count > 0 && Directory.Exists(m_args[0]))
+					WorkingDirectory = Path.Combine(WorkingDirectory, NextArg());
+
 				Console.WriteLine($"Harness: working directory is: {WorkingDirectory}");
 			}
 
-			m_args = new List<string>(args);
-			if (m_args.Count > 0 && Directory.Exists(args[0]))
+			if (m_args.Count > 0 && Directory.Exists(m_args[0]))
 			{
 				WorkingDirectory = NextArg();
 				Console.WriteLine($"Harness: working directory is: {WorkingDirectory}");
 			}
-			else if (m_args.Count > 0 && (File.Exists(args[0]) || WorkingDirectory == null ? File.Exists(args[0]) :
-				File.Exists(Path.Combine(WorkingDirectory, args[0]))))
+			else if (m_args.Count > 0 && (File.Exists(m_args[0]) || WorkingDirectory == null ? File.Exists(m_args[0]) :
+				File.Exists(Path.Combine(WorkingDirectory, m_args[0]))))
 			{
 				// command line can contain the script file name, the logging file name, and the tag for console output
 				m_inputStreamFilename = NextArg();
