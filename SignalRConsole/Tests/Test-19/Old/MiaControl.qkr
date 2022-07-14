@@ -1,0 +1,145 @@
+{
+  "Version": 1,
+  "DeviceId": "bc648e13-9aeb-41dc-aa7a-21d295f8d95d",
+  "Friends": [
+    {
+      "Blocked": false,
+      "BluetoothId": null,
+      "BluetoothDeviceName": null,
+      "Id": "a1b4828b-4a1b-42ff-aaf2-e153fccee6d4",
+      "Email": "bryan.m.albert@gmail.com",
+      "Name": "Bryan Albert",
+      "Handle": "Papa",
+      "Color": null,
+      "Created": "2022-06-27T23:00:00",
+      "Modified": "2022-06-27T23:00:00"
+    },
+    {
+      "Blocked": false,
+      "BluetoothId": null,
+      "BluetoothDeviceName": null,
+      "Id": "brucef68-3c37-4aef-b8a6-1649659bbbc4",
+      "Email": "bruce@hotmail.com",
+      "Name": "Bruce Albert",
+      "Handle": "Bruce",
+      "Color": "Red",
+      "Created": "2022-07-06T03:05:12",
+      "Modified": "2022-07-06T03:05:12"
+    }
+  ],
+  "Operators": [
+    {
+      "Name": "Addition",
+      "Tables": []
+    },
+    {
+      "Name": "Subtraction",
+      "Tables": []
+    },
+    {
+      "Name": "Multiplication",
+      "Tables": [
+        {
+          "Base": 1,
+          "Cards": [
+            {
+              "Fact": {
+                "First": 1,
+                "Second": 1
+              },
+              "Quizzed": 3,
+              "Correct": 3,
+              "TotalTime": 1744,
+              "MergeQuizzed": [
+                3
+              ],
+              "MergeCorrect": [
+                3
+              ],
+              "MergeTime": [
+                1744
+              ],
+              "BestTime": 518
+            },
+            {
+              "Fact": {
+                "First": 1,
+                "Second": 2
+              },
+              "Quizzed": 3,
+              "Correct": 3,
+              "TotalTime": 2346,
+              "MergeQuizzed": [
+                3
+              ],
+              "MergeCorrect": [
+                3
+              ],
+              "MergeTime": [
+                2346
+              ],
+              "BestTime": 692
+            }
+          ]
+        },
+        {
+          "Base": 2,
+          "Cards": [
+            {
+              "Fact": {
+                "First": 2,
+                "Second": 1
+              },
+              "Quizzed": 3,
+              "Correct": 3,
+              "TotalTime": 1770,
+              "MergeQuizzed": [
+                3
+              ],
+              "MergeCorrect": [
+                3
+              ],
+              "MergeTime": [
+                1770
+              ],
+              "BestTime": 542
+            },
+            {
+              "Fact": {
+                "First": 2,
+                "Second": 2
+              },
+              "Quizzed": 1,
+              "Correct": 1,
+              "TotalTime": 1532,
+              "MergeQuizzed": [
+                1
+              ],
+              "MergeCorrect": [
+                1
+              ],
+              "MergeTime": [
+                1532
+              ],
+              "BestTime": 532
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "Name": "Division",
+      "Tables": []
+    }
+  ],
+  "MergeIndex": {
+    "e27f1d65-1468-4409-a21a-f5b4f000ee4f": 0
+  },
+  "Id": "mia38308-9a9b-4a6b-9db9-9e9b6238283f",
+  "Email": "mia@albertnet.us",
+  "Name": "Mia Albert",
+  "Handle": "Mia",
+  "Color": "Turquoise",
+  "Created": "2022-06-27T23:00:00",
+  "Modified": "2022-07-12T23:10:57"
+}

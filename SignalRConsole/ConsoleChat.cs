@@ -400,11 +400,50 @@ namespace SignalRConsole
 				m_users.Add(m_user);
 				SaveUser();
 			}
+			else
+			{
+				if (m_user.Version != User.c_dataVersion)
+					UdpateJson(m_user);
+			}
 
 			m_console.WriteLine($"Name: {Name}, Email: {Email}, Favorite color: {m_user.Color},");
 			m_console.WriteLine($"Id: {Id}, Device Id: {m_user.DeviceId},");
 			m_console.WriteLine($"Creation Date: {m_user.Created}, Modified Date: {m_user.Modified}");
 			return true;
+		}
+
+		private void UdpateJson(User m_user)
+		{
+			// update no version to Version 1.0
+			m_console.WriteLine($"{FileName} has Version {m_user.Version}, updating to version {User.c_dataVersion}");
+			m_user.Version = User.c_dataVersion;
+			if (m_user.DeviceId == null)
+				m_user.DeviceId = Guid.NewGuid().ToString();
+
+			if (m_user.Operators == null)
+			{
+				m_user.Operators = new List<OperatorTables>
+				{
+					new OperatorTables() { Name = "Addition", Tables = new List<FactTable>() },
+					new OperatorTables() { Name = "Subtraction", Tables = new List<FactTable>() },
+					new OperatorTables() { Name = "Multiplication", Tables = new List<FactTable>() },
+					new OperatorTables() { Name = "Division", Tables = new List<FactTable>() }
+				};
+			}
+
+			if (m_user.MergeIndex == null)
+				m_user.MergeIndex = new Dictionary<string, int>();
+
+			if (m_user.Color == null)
+				m_user.Color = "White";
+
+			if (m_user.Created == null)
+				m_user.Created = File.GetLastWriteTimeUtc(FileName).ToString("s");
+
+			if (m_user.Modified == null)
+				m_user.Modified = File.GetCreationTimeUtc(FileName).ToString("s");
+
+			SaveUser();
 		}
 
 		private async Task<string> RegisterAsync()

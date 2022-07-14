@@ -1,0 +1,3 @@
+test-harness Merging old account with tables to empty new account
+start Old MiaInput.txt MiaOutput.txt Old
+start New MiaInput.txt MiaOutput.txt New

@@ -1,0 +1,3 @@
+test-harness After initial merge, merge more data from New
+start Old MiaInput.txt MiaOutput.txt Old
+start New MiaInput.txt MiaOutput.txt New

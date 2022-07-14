@@ -1,0 +1,57 @@
+{
+  "Description": "Existing device with no data, before new device is merged.",
+  "Version": 1,
+  "DeviceId": "bc648e13-9aeb-41dc-aa7a-21d295f8d95d",
+  "Friends": [
+    {
+      "Blocked": false,
+      "BluetoothId": null,
+      "BluetoothDeviceName": null,
+      "Id": "a1b4828b-4a1b-42ff-aaf2-e153fccee6d4",
+      "Email": "bryan.m.albert@gmail.com",
+      "Name": "Bryan Albert",
+      "Handle": "Papa",
+      "Color": null,
+      "Created": "2022-06-27T23:00:00",
+      "Modified": "2022-06-27T23:00:00"
+    },
+    {
+      "Blocked": false,
+      "BluetoothId": null,
+      "BluetoothDeviceName": null,
+      "Id": "brucef68-3c37-4aef-b8a6-1649659bbbc4",
+      "Email": "bruce@hotmail.com",
+      "Name": "Bruce Albert",
+      "Handle": "Bruce",
+      "Color": "Red",
+      "Created": "2022-07-06T03:05:12",
+      "Modified": "2022-07-06T03:05:12"
+    }
+  ],
+  "Operators": [
+    {
+      "Name": "Addition",
+      "Tables": []
+    },
+    {
+      "Name": "Subtraction",
+      "Tables": []
+    },
+    {
+      "Name": "Multiplication",
+      "Tables": []
+    },
+    {
+      "Name": "Division",
+      "Tables": []
+    }
+  ],
+  "MergeIndex": {},
+  "Id": "mia38308-9a9b-4a6b-9db9-9e9b6238283f",
+  "Email": "mia@albertnet.us",
+  "Name": "Mia Albert",
+  "Handle": "Mia",
+  "Color": "Turquoise",
+  "Created": "2022-06-27T23:00:00",
+  "Modified": "2022-07-06T03:13:41"
+}

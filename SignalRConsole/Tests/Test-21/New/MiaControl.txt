@@ -1,0 +1,225 @@
+Initializing server and connecting to URL: https://localhost:5001/chathub
+What is your handle (nickname)? 
+Mia
+Name: Mia Albert, Email: mia@albertnet.us, Favorite color: Turquoise,
+Id: mia38308-9a9b-4a6b-9db9-9e9b6238283f, Device Id: e27f1d65-1468-4409-a21a-f5b4f000ee4f,
+Creation Date: 2022-07-06T23:11:31, Modified Date: 2022-07-08T00:10:38
+Pick a command: t to list tables, a to add a friend, l to list friends,
+u to unfriend a friend, c to chat, or x to exit
+(Sent unrecognized command to Mia.)
+Listening> 
+Mia is online on another device, sending tables...
+Mia is online on another device, merging received tables...
+Merged tables from Mia.
+L
+Friends:
+Papa, Bryan Albert, bryan.m.albert@gmail.com, Created: 2022-06-27T23:00:00 Modified: 2022-06-27T23:00:00
+Bruce, Bruce Albert, bruce@hotmail.com, Red, Created: 2022-07-06T03:05:12 Modified: 2022-07-06T03:05:12
+T
+[
+  {
+    "Name": "Addition",
+    "Tables": []
+  },
+  {
+    "Name": "Subtraction",
+    "Tables": []
+  },
+  {
+    "Name": "Multiplication",
+    "Tables": [
+      {
+        "Base": 1,
+        "Cards": [
+          {
+            "Fact": {
+              "First": 1,
+              "Second": 1
+            },
+            "Quizzed": 4,
+            "Correct": 4,
+            "TotalTime": 2387,
+            "MergeQuizzed": [
+              4
+            ],
+            "MergeCorrect": [
+              4
+            ],
+            "MergeTime": [
+              2387
+            ],
+            "BestTime": 518
+          },
+          {
+            "Fact": {
+              "First": 1,
+              "Second": 2
+            },
+            "Quizzed": 4,
+            "Correct": 4,
+            "TotalTime": 3041,
+            "MergeQuizzed": [
+              4
+            ],
+            "MergeCorrect": [
+              4
+            ],
+            "MergeTime": [
+              3041
+            ],
+            "BestTime": 692
+          },
+          {
+            "Fact": {
+              "First": 1,
+              "Second": 3
+            },
+            "Quizzed": 2,
+            "Correct": 2,
+            "TotalTime": 1397,
+            "MergeQuizzed": [
+              2
+            ],
+            "MergeCorrect": [
+              2
+            ],
+            "MergeTime": [
+              1397
+            ],
+            "BestTime": 670
+          }
+        ]
+      },
+      {
+        "Base": 2,
+        "Cards": [
+          {
+            "Fact": {
+              "First": 2,
+              "Second": 1
+            },
+            "Quizzed": 4,
+            "Correct": 4,
+            "TotalTime": 2437,
+            "MergeQuizzed": [
+              4
+            ],
+            "MergeCorrect": [
+              4
+            ],
+            "MergeTime": [
+              2437
+            ],
+            "BestTime": 542
+          },
+          {
+            "Fact": {
+              "First": 2,
+              "Second": 2
+            },
+            "Quizzed": 2,
+            "Correct": 2,
+            "TotalTime": 2407,
+            "MergeQuizzed": [
+              2
+            ],
+            "MergeCorrect": [
+              2
+            ],
+            "MergeTime": [
+              2407
+            ],
+            "BestTime": 532
+          },
+          {
+            "Fact": {
+              "First": 2,
+              "Second": 3
+            },
+            "Quizzed": 1,
+            "Correct": 1,
+            "TotalTime": 1579,
+            "MergeQuizzed": [
+              1
+            ],
+            "MergeCorrect": [
+              1
+            ],
+            "MergeTime": [
+              1579
+            ],
+            "BestTime": 579
+          }
+        ]
+      },
+      {
+        "Base": 3,
+        "Cards": [
+          {
+            "Fact": {
+              "First": 3,
+              "Second": 1
+            },
+            "Quizzed": 1,
+            "Correct": 1,
+            "TotalTime": 880,
+            "MergeQuizzed": [
+              1
+            ],
+            "MergeCorrect": [
+              1
+            ],
+            "MergeTime": [
+              880
+            ],
+            "BestTime": 880
+          },
+          {
+            "Fact": {
+              "First": 3,
+              "Second": 2
+            },
+            "Quizzed": 1,
+            "Correct": 1,
+            "TotalTime": 1125,
+            "MergeQuizzed": [
+              1
+            ],
+            "MergeCorrect": [
+              1
+            ],
+            "MergeTime": [
+              1125
+            ],
+            "BestTime": 125
+          },
+          {
+            "Fact": {
+              "First": 3,
+              "Second": 3
+            },
+            "Quizzed": 1,
+            "Correct": 1,
+            "TotalTime": 880,
+            "MergeQuizzed": [
+              1
+            ],
+            "MergeCorrect": [
+              1
+            ],
+            "MergeTime": [
+              880
+            ],
+            "BestTime": 880
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "Name": "Division",
+    "Tables": []
+  }
+]
+X
+Finished.
