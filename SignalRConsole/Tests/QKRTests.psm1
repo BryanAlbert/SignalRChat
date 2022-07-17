@@ -10,7 +10,7 @@ function Get-Descriptions($number)
     {
         Get-ChildItem -Recurse QKRTest.psm1 | ForEach-Object {
             Import-Module -DisableNameChecking -Force $_
-            Get-Description $false
+            Reset-Test $false
         }
     }
     else

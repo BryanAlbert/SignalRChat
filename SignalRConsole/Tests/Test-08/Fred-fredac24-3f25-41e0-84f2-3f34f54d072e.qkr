@@ -3,7 +3,7 @@
   "Id": "fredac24-3f25-41e0-84f2-3f34f54d072e",
   "Handle": "Fred",
   "Name": "Fred Sanson",
-  "FavoriteColor": "Green",
+  "Color": "Green",
   "Email": "fred@gmail.com",
   "Operators": [
     {

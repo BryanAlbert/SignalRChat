@@ -6,8 +6,8 @@ Id: e27f1d65-1468-4409-a21a-f5b4f000ee4f, Device Id: e27f1d65-1468-4409-a21a-f5b
 Creation Date: 2022-07-08T03:43:05, Modified Date: 2022-07-08T04:20:51
 Pick a command: t to list tables, a to add a friend, l to list friends,
 u to unfriend a friend, c to chat, or x to exit
-(Sent unrecognized command to Mia.)
 Listening> 
+(Sent Hello null command to Mia.)
 Mia is online on another device, merging received tables...
 Merged tables from Mia.
 L

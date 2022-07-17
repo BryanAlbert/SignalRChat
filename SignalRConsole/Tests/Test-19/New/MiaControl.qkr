@@ -4,6 +4,7 @@
   "Friends": [
     {
       "Blocked": false,
+      "DeviceId": null,
       "BluetoothId": null,
       "BluetoothDeviceName": null,
       "Id": "a1b4828b-4a1b-42ff-aaf2-e153fccee6d4",
@@ -16,6 +17,7 @@
     },
     {
       "Blocked": false,
+      "DeviceId": null,
       "BluetoothId": null,
       "BluetoothDeviceName": null,
       "Id": "brucef68-3c37-4aef-b8a6-1649659bbbc4",
@@ -141,5 +143,5 @@
   "Handle": "Mia",
   "Color": "Turquoise",
   "Created": "2022-07-08T03:43:05",
-  "Modified": "2022-07-12T23:10:57"
+  "Modified": "2022-07-17T00:03:23"
 }

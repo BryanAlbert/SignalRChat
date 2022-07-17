@@ -35,7 +35,7 @@ function Run-Test
 {
 	$script = Join-Path $test "Test.txt"
 	"Running script $script"
-	Get-Description $false
+	Reset-Test $true
 	dotnet.exe .\SignalRConsole.dll $script
 	Check-Test $false
 }
@@ -45,19 +45,19 @@ function Check-Test($checkQkr)
 	Push-Location $test
 	$script:warningCount = 0
 	$script:errorCount = 0
-	Compare-Files .\Old\MiaControl.qkr .\Old\Mia.qkr.json
-	Compare-Files .\New\MiaControl.qkr .\New\Mia.qkr.json
+	Compare-Files .\Old\MiaControl.qkr .\Old\Mia.qkr.json 2
+	Compare-Files .\New\MiaControl.qkr .\New\Mia.qkr.json 2
 	
 	if ($null -eq $checkQkr -or $checkQkr)
 	{
-		Compare-Files .\Bruce-brucef68-3c37-4aef-b8a6-1649659bbbc4Control.qkr (Join-Path $global:qkrLocalState Bruce-brucef68-3c37-4aef-b8a6-1649659bbbc4.json)
-		Compare-Files .\Fred-fredac24-3f25-41e0-84f2-3f34f54d072eControl.qkr (Join-Path $global:qkrLocalState Fred-fredac24-3f25-41e0-84f2-3f34f54d072e.json)
+		Compare-Files .\Bruce-brucef68-3c37-4aef-b8a6-1649659bbbc4Control.qkr (Join-Path $global:qkrLocalState Bruce-brucef68-3c37-4aef-b8a6-1649659bbbc4.json) 2
+		Compare-Files .\Fred-fredac24-3f25-41e0-84f2-3f34f54d072eControl.qkr (Join-Path $global:qkrLocalState Fred-fredac24-3f25-41e0-84f2-3f34f54d072e.json) 2
 	}
 
-	Compare-Files .\Old\MiaControl.txt .\Old\MiaOutput.txt 2
-	Compare-Files .\New\MiaControl.txt .\New\MiaOutput.txt 2
+	Compare-Files .\Old\Mia.qkr.json .\New\Mia.qkr.json 2 $true
 
-	Compare-Files .\Old\Mia.qkr.json .\New\Mia.qkr.json
+	Compare-Files .\Old\MiaControl.txt .\Old\MiaOutput.txt 1
+	Compare-Files .\New\MiaControl.txt .\New\MiaOutput.txt 1
 
 	"Warning count: $script:warningCount"
 	"Error count: $script:errorCount"
@@ -92,10 +92,12 @@ function Update-SignalRConsole
 	Get-ChildItem ..\bin\Debug\netcoreapp3.1\* -File | Copy-Item -Destination .
 }
 
-function Compare-Files($control, $file, $errorLevel)
+function Compare-Files($control, $file, $errorLevel, $merge)
 {
 	"Comparing: $control with $file"
-	if (((Compare-Object (Get-Content $control) (Get-Content $file)) | Measure-Object).Count -gt 0)
+	$controlText = Get-FilteredText $control $merge
+	$fileText = Get-FilteredText $file $merge
+	if (((Compare-Object $controlText $fileText) | Measure-Object).Count -gt 0)
 	{
 		if ($errorLevel -eq 1)
 		{
@@ -114,6 +116,36 @@ function Compare-Files($control, $file, $errorLevel)
 			"Files differ, check output:"
 		}
 
-		Compare-Object (Get-Content $control) (Get-Content $file) | Format-Table -Property SideIndicator, InputObject
+		Compare-Object $controlText $fileText | Format-Table -Property SideIndicator, InputObject
+	}
+}
+
+function Get-FilteredText($file, $merge)
+{
+	Get-Content $file | ForEach-Object {
+		if ($_ -match "Modified: ") {
+			$_ -replace "Modified: .{19}", "Modified <Date>"
+		}
+		elseif ($_ -match "`"Modified`": `".{19}") {
+			$_ -replace "`"Modified`": `".{19}", "`"Modified`": `"<Date>`""
+		}
+		elseif ($_ -match "Modified Date: .{19}") {
+			$_ -replace "Modified Date: .{19}", "Modified Date: `"<Date>`""
+		}
+		elseif ($merge)
+		{
+			if ($_ -match "`"Created`": `".{19}") {
+				$_ -replace "`"Created`": `".{19}", "`"Created`": `"<Date>`""
+			}
+			elseif ($_ -match "`"DeviceId`": `"[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}`",") {
+				("  " + $_ -replace "`"DeviceId`": ", "" -replace ",", "") + ": 0"
+			}
+			else {
+				$_
+			}
+		}
+		else {
+			$_
+		}
 	}
 }

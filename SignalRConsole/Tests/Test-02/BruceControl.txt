@@ -1,8 +1,12 @@
 Initializing server and connecting to URL: https://localhost:5001/chathub
 What is your handle (nickname)? 
 Bruce
-Pick a command: a to add a friend, l to list friends, u to unfriend a friend,
-d to delete a user, c to chat, or x to exit
+Name: Bruce Albert, Email: bruce@hotmail.com, Favorite color: Red,
+Id: brucef68-3c37-4aef-b8a6-1649659bbbc4, Device Id: d0699370-cfaf-4865-b979-8f3c7301fb85,
+Creation Date: 2022-06-06T19:03:41, Modified Date: 2022-07-14T21:47:55
+Pick a command: t to list tables, a to add a friend, l to list friends,
+u to unfriend a friend, c to chat, or x to exit
+(Sent Hello null command to Bruce.)
 Listening> 
 A
 Busy...       
@@ -16,6 +20,6 @@ Your (pending) friend Fred is online.
 You and Fred are now friends!
 L
 Friends:
-Fred, Fred Sanson, fred@gmail.com, Green (online)
+Fred, Fred Sanson, fred@gmail.com, Green, Created: 2022-06-06T19:03:41 Modified: 2022-07-14T21:48:17 (online)
 X
 Finished.

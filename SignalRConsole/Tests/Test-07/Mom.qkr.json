@@ -1,9 +1,31 @@
 {
-  "Handle": "Mom",
+  "Version": 1,
+  "DeviceId": "618b7593-4072-401b-a9f0-d8c12106bec6",
+  "Friends": [],
+  "Operators": [
+    {
+      "Name": "Addition",
+      "Tables": []
+    },
+    {
+      "Name": "Subtraction",
+      "Tables": []
+    },
+    {
+      "Name": "Multiplication",
+      "Tables": []
+    },
+    {
+      "Name": "Division",
+      "Tables": []
+    }
+  ],
+  "MergeIndex": {},
+  "Id": "mom0c866-8cb0-4a10-ad96-dfe5f9ebd98e",
   "Email": "jeanmariealbert@hotmail.com",
   "Name": "Jean Albert",
-  "FavoriteColor": "Maroon",
-  "Id": "mom0c866-8cb0-4a10-ad96-dfe5f9ebd98e",
-  "Blocked": null,
-  "Friends": []
+  "Handle": "Mom",
+  "Color": "Maroon",
+  "Created": "2022-07-15T00:05:39",
+  "Modified": "2022-07-15T16:05:32"
 }

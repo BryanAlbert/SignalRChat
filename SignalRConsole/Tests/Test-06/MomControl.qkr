@@ -1,28 +1,58 @@
 {
-  "Handle": "Mom",
-  "Email": "jeanmariealbert@hotmail.com",
-  "Name": "Jean Albert",
-  "FavoriteColor": "Maroon",
-  "Id": "mom0c866-8cb0-4a10-ad96-dfe5f9ebd98e",
-  "Blocked": null,
+  "Version": 1,
+  "DeviceId": "750181c2-74a9-4af9-a54b-508a5504bfc2",
   "Friends": [
     {
-      "Handle": "Bruce",
+      "Blocked": false,
+      "DeviceId": "aa3ef055-9666-4307-bcd6-fd786259e4cf",
+      "BluetoothId": null,
+      "BluetoothDeviceName": null,
+      "Id": "brucef68-3c37-4aef-b8a6-1649659bbbc4",
       "Email": "bruce@hotmail.com",
       "Name": "Bruce Albert",
-      "FavoriteColor": "Red",
-      "Id": "brucef68-3c37-4aef-b8a6-1649659bbbc4",
-      "Blocked": false,
-      "Friends": []
+      "Handle": "Bruce",
+      "Color": "Red",
+      "Created": "2022-07-15T00:05:39",
+      "Modified": "2022-07-17T02:05:46"
     },
     {
-      "Handle": "Fred",
+      "Blocked": false,
+      "DeviceId": "a776e352-0474-48f6-afc0-f3e159abf7ce",
+      "BluetoothId": null,
+      "BluetoothDeviceName": null,
+      "Id": "fredac24-3f25-41e0-84f2-3f34f54d072e",
       "Email": "fred@gmail.com",
       "Name": "Fred Sanson",
-      "FavoriteColor": "Green",
-      "Id": "fredac24-3f25-41e0-84f2-3f34f54d072e",
-      "Blocked": false,
-      "Friends": []
+      "Handle": "Fred",
+      "Color": "Green",
+      "Created": "2022-07-15T00:05:39",
+      "Modified": "2022-07-17T02:05:46"
     }
-  ]
+  ],
+  "Operators": [
+    {
+      "Name": "Addition",
+      "Tables": []
+    },
+    {
+      "Name": "Subtraction",
+      "Tables": []
+    },
+    {
+      "Name": "Multiplication",
+      "Tables": []
+    },
+    {
+      "Name": "Division",
+      "Tables": []
+    }
+  ],
+  "MergeIndex": {},
+  "Id": "mom0c866-8cb0-4a10-ad96-dfe5f9ebd98e",
+  "Email": "jeanmariealbert@hotmail.com",
+  "Name": "Jean Albert",
+  "Handle": "Mom",
+  "Color": "Maroon",
+  "Created": "2022-07-15T00:05:39",
+  "Modified": "2022-07-17T02:05:46"
 }

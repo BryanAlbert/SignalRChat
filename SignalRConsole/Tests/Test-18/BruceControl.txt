@@ -1,8 +1,11 @@
 Initializing server and connecting to URL: https://localhost:5001/chathub
 What is your handle (nickname)? 
 Bruce
-Pick a command: a to add a friend, l to list friends, u to unfriend a friend,
-d to delete a user, c to chat, or x to exit
+Name: Bruce Albert, Email: bruce@hotmail.com, Favorite color: Red,
+Id: brucef68-3c37-4aef-b8a6-1649659bbbc4, Device Id: 8ba7de0f-e967-46cd-ad26-20268b24e3bb,
+Creation Date: 2022-07-15T00:05:39, Modified Date: 2022-07-15T19:22:20
+Pick a command: t to list tables, a to add a friend, l to list friends,
+u to unfriend a friend, c to chat, or x to exit
 Listening> 
 A
 Busy...       
@@ -16,6 +19,7 @@ Friends:
 0: Fred
 Whom would you like to unfriend (number, Enter to abort): 
 0
+(Sent Hello null command to Bruce.)
 Fred has been unfriended.
 Listening> 
 A
@@ -29,7 +33,6 @@ Listening>
 Fred has blocked you. Fred must unfriend you before you can become friends.
 Your (pending) friend Fred is offline.
 Fred has blocked you. Fred must unfriend you before you can become friends.
-Your (pending) friend Fred is online.
 Busy...       
 Accept friend request from Fred, email address fred@gmail.com? [y/n] 
 Y
@@ -37,6 +40,6 @@ Listening>
 You and Fred are now friends!
 L
 Friends:
-Fred, Fred Sanson, fred@gmail.com, Green (online)
+Fred, Fred Sanson, fred@gmail.com, Green, Created: 2022-07-15T00:05:39 Modified: 2022-07-17T02:10:53 (online)
 X
 Finished.

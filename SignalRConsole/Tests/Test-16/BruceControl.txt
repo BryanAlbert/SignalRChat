@@ -1,8 +1,11 @@
 Initializing server and connecting to URL: https://localhost:5001/chathub
 What is your handle (nickname)? 
 Bruce
-Pick a command: a to add a friend, l to list friends, u to unfriend a friend,
-d to delete a user, c to chat, or x to exit
+Name: Bruce Albert, Email: bruce@hotmail.com, Favorite color: Red,
+Id: brucef68-3c37-4aef-b8a6-1649659bbbc4, Device Id: fe899f7c-809a-4ef2-b746-77ed28c9fd58,
+Creation Date: 2022-07-15T00:05:39, Modified Date: 2022-07-15T19:08:40
+Pick a command: t to list tables, a to add a friend, l to list friends,
+u to unfriend a friend, c to chat, or x to exit
 Listening> 
 A
 Busy...       
@@ -10,6 +13,7 @@ What is your friend's handle?
 Fred
 What is your friend's email? 
 fred@gmail.com
+(Sent Hello null command to Bruce.)
 A friend request has been sent to Fred.
 Listening> 
 Your (pending) friend Fred is online.
@@ -28,8 +32,12 @@ Finished.
 Initializing server and connecting to URL: https://localhost:5001/chathub
 What is your handle (nickname)? 
 Bruce
-Pick a command: a to add a friend, l to list friends, u to unfriend a friend,
-d to delete a user, c to chat, or x to exit
+Name: Bruce Albert, Email: bruce@hotmail.com, Favorite color: Red,
+Id: brucef68-3c37-4aef-b8a6-1649659bbbc4, Device Id: fe899f7c-809a-4ef2-b746-77ed28c9fd58,
+Creation Date: 2022-07-15T00:05:39, Modified Date: 2022-07-15T19:10:19
+Pick a command: t to list tables, a to add a friend, l to list friends,
+u to unfriend a friend, c to chat, or x to exit
+(Sent Hello null command to Bruce.)
 Listening> 
 (Sent unfriend command to Fred.)
 L

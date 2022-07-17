@@ -1,19 +1,45 @@
 {
-  "Handle": "Fred",
-  "Email": "fred@gmail.com",
-  "Name": "Fred Sanson",
-  "FavoriteColor": "Green",
-  "Id": "fredac24-3f25-41e0-84f2-3f34f54d072e",
-  "Blocked": null,
+  "Version": 1,
+  "DeviceId": "3732bea0-7423-4dd3-bd9b-f1307c059933",
   "Friends": [
     {
-      "Handle": "Bruce",
+      "Blocked": true,
+      "DeviceId": "8ef99d20-fce8-4685-9ffa-e4d258eaa9d1",
+      "BluetoothId": null,
+      "BluetoothDeviceName": null,
+      "Id": "brucef68-3c37-4aef-b8a6-1649659bbbc4",
       "Email": "bruce@hotmail.com",
       "Name": "Bruce Albert",
-      "FavoriteColor": "Red",
-      "Id": "brucef68-3c37-4aef-b8a6-1649659bbbc4",
-      "Blocked": true,
-      "Friends": []
+      "Handle": "Bruce",
+      "Color": "Red",
+      "Created": "2022-07-15T00:05:39",
+      "Modified": "2022-07-17T02:09:07"
     }
-  ]
+  ],
+  "Operators": [
+    {
+      "Name": "Addition",
+      "Tables": []
+    },
+    {
+      "Name": "Subtraction",
+      "Tables": []
+    },
+    {
+      "Name": "Multiplication",
+      "Tables": []
+    },
+    {
+      "Name": "Division",
+      "Tables": []
+    }
+  ],
+  "MergeIndex": {},
+  "Id": "fredac24-3f25-41e0-84f2-3f34f54d072e",
+  "Email": "fred@gmail.com",
+  "Name": "Fred Sanson",
+  "Handle": "Fred",
+  "Color": "Green",
+  "Created": "2022-07-15T00:05:39",
+  "Modified": "2022-07-17T02:09:07"
 }

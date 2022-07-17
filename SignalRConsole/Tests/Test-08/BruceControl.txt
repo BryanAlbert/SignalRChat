@@ -1,8 +1,11 @@
 Initializing server and connecting to URL: https://localhost:5001/chathub
 What is your handle (nickname)? 
 Bruce
-Pick a command: a to add a friend, l to list friends, u to unfriend a friend,
-d to delete a user, c to chat, or x to exit
+Name: Bruce Albert, Email: bruce@hotmail.com, Favorite color: Red,
+Id: brucef68-3c37-4aef-b8a6-1649659bbbc4, Device Id: 1e73e8f5-9b3a-4729-9b46-94c9fb850579,
+Creation Date: 2022-07-15T00:05:39, Modified Date: 2022-07-15T16:36:04
+Pick a command: t to list tables, a to add a friend, l to list friends,
+u to unfriend a friend, c to chat, or x to exit
 Listening> 
 A
 Busy...       
@@ -10,6 +13,7 @@ What is your friend's handle?
 Mom
 What is your friend's email? 
 jeanmariealbert@hotmail.com
+(Sent Hello null command to Bruce.)
 A friend request has been sent to Mom.
 Listening> 
 A
@@ -29,12 +33,15 @@ Finished.
 Initializing server and connecting to URL: https://localhost:5001/chathub
 What is your handle (nickname)? 
 Bruce
-Pick a command: a to add a friend, l to list friends, u to unfriend a friend,
-d to delete a user, c to chat, or x to exit
-Your (pending) friend Fred is online.
+Name: Bruce Albert, Email: bruce@hotmail.com, Favorite color: Red,
+Id: brucef68-3c37-4aef-b8a6-1649659bbbc4, Device Id: 1e73e8f5-9b3a-4729-9b46-94c9fb850579,
+Creation Date: 2022-07-15T00:05:39, Modified Date: 2022-07-17T02:12:38
+Pick a command: t to list tables, a to add a friend, l to list friends,
+u to unfriend a friend, c to chat, or x to exit
 Listening> 
-Your (pending) friend Mom is online.
+(Sent Hello null command to Bruce.)
 Busy...       
+Your (pending) friend Mom is online.
 Accept friend request from Fred, email address fred@gmail.com? [y/n] 
 Y
 Listening> 
@@ -42,7 +49,7 @@ You and Fred are now friends!
 You and Mom are now friends!
 L
 Friends:
-Mom, Jean Albert, jeanmariealbert@hotmail.com, Maroon (online)
-Fred, Fred Sanson, fred@gmail.com, Green (online)
+Mom, Jean Albert, jeanmariealbert@hotmail.com, Maroon, Created: 2022-07-15T00:05:39 Modified: 2022-07-17T02:12:38 (online)
+Fred, Fred Sanson, fred@gmail.com, Green, Created: 2022-07-15T00:05:39 Modified: 2022-07-17T02:12:38 (online)
 X
 Finished.

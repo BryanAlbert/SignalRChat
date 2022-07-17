@@ -1,9 +1,31 @@
 {
-  "Handle": "Bruce",
+  "Version": 1,
+  "DeviceId": "ed6c36db-ae17-45a9-929c-2f21beeb1e94",
+  "Friends": [],
+  "Operators": [
+    {
+      "Name": "Addition",
+      "Tables": []
+    },
+    {
+      "Name": "Subtraction",
+      "Tables": []
+    },
+    {
+      "Name": "Multiplication",
+      "Tables": []
+    },
+    {
+      "Name": "Division",
+      "Tables": []
+    }
+  ],
+  "MergeIndex": {},
+  "Id": "brucef68-3c37-4aef-b8a6-1649659bbbc4",
   "Email": "bruce@hotmail.com",
   "Name": "Bruce Albert",
-  "FavoriteColor": "Red",
-  "Id": "brucef68-3c37-4aef-b8a6-1649659bbbc4",
-  "Blocked": null,
-  "Friends": []
+  "Handle": "Bruce",
+  "Color": "Red",
+  "Created": "2022-06-06T19:03:41",
+  "Modified": "2022-07-14T23:41:45"
 }

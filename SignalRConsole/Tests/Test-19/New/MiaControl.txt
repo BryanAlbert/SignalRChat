@@ -7,7 +7,7 @@ Creation Date: 2022-07-08T03:43:05, Modified Date: 2022-07-08T03:43:05
 Pick a command: t to list tables, a to add a friend, l to list friends,
 u to unfriend a friend, c to chat, or x to exit
 Listening> 
-(Sent unrecognized command to Mia.)
+(Sent Hello null command to Mia.)
 Mia is online on another device, merging received tables...
 Merged tables from Mia.
 L

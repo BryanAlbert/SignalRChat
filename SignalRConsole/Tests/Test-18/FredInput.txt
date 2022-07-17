@@ -1,6 +1,6 @@
 Fred
 # wait for Bruce to try and friend us
->wait-for: (Sent blocked command to Bruce.)
+>wait-for: (Sent Hello False command to Bruce.)
 U
 0
 A

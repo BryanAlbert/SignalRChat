@@ -2,4 +2,5 @@ Bruce
 A
 Fred
 L
+>wait-for: (Sent Hello null command to Bruce.)
 X

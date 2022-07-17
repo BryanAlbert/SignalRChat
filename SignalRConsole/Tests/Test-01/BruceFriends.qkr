@@ -10,9 +10,9 @@
       "Email": "fred@gmail.com",
       "Name": "Fred Sanson",
       "Handle": "Fred",
-      "Color": null,
-      "Created": null,
-      "Modified": null
+      "Color": "Green",
+      "Created": "2022-06-06T19:03:41",
+      "Modified": "2022-07-14T14:42:33"
     }
   ],
   "Operators": [
@@ -38,7 +38,7 @@
   "Email": "bruce@hotmail.com",
   "Name": "Bruce Albert",
   "Handle": "Bruce",
-  "Color": "White",
+  "Color": "Red",
   "Created": "2022-06-06T19:03:41",
-  "Modified": "2022-07-14T14:42:00"
+  "Modified": "2022-07-14T18:58:04"
 }

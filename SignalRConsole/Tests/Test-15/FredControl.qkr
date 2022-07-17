@@ -1,9 +1,31 @@
 {
-  "Handle": "Fred",
+  "Version": 1,
+  "DeviceId": "b56d7de8-19c4-4eba-be43-f14e86cd5b3f",
+  "Friends": [],
+  "Operators": [
+    {
+      "Name": "Addition",
+      "Tables": []
+    },
+    {
+      "Name": "Subtraction",
+      "Tables": []
+    },
+    {
+      "Name": "Multiplication",
+      "Tables": []
+    },
+    {
+      "Name": "Division",
+      "Tables": []
+    }
+  ],
+  "MergeIndex": {},
+  "Id": "fredac24-3f25-41e0-84f2-3f34f54d072e",
   "Email": "fred@gmail.com",
   "Name": "Fred Sanson",
-  "FavoriteColor": "Green",
-  "Id": "fredac24-3f25-41e0-84f2-3f34f54d072e",
-  "Blocked": null,
-  "Friends": []
+  "Handle": "Fred",
+  "Color": "Green",
+  "Created": "2022-07-15T00:05:39",
+  "Modified": "2022-07-15T19:04:28"
 }

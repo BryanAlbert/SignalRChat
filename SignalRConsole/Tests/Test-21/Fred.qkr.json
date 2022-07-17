@@ -1,19 +1,18 @@
 {
   "Version": 1,
-  "DeviceId": "f266285b-94b7-4d21-98ab-f7e14e55ab2c",
+  "DeviceId": "b51ed0e8-086f-4ad3-8bd6-402e804a00f0",
   "Friends": [
     {
-      "Blocked": false,
-      "DeviceId": "ed6c36db-ae17-45a9-929c-2f21beeb1e94",
+      "Blocked": null,
       "BluetoothId": null,
       "BluetoothDeviceName": null,
-      "Id": "brucef68-3c37-4aef-b8a6-1649659bbbc4",
+      "Id": null,
       "Email": "bruce@hotmail.com",
-      "Name": "Bruce Albert",
+      "Name": null,
       "Handle": "Bruce",
-      "Color": "Red",
-      "Created": "2022-06-06T19:03:41",
-      "Modified": "2022-07-17T02:05:19"
+      "Color": null,
+      "Created": null,
+      "Modified": null
     }
   ],
   "Operators": [
@@ -35,11 +34,11 @@
     }
   ],
   "MergeIndex": {},
-  "Id": "fredac24-3f25-41e0-84f2-3f34f54d072e",
-  "Email": "fred@gmail.com",
+  "Id": "b51ed0e8-086f-4ad3-8bd6-402e804a00f0",
+  "Email": "fred@outlook.com",
   "Name": "Fred Sanson",
   "Handle": "Fred",
   "Color": "Green",
-  "Created": "2022-06-06T19:03:41",
-  "Modified": "2022-07-17T02:05:19"
+  "Created": "2022-07-16T22:51:36",
+  "Modified": "2022-07-16T22:51:45"
 }
