@@ -23,7 +23,7 @@ namespace SignalRConsole
 				m_hubConnection = hubConnection;
 			}
 
-			public static async Task SendCommandAsync(CommandNames name, string from, string channel, string to, Friend friend, bool? flag)
+			public static async Task SendCommandAsync(CommandNames name, string from, string channel, string to, User user, bool? flag)
 			{
 				ConnectionCommand command = new ConnectionCommand()
 				{
@@ -31,7 +31,7 @@ namespace SignalRConsole
 					Channel = channel,
 					From = from,
 					To = to,
-					Friend = friend,
+					Racer = new Friend(user),
 					Flag = flag
 				};
 
@@ -46,33 +46,25 @@ namespace SignalRConsole
 				}
 			}
 
-			public static async Task SendCommandAsync(CommandNames name, string from, string channel, string to, User user, bool? flag)
+			public static async Task SendMergeCommandAsync(string from, string channel, string to, User user, bool? flag)
 			{
 				ConnectionCommand command = new ConnectionCommand()
 				{
-					Command = name.ToString(),
+					Command = CommandNames.Merge.ToString(),
 					Channel = channel,
 					From = from,
 					To = to,
-					Data = user,
+					Merge = user,
 					Flag = flag
 				};
 
-				if (name != CommandNames.Hello && name != CommandNames.Merge)
-				{
-					Debug.WriteLine($"Error: SendCommand called with string  and bool is only valid for the {CommandNames.Merge}" +
-						$" command, called with: {name}");
-				}
-				else
-				{
-					await command.SendCommandAsync();
-				}
+				await command.SendCommandAsync();
 			}
 
 
 			public string Command { get; set; }
-			public Friend Friend { get; set; }
-			public User Data { get; set; }
+			public Friend Racer { get; set; }
+			public User Merge { get; set; }
 			public bool? Flag { get; set; }
 
 			[JsonIgnore]

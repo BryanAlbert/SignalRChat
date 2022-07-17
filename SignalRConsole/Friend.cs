@@ -16,10 +16,12 @@ namespace SignalRConsole
 
 		public Friend(User user) : base(user)
 		{
+			DeviceId = user.DeviceId;
 		}
 
 
 		public bool? Blocked { get; set; }
+		public string DeviceId { get; set; }
 		public string BluetoothId { get; set; }
 		public string BluetoothDeviceName { get; set; }
 

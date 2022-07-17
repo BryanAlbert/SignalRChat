@@ -199,14 +199,14 @@ namespace SignalRConsole
 			{
 				if (State == States.Listening)
 				{
-					await SendCommandAsync(CommandNames.Hello, Id, channel, user, new Friend(m_user), true);
+					await SendCommandAsync(CommandNames.Hello, Id, channel, user, m_user, true);
 					ActiveChatChannelName = channel;
 					ActiveChatFriend = m_user.Friends.FirstOrDefault(x => x.Id == user);
 					_ = await MessageLoopAsync();
 				}
 				else
 				{
-					await SendCommandAsync(CommandNames.Hello, Id, channel, user, new Friend(m_user), false);
+					await SendCommandAsync(CommandNames.Hello, Id, channel, user, m_user, false);
 				}
 
 				return;
@@ -235,32 +235,21 @@ namespace SignalRConsole
 				}
 			}
 
-			// since we expect two JoinedChannel messages (one for our channel, one for the friend's channel)
-			// we need to lock here so that we don't add the user to the online list twice
-			lock (m_lock)
-			{
-				if (friend != null && (!friend.Blocked ?? true) && !m_online.Contains(friend))
-				{
-					ConsoleWriteLogLine($"Your {(friend.Blocked.HasValue ? "" : "(pending) ")}friend {friend.Handle} is online.");
-					m_online.Add(friend);
-				}
-			}
-
 			if (friend?.HelloInitiated ?? false)
 			{
 				friend.HelloInitiated = false;
 				return;
 			}
 
-			await SendCommandAsync(CommandNames.Hello, Id, channel, user, new Friend(m_user), !friend?.Blocked);
+			await SendCommandAsync(CommandNames.Hello, Id, channel, user, m_user, !friend?.Blocked);
 
 			if (m_console.ScriptMode)
 			{
 				// special messages for triggering while scripting
 				if (friend == null)
-					ConsoleWriteLogLine($"(Sent unrecognized command to {user}.)");
+					ConsoleWriteLogLine($"(Sent Hello null command to {user}.)");
 				else if (friend.Blocked == true)
-					ConsoleWriteLogLine($"(Sent blocked command to {user}.)");
+					ConsoleWriteLogLine($"(Sent Hello {!friend?.Blocked} command to {user}.)");
 			}
 		}
 
@@ -570,8 +559,7 @@ namespace SignalRConsole
 
 			if (result.Item2 != null)
 			{
-				await SendCommandAsync(CommandNames.Hello, Id, result.Item2.Id, result.Item2.Id,
-					new Friend(m_user), false);
+				await SendCommandAsync(CommandNames.Hello, Id, result.Item2.Id, result.Item2.Id, m_user, false);
 				await UnfriendAsync(result.Item2);
 				ConsoleWriteLogLine($"{result.Item2.Handle} has been unfriended.");
 			}
@@ -670,27 +658,31 @@ namespace SignalRConsole
 			return success;
 		}
 
-		private async Task SendMergeAsync(Friend pending)
+		private async Task SendMergeAsync(Friend friend)
 		{
 			DateTime.TryParse(m_user.Created, out DateTime myCreated);
-			DateTime.TryParse(pending.Created, out DateTime created);
+			DateTime.TryParse(friend.Created, out DateTime created);
 
-			if (Id == pending.Id ? myCreated != created : myCreated < created)
+			if (Id == friend.Id ? myCreated != created : myCreated < created)
 			{
-				ConsoleWriteLogLine($"{pending.Handle} is online on another device, sending tables...");
-				await SendCommandAsync(CommandNames.Merge, Id, pending.Id, pending.Id, m_user, null);
+				if (!m_pendingMerge.Contains(friend.DeviceId))
+				{
+					m_pendingMerge.Add(friend.DeviceId);
+					ConsoleWriteLogLine($"{friend.Handle} is online on another device, sending tables...");
+					await SendMergeCommandAsync(Id, friend.Id, friend.Id, m_user, null);
+				}
 			}
 			
 			if (myCreated == DateTime.MinValue || created == DateTime.MinValue)
 			{
 				ConsoleWriteLogLine($"Error in CheckSendMerge, could not parse DateTime from {m_user.Created}" +
-					$" and/or {pending.Created}");
+					$" and/or {friend.Created}");
 			}
 		}
 
 		private async Task MergeAccountsAsync(ConnectionCommand merge)
 		{
-			User user = merge.Data;
+			User user = merge.Merge;
 			DateTime.TryParse(m_user.Created, out DateTime myCreated);
 			DateTime.TryParse(user.Created, out DateTime created);
 			if (myCreated == created)
@@ -720,8 +712,10 @@ namespace SignalRConsole
 				ConsoleWriteLogLine($"Merged tables from {Handle}.");
 				SaveUser();
 				if (firstMerge)
-					await SendCommandAsync(CommandNames.Merge, Id, user.Id, user.Id, m_user, null);
+					await SendMergeCommandAsync(Id, user.Id, user.Id, m_user, null);
 			}
+
+			m_pendingMerge.Remove(user.DeviceId);
 		}
 
 		private bool MergeFriends(bool save, User user)
@@ -877,8 +871,7 @@ namespace SignalRConsole
 		{
 			if (send)
 			{
-				await SendCommandAsync(CommandNames.Hello, Id, ActiveChatChannelName, ActiveChatFriend.Id,
-					new Friend(m_user), false);
+				await SendCommandAsync(CommandNames.Hello, Id, ActiveChatChannelName, ActiveChatFriend.Id, m_user, false);
 			}
 
 			if (ActiveChatChannelName != ChatChannelName)
@@ -954,7 +947,7 @@ namespace SignalRConsole
 				else
 				{
 					await m_hubConnection.SendAsync(c_leaveChannel, ActiveChatChannelName, Id);
-					ConsoleWriteLogLine($"{command.Friend.Handle} can't chat at the moment.");
+					ConsoleWriteLogLine($"{command.Racer.Handle} can't chat at the moment.");
 					State = States.Listening;
 				}
 			}
@@ -980,7 +973,7 @@ namespace SignalRConsole
 
 		private async Task CheckFriendshipAsync(string from, ConnectionCommand hello)
 		{
-			Tuple<Friend, Friend> update = UpdateFriendData(hello.Friend);
+			Tuple<Friend, Friend> update = UpdateFriendData(hello.Racer);
 			Friend existing = update.Item1;
 			Friend pending = update.Item2;
 			if (from == Id || pending.Handle == Handle && pending.Name == Name && pending.Email == Email)
@@ -1012,7 +1005,7 @@ namespace SignalRConsole
 					if (existing == null)
 					{
 						// we unfriended him while he was away, send Hello with false
-						await SendCommandAsync(CommandNames.Hello, Id, pending.Id, pending.Id, new Friend(m_user), false);
+						await SendCommandAsync(CommandNames.Hello, Id, pending.Id, pending.Id, m_user, false);
 
 						// special message for triggering while scripting
 						if (m_console.ScriptMode)
@@ -1023,13 +1016,13 @@ namespace SignalRConsole
 						// he accepted our friend request while we were away
 						existing.Blocked = false;
 						SaveUser();
-						await SendCommandAsync(CommandNames.Hello, Id, existing.Id, existing.Id, new Friend(m_user), true);
+						await SendCommandAsync(CommandNames.Hello, Id, existing.Id, existing.Id, m_user, true);
 					}
 				}
 				else
 				{
 					await SendCommandAsync(CommandNames.Verify, Id, MakeHandleChannelName(existing ?? pending),
-						from, new Friend(m_user), null);
+						from, m_user, null);
 				}
 			}
 
@@ -1037,12 +1030,14 @@ namespace SignalRConsole
 			{
 				ConsoleWriteLogLine($"Your {(existing.Blocked.HasValue ? "" : "(pending) ")}friend {existing.Handle} is online.");
 				m_online.Add(existing);
+				if (existing.Blocked == false)
+					await SendCommandAsync(CommandNames.Hello, Id, existing.Id, existing.Id, m_user, true);
 			}
 		}
 
 		private async Task VerifyFriendAsync(string from, ConnectionCommand verify)
 		{
-			Tuple<Friend, Friend> update = UpdateFriendData(verify.Friend);
+			Tuple<Friend, Friend> update = UpdateFriendData(verify.Racer);
 			Friend existing = update.Item1;
 			Friend pending = update.Item2;
 			if (!verify.Flag.HasValue)
@@ -1067,12 +1062,11 @@ namespace SignalRConsole
 
 				if (m_online.Contains(pending))
 				{
-					await SendCommandAsync(CommandNames.Verify, Id, HandleChannelName, from, new Friend(m_user),
-						!pending.Blocked);
+					await SendCommandAsync(CommandNames.Verify, Id, HandleChannelName, from, m_user, !pending.Blocked);
 				}
 
 				if (!pending.Blocked ?? false)
-					await m_hubConnection.SendAsync(c_joinChannel, verify.Friend);
+					await m_hubConnection.SendAsync(c_joinChannel, verify.Racer);
 
 				m_console.SetCursorPosition(confirm.Item1.X, confirm.Item1.Y);
 				existing = pending;
@@ -1086,7 +1080,7 @@ namespace SignalRConsole
 				if (verify.Flag == false)
 				{
 					_ = m_online.Remove(existing);
-					await m_hubConnection.SendAsync(c_leaveChannel, verify.Friend, Handle);
+					await m_hubConnection.SendAsync(c_leaveChannel, verify.Racer, Handle);
 				}
 			}
 
@@ -1263,12 +1257,12 @@ namespace SignalRConsole
 		private Harness m_console;
 		private User m_user;
 		private States m_state;
-		private readonly object m_lock = new object();
 		private bool m_waitForEnter;
 		private readonly List<User> m_users = new List<User>();
 		private readonly List<Friend> m_online = new List<Friend>();
 		private readonly List<string> m_log = new List<string>();
 		private readonly Stack<States> m_states = new Stack<States>();
+		private readonly List<string> m_pendingMerge = new List<string>();
 		private readonly JsonSerializerOptions m_serializerOptions = new JsonSerializerOptions()
 		{
 			WriteIndented = true

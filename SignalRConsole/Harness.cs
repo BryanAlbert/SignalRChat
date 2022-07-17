@@ -17,7 +17,7 @@ namespace SignalRConsole
 						workingDirectory[(Environment.CurrentDirectory.Length + 1)..] :
 						workingDirectory;
 				
-				if (m_args.Count > 0 && Directory.Exists(m_args[0]))
+				if (m_args.Count > 0 && Directory.Exists(Path.Combine(WorkingDirectory, m_args[0])))
 					WorkingDirectory = Path.Combine(WorkingDirectory, NextArg());
 
 				Console.WriteLine($"Harness: working directory is: {WorkingDirectory}");
