@@ -6,6 +6,36 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Tests\Microsoft.AspNetCore.Connections.Abstractions.dll" />
+    <None Remove="Tests\Microsoft.AspNetCore.Http.Connections.Client.dll" />
+    <None Remove="Tests\Microsoft.AspNetCore.Http.Connections.Common.dll" />
+    <None Remove="Tests\Microsoft.AspNetCore.SignalR.Client.Core.dll" />
+    <None Remove="Tests\Microsoft.AspNetCore.SignalR.Client.dll" />
+    <None Remove="Tests\Microsoft.AspNetCore.SignalR.Common.dll" />
+    <None Remove="Tests\Microsoft.AspNetCore.SignalR.Protocols.Json.dll" />
+    <None Remove="Tests\Microsoft.Extensions.DependencyInjection.Abstractions.dll" />
+    <None Remove="Tests\Microsoft.Extensions.DependencyInjection.dll" />
+    <None Remove="Tests\Microsoft.Extensions.Features.dll" />
+    <None Remove="Tests\Microsoft.Extensions.Logging.Abstractions.dll" />
+    <None Remove="Tests\Microsoft.Extensions.Logging.dll" />
+    <None Remove="Tests\Microsoft.Extensions.Options.dll" />
+    <None Remove="Tests\Microsoft.Extensions.Primitives.dll" />
+    <None Remove="Tests\QKRTests.psm1" />
+    <None Remove="Tests\SignalRConsole.deps.json" />
+    <None Remove="Tests\SignalRConsole.dll" />
+    <None Remove="Tests\SignalRConsole.exe" />
+    <None Remove="Tests\SignalRConsole.pdb" />
+    <None Remove="Tests\SignalRConsole.runtimeconfig.dev.json" />
+    <None Remove="Tests\SignalRConsole.runtimeconfig.json" />
+    <None Remove="Tests\System.Diagnostics.DiagnosticSource.dll" />
+    <None Remove="Tests\System.IO.Pipelines.dll" />
+    <None Remove="Tests\System.Runtime.CompilerServices.Unsafe.dll" />
+    <None Remove="Tests\System.Text.Encodings.Web.dll" />
+    <None Remove="Tests\System.Text.Json.dll" />
+    <None Remove="Tests\System.Threading.Channels.dll" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="6.0.2" />
   </ItemGroup>
 
