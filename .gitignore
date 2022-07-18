@@ -262,4 +262,6 @@ __pycache__/
 *.dll
 /SignalRConsole/Tests/SignalRConsole.runtimeconfig.dev.json
 /SignalRConsole/Tests/SignalRConsole.runtimeconfig.json
+/SignalRConsole/Tests/SignalRConsole.deps.json
 *.exe
+
