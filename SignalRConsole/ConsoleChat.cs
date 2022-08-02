@@ -163,6 +163,7 @@ namespace SignalRConsole
 		private string Handle => m_user?.Handle;
 		private string Name => m_user?.Name;
 		private string Id => m_user?.Id;
+		private string DeviceId => m_user.DeviceId;
 		private string Email => m_user?.Email;
 		private string FileName => m_user.FileName;
 		private string HandleChannelName => MakeHandleChannelName(Handle, Email);
@@ -275,7 +276,7 @@ namespace SignalRConsole
 
 		private async Task OnSentCommandAsync(string from, string to, string json)
 		{
-			if (to == Id || to == Handle)
+			if (to == Id || to == Handle || to == DeviceId)
 			{
 				ConnectionCommand command = DeserializeCommand(json);
 				switch (command.CommandName)
@@ -287,7 +288,7 @@ namespace SignalRConsole
 						await VerifyFriendAsync(from, command);
 						break;
 					case CommandNames.Merge:
-						await MergeAccountsAsync(command);
+						await MergeAccountsAsync(command, to);
 						break;
 					case CommandNames.Unrecognized:
 					default:
@@ -450,6 +451,12 @@ namespace SignalRConsole
 
 			State = States.Initializing;
 			m_console.WriteLine("Enter the token returned from the server, Enter to abort: ");
+			if (m_console.ScriptMode)
+			{
+				m_console.WriteLine("(Script mode: skipping registration validation.)");
+				return email;
+			}
+
 			string token;
 			while (true)
 			{
@@ -668,8 +675,8 @@ namespace SignalRConsole
 				if (!m_pendingMerge.Contains(friend.DeviceId))
 				{
 					m_pendingMerge.Add(friend.DeviceId);
-					ConsoleWriteLogLine($"{friend.Handle} is online on another device, sending tables...");
-					await SendMergeCommandAsync(Id, friend.Id, friend.Id, m_user, null);
+					ConsoleWriteLogLine($"{friend.Handle} is online on device {friend.DeviceId}, sending tables...");
+					await SendMergeCommandAsync(Id, friend.Id, friend.DeviceId, m_user, null);
 				}
 			}
 			
@@ -680,42 +687,75 @@ namespace SignalRConsole
 			}
 		}
 
-		private async Task MergeAccountsAsync(ConnectionCommand merge)
+		private async Task SendMergeCommandAsync(string from, string channel, string to, User user, bool? flag)
 		{
-			User user = merge.Merge;
-			DateTime.TryParse(m_user.Created, out DateTime myCreated);
-			DateTime.TryParse(user.Created, out DateTime created);
-			if (myCreated == created)
-				return;
-
-			DateTime.TryParse(m_user.Modified, out DateTime myModified);
-			DateTime.TryParse(user.Modified, out DateTime modified);
-			bool firstMerge = m_user.Id != user.Id;
-			bool save = firstMerge || myModified < modified && (m_user.Name != user.Name ||
-				m_user.Handle != user.Handle || m_user.Email != user.Email || m_user.Color != user.Color);
-			ConsoleWriteLogLine($"{Handle} is online on another device, merging received tables...");
-
+			bool save = !m_user.MergeIndex.ContainsKey(DeviceId);
 			if (save)
+				m_user.MergeIndex[DeviceId] = 0;
+
+			foreach (OperatorTables math in m_user.Operators)
 			{
-				m_user.Id = user.Id;
-				m_user.Name = user.Name;
-				m_user.Handle = user.Handle;
-				m_user.Email = user.Email;
-				m_user.Color = user.Color;
+				foreach (FactTable table in math.Tables)
+				{
+					foreach (Card card in table.Cards)
+					{
+						InitializeMergeProperties(card, 0);
+						ComputeMergeData(card, 0);
+						save = true;
+					}
+				}
 			}
 
-			save = MergeFriends(save, user);
-			save = MergeTables(save, user);
-
 			if (save)
-			{
-				ConsoleWriteLogLine($"Merged tables from {Handle}.");
 				SaveUser();
-				if (firstMerge)
-					await SendMergeCommandAsync(Id, user.Id, user.Id, m_user, null);
+
+			await ConnectionCommand.SendMergeCommandAsync(from, channel, to, user, flag);
+		}
+
+		private async Task MergeAccountsAsync(ConnectionCommand merge, string to)
+		{
+			bool firstMerge;
+			User user;
+
+			lock (m_lock)
+			{
+				// in case multiple devices are logged in at the same time, make this an atomic action
+				user = merge.Merge;
+				DateTime.TryParse(m_user.Created, out DateTime myCreated);
+				DateTime.TryParse(user.Created, out DateTime created);
+				if (myCreated == created || to != DeviceId)
+					return;
+
+				DateTime.TryParse(m_user.Modified, out DateTime myModified);
+				DateTime.TryParse(user.Modified, out DateTime modified);
+				firstMerge = m_user.Id != user.Id;
+				bool save = firstMerge || myModified < modified && (m_user.Name != user.Name ||
+					m_user.Handle != user.Handle || m_user.Email != user.Email || m_user.Color != user.Color);
+				ConsoleWriteLogLine($"{Handle} is online on device {user.DeviceId}, merging received tables...");
+
+				if (save)
+				{
+					m_user.Id = user.Id;
+					m_user.Name = user.Name;
+					m_user.Handle = user.Handle;
+					m_user.Email = user.Email;
+					m_user.Color = user.Color;
+				}
+
+				save = MergeFriends(save, user);
+				save = MergeTables(save, user);
+
+				if (save)
+				{
+					ConsoleWriteLogLine($"Merged tables from {Handle} on device{user.DeviceId}{(firstMerge ? ", sending merge tables" : "")}.");
+					SaveUser();
+				}
+
+				m_pendingMerge.Remove(user.DeviceId);
 			}
 
-			m_pendingMerge.Remove(user.DeviceId);
+			if (firstMerge)
+				await SendMergeCommandAsync(Id, user.Id, user.DeviceId, m_user, null);
 		}
 
 		private bool MergeFriends(bool save, User user)
@@ -748,20 +788,11 @@ namespace SignalRConsole
 
 		private bool MergeTables(bool save, User user)
 		{
-			int myMergeIndex = 0;
-			if (m_user.MergeIndex.ContainsKey(user.DeviceId))
-			{
-				myMergeIndex = m_user.MergeIndex[user.DeviceId];
-			}
-			else
-			{
-				myMergeIndex = m_user.MergeIndex.Values.Count == 0 ?  0 : m_user.MergeIndex.Values.Max();
-				m_user.MergeIndex[user.DeviceId] = myMergeIndex;
-			}
+			if (!m_user.MergeIndex.ContainsKey(DeviceId))
+				m_user.MergeIndex[DeviceId] = 0;
 
-			int mergeIndex = 0;
-			if (user.MergeIndex.ContainsKey(m_user.DeviceId))
-				mergeIndex = user.MergeIndex[m_user.DeviceId];
+			int myMergeIndex = GetMergeIndex(m_user, user, ref save);
+			int mergeIndex = GetMergeIndex(user, m_user, ref save);
 
 			foreach (OperatorTables math in user.Operators)
 			{
@@ -772,7 +803,7 @@ namespace SignalRConsole
 					if (myTable == null)
 					{
 						foreach (Card card in table.Cards)
-							MergeCards(save, card, mergeIndex, null, 0);
+							_ = MergeCards(save, card, mergeIndex, null, myMergeIndex);
 
 						myOperator.Tables.Add(table);
 						save = true;
@@ -801,9 +832,9 @@ namespace SignalRConsole
 			}
 
 			foreach (OperatorTables math in m_user.Operators)
-				foreach (FactTable myTables in math.Tables)
-					foreach (Card myCard in myTables.Cards.Where(x => x.MergeQuizzed == null))
-						save = MergeCards(save, myCard, mergeIndex, null, 0);
+				foreach (FactTable table in math.Tables)
+					foreach (Card card in table.Cards.Where(x => x.MergeQuizzed == null))
+						save = MergeCards(save, card, mergeIndex, null, 0);
 
 			return save;
 		}
@@ -812,15 +843,15 @@ namespace SignalRConsole
 		{
 			if (myCard == null)
 			{
-				InitializeMergeProperties(card, mergeIndex);
-				card.MergeQuizzed[mergeIndex] = card.Quizzed;
-				card.MergeCorrect[mergeIndex] = card.Correct;
-				card.MergeTime[mergeIndex] =  card.TotalTime;
+				InitializeMergeProperties(card, myMergeIndex);
+				card.MergeQuizzed[myMergeIndex] = card.Quizzed;
+				card.MergeCorrect[myMergeIndex] = card.Correct;
+				card.MergeTime[myMergeIndex] =  card.TotalTime;
 				save = true;
 			}
-			else if (myCard.MergeQuizzed == null && card.MergeQuizzed != null)
+			else if (myMergeIndex > (myCard.MergeQuizzed?.Length ?? 0) - 1 && card.MergeQuizzed != null)
 			{
-				// the new device has merged our data and sent us a Merge command, set our Merged values to his
+				// the new device has copied our data and sent us back a Merge command, set our Merged values to his
 				InitializeMergeProperties(myCard, myMergeIndex);
 				myCard.MergeQuizzed[myMergeIndex] = myCard.Quizzed = card.Quizzed;
 				myCard.MergeCorrect[myMergeIndex] = myCard.Correct = card.Correct;
@@ -864,7 +895,43 @@ namespace SignalRConsole
 				card.MergeQuizzed = new int[++mergeIndex];
 				card.MergeCorrect = new int[mergeIndex];
 				card.MergeTime = new int[mergeIndex];
+				card.MergeQuizzed[--mergeIndex] = card.Quizzed;
+				card.MergeCorrect[mergeIndex] = card.Correct;
+				card.MergeTime[mergeIndex] = card.TotalTime;
 			}
+			else if (mergeIndex > (card.MergeQuizzed?.Length ?? 0) - 1)
+			{
+				card.MergeQuizzed = GrowArray(card.MergeQuizzed);
+				card.MergeCorrect = GrowArray(card.MergeCorrect);
+				card.MergeTime = GrowArray(card.MergeTime);
+			}
+		}
+
+		private static int[] GrowArray(int[] mergeQuizzed)
+		{
+			int[] resized = new int[mergeQuizzed.Length + 1];
+			for (int index = 0; index < mergeQuizzed.Length; index++)
+				resized[index] = mergeQuizzed[index];
+
+			return resized;
+		}
+
+		private static void ComputeMergeData(Card card, int index)
+		{
+			card.MergeQuizzed[index] = card.Quizzed - card.MergeQuizzed.Sum();
+			card.MergeCorrect[index] = card.Correct - card.MergeCorrect.Sum();
+			card.MergeTime[index] = card.TotalTime - card.MergeTime.Sum();
+		}
+
+		private int GetMergeIndex(User us, User them, ref bool save)
+		{
+			if (us.MergeIndex.ContainsKey(them.DeviceId))
+				return us.MergeIndex[them.DeviceId];
+
+			int mergeIndex = us.MergeIndex.Values.Max() + 1;
+			us.MergeIndex[them.DeviceId] = mergeIndex;
+			save = true;
+			return mergeIndex;
 		}
 
 		private async Task LeaveChatChannelAsync(bool send)
@@ -1103,10 +1170,11 @@ namespace SignalRConsole
 
 			if (friend != null)
 			{
-				if (friend.Handle != updated.Handle || friend.Name != updated.Name ||
-					friend.Color != updated.Color || friend.Id != updated.Id)
+				if (friend.Handle != updated.Handle || friend.Name != updated.Name || friend.Color != updated.Color ||
+					friend.Id != updated.Id || friend.Modified != updated.Modified)
 				{
 					friend.Handle = updated.Handle;
+					friend.Email = updated.Email;
 					friend.Name = updated.Name;
 					friend.Color = updated.Color;
 					friend.Id = updated.Id;
@@ -1258,6 +1326,7 @@ namespace SignalRConsole
 		private User m_user;
 		private States m_state;
 		private bool m_waitForEnter;
+		private readonly object m_lock = new object();
 		private readonly List<User> m_users = new List<User>();
 		private readonly List<Friend> m_online = new List<Friend>();
 		private readonly List<string> m_log = new List<string>();

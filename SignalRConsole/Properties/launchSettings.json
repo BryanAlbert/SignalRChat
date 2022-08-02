@@ -2,7 +2,7 @@
   "profiles": {
     "SignalRConsole": {
       "commandName": "Project",
-      "commandLineArgs": ".\\Test-19\\ Fred"
+      "commandLineArgs": "..\\..\\..\\Tests\\Test-20\\Old\\ Mia"
     }
   }
 }

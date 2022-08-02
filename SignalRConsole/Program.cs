@@ -67,7 +67,6 @@ namespace SignalRConsole
 								break;
 							case c_startWaitFor:
 							case c_startWaitForRegex:
-								// requires the output to wait for in quotes before the rest of the command line
 								int start = line.IndexOf('"') + 1;
 								string waitForOutput = line[start..line.LastIndexOf('"')];
 								commandLine = line[(line.LastIndexOf('"') + 2)..];
