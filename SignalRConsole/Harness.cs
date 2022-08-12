@@ -9,6 +9,10 @@ namespace SignalRConsole
 	{
 		public Harness(string[] args, string workingDirectory = null)
 		{
+			// set to 1 to receive script-mode output without script mode
+			ScriptMode = m_inputStreamFilename != null ? 2 : 0;
+			ScriptMode = 1;
+
 			m_args = new List<string>(args);
 			if (workingDirectory != null)
 			{
@@ -62,7 +66,7 @@ namespace SignalRConsole
 
 
 		public string Tag { get; private set; }
-		public bool ScriptMode => m_inputStreamFilename != null;
+		public int ScriptMode { get; set; }
 		public string WorkingDirectory { get; set; } = ".";
 		public int CursorLeft { get => Console.CursorLeft; set { Console.CursorLeft = value; } }
 		public int CursorTop { get => Console.CursorTop; set { Console.CursorTop = value; } }
@@ -79,7 +83,7 @@ namespace SignalRConsole
 		{
 			get
 			{
-				if (!ScriptMode)
+				if (ScriptMode < 2)
 					return Console.KeyAvailable;
 
 				if (NextInputLine.StartsWith(c_menuBlockCommand))
@@ -125,7 +129,7 @@ namespace SignalRConsole
 
 		public ConsoleKeyInfo ReadKey(bool intercept = false)
 		{
-			if (ScriptMode)
+			if (ScriptMode > 1)
 			{
 				LogWriteLine(NextInputLine);
 				Console.WriteLine(Tag != null ? $"{Tag}: {NextInputLine}" : NextInputLine);
@@ -149,7 +153,7 @@ namespace SignalRConsole
 
 		public string ReadLine()
 		{
-			if (ScriptMode)
+			if (ScriptMode > 1)
 			{
 				string line = NextInputLine;
 				Console.WriteLine(Tag != null ? $"{Tag}: {NextInputLine}" : NextInputLine);
@@ -163,7 +167,7 @@ namespace SignalRConsole
 
 		public void WriteLine(string value)
 		{
-			if (ScriptMode)
+			if (ScriptMode > 1)
 				value = value.Trim('\n');
 
 			Console.WriteLine(Tag != null ? $"{Tag}: {value}" : value);
@@ -173,7 +177,7 @@ namespace SignalRConsole
 
 		public void Write(char value)
 		{
-			if (ScriptMode)
+			if (ScriptMode > 1)
 				Console.WriteLine(value);
 			else
 				Console.Write(value);
@@ -184,7 +188,7 @@ namespace SignalRConsole
 
 		public void Write(string value)
 		{
-			if (ScriptMode)
+			if (ScriptMode > 1)
 				Console.WriteLine(Tag != null ? $"{Tag}: {value}" : value);
 			else
 				Console.Write(Tag != null ? $"{Tag}: {value}" : value);
@@ -195,7 +199,7 @@ namespace SignalRConsole
 
 		public void SetCursorPosition(int left, int top)
 		{
-			if (!ScriptMode)
+			if (ScriptMode < 2)
 				Console.SetCursorPosition(left, top);
 		}
 

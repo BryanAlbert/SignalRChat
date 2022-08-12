@@ -7,6 +7,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 using static SignalRConsole.Commands;
 using static SignalRConsole.Commands.ConnectionCommand;
@@ -42,6 +43,11 @@ namespace SignalRConsole
 			}
 		}
 
+
+		public static SemaphoreSlim m_semaphoreSlim = new SemaphoreSlim(1, 1);
+
+
+		public bool? FirstMerge { get; set; }
 		public States PreviousState { get => m_states.Pop(); set => m_states.Push(value); }
 
 
@@ -244,7 +250,7 @@ namespace SignalRConsole
 
 			await SendCommandAsync(CommandNames.Hello, Id, channel, user, m_user, !friend?.Blocked);
 
-			if (m_console.ScriptMode)
+			if (m_console.ScriptMode > 0)
 			{
 				// special messages for triggering while scripting
 				if (friend == null)
@@ -279,21 +285,29 @@ namespace SignalRConsole
 			if (to == Id || to == Handle || to == DeviceId)
 			{
 				ConnectionCommand command = DeserializeCommand(json);
-				switch (command.CommandName)
+				await m_semaphoreSlim.WaitAsync();
+				try
 				{
-					case CommandNames.Hello:
-						await HelloAsync(from, command);
-						break;
-					case CommandNames.Verify:
-						await VerifyFriendAsync(from, command);
-						break;
-					case CommandNames.Merge:
-						await MergeAccountsAsync(command, to);
-						break;
-					case CommandNames.Unrecognized:
-					default:
-						Debug.WriteLine($"Error in OnSentCommandAsync, unrecognized command: {command.CommandName}");
-						break;
+					switch (command.CommandName)
+					{
+						case CommandNames.Hello:
+							await HelloAsync(from, command);
+							break;
+						case CommandNames.Verify:
+							await VerifyFriendAsync(from, command);
+							break;
+						case CommandNames.Merge:
+							await MergeAccountsAsync(command, to);
+							break;
+						case CommandNames.Unrecognized:
+						default:
+							Debug.WriteLine($"Error in OnSentCommandAsync, unrecognized command: {command.CommandName}");
+							break;
+					}
+				}
+				finally
+				{
+					m_semaphoreSlim.Release();
 				}
 			} 
 		}
@@ -451,7 +465,7 @@ namespace SignalRConsole
 
 			State = States.Initializing;
 			m_console.WriteLine("Enter the token returned from the server, Enter to abort: ");
-			if (m_console.ScriptMode)
+			if (m_console.ScriptMode > 0)
 			{
 				m_console.WriteLine("(Script mode: skipping registration validation.)");
 				return email;
@@ -546,9 +560,16 @@ namespace SignalRConsole
 		{
 			EraseLog();
 			if (m_user.Operators.Any(x => x.Tables.Count > 0))
+			{
+				ConsoleWriteLogLine("Tables json:");
 				ConsoleWriteLogLine(JsonSerializer.Serialize(m_user.Operators, m_serializerOptions));
+				ConsoleWriteLogLine("MergeIndex json:");
+				ConsoleWriteLogLine(JsonSerializer.Serialize(m_user.MergeIndex, m_serializerOptions));
+			}
 			else
+			{
 				ConsoleWriteLogLine($"{Handle} has no tables.");
+			}
 		}
 
 		private async Task UnfriendFriendAsync()
@@ -672,14 +693,14 @@ namespace SignalRConsole
 
 			if (Id == friend.Id ? myCreated != created : myCreated < created)
 			{
-				if (!m_pendingMerge.Contains(friend.DeviceId))
+				if (!m_merged.Contains(friend.DeviceId))
 				{
-					m_pendingMerge.Add(friend.DeviceId);
-					ConsoleWriteLogLine($"{friend.Handle} is online on device {friend.DeviceId}, sending tables...");
+					ConsoleWriteLogLine($"{friend.Handle} is online on device {friend.DeviceId}, sending merge data...");
+					m_merged.Add(friend.DeviceId);
 					await SendMergeCommandAsync(Id, friend.Id, friend.DeviceId, m_user, null);
 				}
 			}
-			
+
 			if (myCreated == DateTime.MinValue || created == DateTime.MinValue)
 			{
 				ConsoleWriteLogLine($"Error in CheckSendMerge, could not parse DateTime from {m_user.Created}" +
@@ -687,75 +708,49 @@ namespace SignalRConsole
 			}
 		}
 
-		private async Task SendMergeCommandAsync(string from, string channel, string to, User user, bool? flag)
-		{
-			bool save = !m_user.MergeIndex.ContainsKey(DeviceId);
-			if (save)
-				m_user.MergeIndex[DeviceId] = 0;
-
-			foreach (OperatorTables math in m_user.Operators)
-			{
-				foreach (FactTable table in math.Tables)
-				{
-					foreach (Card card in table.Cards)
-					{
-						InitializeMergeProperties(card, 0);
-						ComputeMergeData(card, 0);
-						save = true;
-					}
-				}
-			}
-
-			if (save)
-				SaveUser();
-
-			await ConnectionCommand.SendMergeCommandAsync(from, channel, to, user, flag);
-		}
-
 		private async Task MergeAccountsAsync(ConnectionCommand merge, string to)
 		{
-			bool firstMerge;
-			User user;
+			User user = merge.Merge;
+			DateTime.TryParse(m_user.Created, out DateTime myCreated);
+			DateTime.TryParse(user.Created, out DateTime created);
+			if (myCreated == created || to != DeviceId)
+				return;
 
-			lock (m_lock)
+			DateTime.TryParse(m_user.Modified, out DateTime myModified);
+			DateTime.TryParse(user.Modified, out DateTime modified);
+			if (!FirstMerge.HasValue)
+				FirstMerge = m_user.Id != user.Id;
+
+			bool save = FirstMerge == true || myModified < modified && (m_user.Name != user.Name ||
+				m_user.Handle != user.Handle || m_user.Email != user.Email || m_user.Color != user.Color);
+
+			if (save)
 			{
-				// in case multiple devices are logged in at the same time, make this an atomic action
-				user = merge.Merge;
-				DateTime.TryParse(m_user.Created, out DateTime myCreated);
-				DateTime.TryParse(user.Created, out DateTime created);
-				if (myCreated == created || to != DeviceId)
-					return;
-
-				DateTime.TryParse(m_user.Modified, out DateTime myModified);
-				DateTime.TryParse(user.Modified, out DateTime modified);
-				firstMerge = m_user.Id != user.Id;
-				bool save = firstMerge || myModified < modified && (m_user.Name != user.Name ||
-					m_user.Handle != user.Handle || m_user.Email != user.Email || m_user.Color != user.Color);
-				ConsoleWriteLogLine($"{Handle} is online on device {user.DeviceId}, merging received tables...");
-
-				if (save)
-				{
-					m_user.Id = user.Id;
-					m_user.Name = user.Name;
-					m_user.Handle = user.Handle;
-					m_user.Email = user.Email;
-					m_user.Color = user.Color;
-				}
-
-				save = MergeFriends(save, user);
-				save = MergeTables(save, user);
-
-				if (save)
-				{
-					ConsoleWriteLogLine($"Merged tables from {Handle} on device{user.DeviceId}{(firstMerge ? ", sending merge tables" : "")}.");
-					SaveUser();
-				}
-
-				m_pendingMerge.Remove(user.DeviceId);
+				m_user.Id = user.Id;
+				m_user.Name = user.Name;
+				m_user.Handle = user.Handle;
+				m_user.Email = user.Email;
+				m_user.Color = user.Color;
 			}
 
-			if (firstMerge)
+			if (FirstMerge == true)
+			{
+				ConsoleWriteLogLine($"Received tables from {Handle} on device {user.DeviceId}, sending tables then" +
+					$" merging...");
+
+				m_merged.Add(user.DeviceId);
 				await SendMergeCommandAsync(Id, user.Id, user.DeviceId, m_user, null);
+			}
+			else
+			{
+				ConsoleWriteLogLine($"Merging tables received from {Handle} on device {user.DeviceId}...");
+			}
+
+			save = MergeFriends(save, user);
+			save = MergeTables(save, user);
+			ConsoleWriteLogLine($"Merged tables from {Handle} on device {user.DeviceId}.");
+			if (save)
+				SaveUser();
 		}
 
 		private bool MergeFriends(bool save, User user)
@@ -788,11 +783,8 @@ namespace SignalRConsole
 
 		private bool MergeTables(bool save, User user)
 		{
-			if (!m_user.MergeIndex.ContainsKey(DeviceId))
-				m_user.MergeIndex[DeviceId] = 0;
-
-			int myMergeIndex = GetMergeIndex(m_user, user, ref save);
-			int mergeIndex = GetMergeIndex(user, m_user, ref save);
+			int myMergeIndex = GetMergeIndex(m_user.MergeIndex, user.DeviceId, ref save);
+			int mergeIndex = GetMergeIndex(user.MergeIndex, m_user.DeviceId, ref save);
 
 			foreach (OperatorTables math in user.Operators)
 			{
@@ -815,7 +807,7 @@ namespace SignalRConsole
 							Card myCard = myTable.Cards.FirstOrDefault(x => x.Fact.First == card.Fact.First && x.Fact.Second == card.Fact.Second);
 							if (myCard == null)
 							{
-								MergeCards(save, card, mergeIndex, null, 0);
+								MergeCards(save, card, mergeIndex, null, myMergeIndex);
 								myTable.Cards.Add(card);
 								save = true;
 							}
@@ -834,70 +826,57 @@ namespace SignalRConsole
 			foreach (OperatorTables math in m_user.Operators)
 				foreach (FactTable table in math.Tables)
 					foreach (Card card in table.Cards.Where(x => x.MergeQuizzed == null))
-						save = MergeCards(save, card, mergeIndex, null, 0);
+						save = MergeCards(save, null, mergeIndex, card, myMergeIndex);
 
 			return save;
 		}
 
 		private static bool MergeCards(bool save, Card card, int mergeIndex, Card myCard, int myMergeIndex)
 		{
-			if (myCard == null)
+			if (card == null)
 			{
-				InitializeMergeProperties(card, myMergeIndex);
+				InitializeMergeProperties(myCard, myMergeIndex);
+				myCard.MergeQuizzed[myMergeIndex] = 0;
+				myCard.MergeCorrect[myMergeIndex] = 0;
+				myCard.MergeTime[myMergeIndex] = 0;
+			}
+			else if (myCard == null)
+			{
+				InitializeMergeProperties(card, myMergeIndex, true);
 				card.MergeQuizzed[myMergeIndex] = card.Quizzed;
 				card.MergeCorrect[myMergeIndex] = card.Correct;
 				card.MergeTime[myMergeIndex] =  card.TotalTime;
-				save = true;
-			}
-			else if (myMergeIndex > (myCard.MergeQuizzed?.Length ?? 0) - 1 && card.MergeQuizzed != null)
-			{
-				// the new device has copied our data and sent us back a Merge command, set our Merged values to his
-				InitializeMergeProperties(myCard, myMergeIndex);
-				myCard.MergeQuizzed[myMergeIndex] = myCard.Quizzed = card.Quizzed;
-				myCard.MergeCorrect[myMergeIndex] = myCard.Correct = card.Correct;
-				myCard.MergeTime[myMergeIndex] = myCard.TotalTime = card.TotalTime;
-				myCard.BestTime = card.BestTime;
 				save = true;
 			}
 			else
 			{
 				InitializeMergeProperties(card, mergeIndex);
 				InitializeMergeProperties(myCard, myMergeIndex);
-				int merge = myCard.Quizzed + card.Quizzed - myCard.MergeQuizzed[myMergeIndex];
-				if (merge != myCard.MergeQuizzed[myMergeIndex])
-				{
-					myCard.MergeQuizzed[myMergeIndex] = myCard.Quizzed = merge;
-					save = true;
-				}
-
-				merge = myCard.Correct + card.Correct - myCard.MergeCorrect[myMergeIndex];
-				if (merge != myCard.MergeCorrect[myMergeIndex])
-				{
-					myCard.MergeCorrect[myMergeIndex] = myCard.Correct = merge;
-					save = true;
-				}
-
-				merge = myCard.TotalTime + card.TotalTime - myCard.MergeTime[myMergeIndex];
-				if (merge != myCard.MergeTime[myMergeIndex])
-				{
-					myCard.MergeTime[myMergeIndex] = myCard.TotalTime = merge;
-					save = true;
-				}
+				int count = card.Quizzed - card.MergeQuizzed.Sum();
+				myCard.Quizzed += count - myCard.MergeQuizzed[myMergeIndex];
+				myCard.MergeQuizzed[myMergeIndex] = count;
+				count = card.Correct - card.MergeCorrect.Sum();
+				myCard.Correct += count - myCard.MergeCorrect[myMergeIndex];
+				myCard.MergeCorrect[myMergeIndex] = count;
+				count = card.TotalTime - card.MergeTime.Sum();
+				myCard.TotalTime += count - myCard.MergeTime[myMergeIndex];
+				myCard.MergeTime[myMergeIndex] = count;
+				save = true;
 			}
 
 			return save;
 		}
 
-		private static void InitializeMergeProperties(Card card, int mergeIndex)
+		private static void InitializeMergeProperties(Card card, int mergeIndex, bool clear = false)
 		{
-			if (card.MergeQuizzed == null)
+			if (card.MergeQuizzed == null || clear)
 			{
-				card.MergeQuizzed = new int[++mergeIndex];
-				card.MergeCorrect = new int[mergeIndex];
-				card.MergeTime = new int[mergeIndex];
-				card.MergeQuizzed[--mergeIndex] = card.Quizzed;
-				card.MergeCorrect[mergeIndex] = card.Correct;
-				card.MergeTime[mergeIndex] = card.TotalTime;
+				card.MergeQuizzed = new int[1];
+				card.MergeCorrect = new int[1];
+				card.MergeTime = new int[1];
+				card.MergeQuizzed[0] = 0;
+				card.MergeCorrect[0] = 0;
+				card.MergeTime[0] = 0;
 			}
 			else if (mergeIndex > (card.MergeQuizzed?.Length ?? 0) - 1)
 			{
@@ -916,20 +895,13 @@ namespace SignalRConsole
 			return resized;
 		}
 
-		private static void ComputeMergeData(Card card, int index)
+		private int GetMergeIndex(Dictionary<string, int> ourMergeIndex, string theirDeviceId, ref bool save)
 		{
-			card.MergeQuizzed[index] = card.Quizzed - card.MergeQuizzed.Sum();
-			card.MergeCorrect[index] = card.Correct - card.MergeCorrect.Sum();
-			card.MergeTime[index] = card.TotalTime - card.MergeTime.Sum();
-		}
+			if (ourMergeIndex.ContainsKey(theirDeviceId))
+				return ourMergeIndex[theirDeviceId];
 
-		private int GetMergeIndex(User us, User them, ref bool save)
-		{
-			if (us.MergeIndex.ContainsKey(them.DeviceId))
-				return us.MergeIndex[them.DeviceId];
-
-			int mergeIndex = us.MergeIndex.Values.Max() + 1;
-			us.MergeIndex[them.DeviceId] = mergeIndex;
+			int mergeIndex = ourMergeIndex.Count > 0 ? ourMergeIndex.Values.Max() + 1 : 0;
+			ourMergeIndex[theirDeviceId] = mergeIndex;
 			save = true;
 			return mergeIndex;
 		}
@@ -1075,7 +1047,7 @@ namespace SignalRConsole
 						await SendCommandAsync(CommandNames.Hello, Id, pending.Id, pending.Id, m_user, false);
 
 						// special message for triggering while scripting
-						if (m_console.ScriptMode)
+						if (m_console.ScriptMode > 0)
 							ConsoleWriteLogLine($"(Sent unfriend command to {pending.Handle}.)");
 					}
 					else if (!existing.Blocked.HasValue)
@@ -1240,7 +1212,7 @@ namespace SignalRConsole
 
 		private void EraseLog()
 		{
-			if (m_console.ScriptMode)
+			if (m_console.ScriptMode > 1)
 				return;
 
 			Point cursor = new Point(m_console.CursorLeft, m_console.CursorTop);
@@ -1326,12 +1298,11 @@ namespace SignalRConsole
 		private User m_user;
 		private States m_state;
 		private bool m_waitForEnter;
-		private readonly object m_lock = new object();
 		private readonly List<User> m_users = new List<User>();
 		private readonly List<Friend> m_online = new List<Friend>();
 		private readonly List<string> m_log = new List<string>();
 		private readonly Stack<States> m_states = new Stack<States>();
-		private readonly List<string> m_pendingMerge = new List<string>();
+		private readonly List<string> m_merged = new List<string>();
 		private readonly JsonSerializerOptions m_serializerOptions = new JsonSerializerOptions()
 		{
 			WriteIndented = true
