@@ -2,7 +2,7 @@ $global:test = "Test-21"
 
 function Get-Description($qkr)
 {
-	"`n${test}: After initial merge, merge more data from New
+	"`n${test}: Merging old account with no tables and new account with tables
 	
 	Old Mia online, New Mia comes online, merges, lists, exits, Old merges, lists, exits.`n"
 
@@ -137,10 +137,10 @@ function Get-FilteredText($file, $merge)
 			if ($_ -match "`"Created`": `".{19}") {
 				$_ -replace "`"Created`": `".{19}", "`"Created`": `"<Date>`""
 			}
-			elseif ($_ -match "`"DeviceId`": `"[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}`",") {
+			elseif ($_ -match "`"DeviceId`": `"[a-fnwol0-9]{8}-[a-f0-9]{4}-[a-fel0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}`",") {
 				("  " + $_ -replace "`"DeviceId`": ", "" -replace ",", "") + ": 0"
 			}
-			else {
+			elseif (!($_ -match "^\s*[0-9]+,?")) {
 				$_
 			}
 		}

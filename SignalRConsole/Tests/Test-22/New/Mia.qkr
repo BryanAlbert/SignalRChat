@@ -1,10 +1,11 @@
 {
-  "Description": "After first merge.",
+  "Description": "After first merge, new has new data to be merged.",
   "Version": 1,
-  "DeviceId": "e27f1d65-1468-4409-a21a-f5b4f000ee4f",
+  "DeviceId": "newf1d65-1468-4409-a21a-f5b4f000ee4f",
   "Friends": [
     {
       "Blocked": false,
+      "DeviceId": null,
       "BluetoothId": null,
       "BluetoothDeviceName": null,
       "Id": "a1b4828b-4a1b-42ff-aaf2-e153fccee6d4",
@@ -17,6 +18,7 @@
     },
     {
       "Blocked": false,
+      "DeviceId": null,
       "BluetoothId": null,
       "BluetoothDeviceName": null,
       "Id": "brucef68-3c37-4aef-b8a6-1649659bbbc4",
@@ -67,9 +69,9 @@
                 "First": 1,
                 "Second": 2
               },
-              "Quizzed": 3,
-              "Correct": 3,
-              "TotalTime": 2346,
+              "Quizzed": 4,
+              "Correct": 4,
+              "TotalTime": 3041,
               "MergeQuizzed": [
                 3
               ],
@@ -80,6 +82,19 @@
                 2346
               ],
               "BestTime": 692
+            },
+            {
+              "Fact": {
+                "First": 1,
+                "Second": 3
+              },
+              "Quizzed": 2,
+              "Correct": 2,
+              "TotalTime": 1397,
+              "MergeQuizzed": null,
+              "MergeCorrect": null,
+              "MergeTime": null,
+              "BestTime": 670
             }
           ]
         },
@@ -91,9 +106,9 @@
                 "First": 2,
                 "Second": 1
               },
-              "Quizzed": 3,
-              "Correct": 3,
-              "TotalTime": 1770,
+              "Quizzed": 4,
+              "Correct": 4,
+              "TotalTime": 2437,
               "MergeQuizzed": [
                 3
               ],
@@ -110,9 +125,9 @@
                 "First": 2,
                 "Second": 2
               },
-              "Quizzed": 1,
-              "Correct": 1,
-              "TotalTime": 1532,
+              "Quizzed": 2,
+              "Correct": 2,
+              "TotalTime": 2407,
               "MergeQuizzed": [
                 1
               ],
@@ -123,6 +138,63 @@
                 1532
               ],
               "BestTime": 532
+            },
+            {
+              "Fact": {
+                "First": 2,
+                "Second": 3
+              },
+              "Quizzed": 1,
+              "Correct": 1,
+              "TotalTime": 579,
+              "MergeQuizzed": null,
+              "MergeCorrect": null,
+              "MergeTime": null,
+              "BestTime": 579
+            }
+          ]
+        },
+        {
+          "Base": 3,
+          "Cards": [
+            {
+              "Fact": {
+                "First": 3,
+                "Second": 1
+              },
+              "Quizzed": 1,
+              "Correct": 1,
+              "TotalTime": 880,
+              "MergeQuizzed": null,
+              "MergeCorrect": null,
+              "MergeTime": null,
+              "BestTime": 880
+            },
+            {
+              "Fact": {
+                "First": 3,
+                "Second": 2
+              },
+              "Quizzed": 1,
+              "Correct": 1,
+              "TotalTime": 1125,
+              "MergeQuizzed": null,
+              "MergeCorrect": null,
+              "MergeTime": null,
+              "BestTime": 125
+            },
+            {
+              "Fact": {
+                "First": 3,
+                "Second": 3
+              },
+              "Quizzed": 1,
+              "Correct": 1,
+              "TotalTime": 880,
+              "MergeQuizzed": null,
+              "MergeCorrect": null,
+              "MergeTime": null,
+              "BestTime": 880
             }
           ]
         }
@@ -134,13 +206,13 @@
     }
   ],
   "MergeIndex": {
-    "bc648e13-9aeb-41dc-aa7a-21d295f8d95d": 0
+    "old48e13-9aeb-41dc-aa7a-21d295f8d95d": 0
   },
   "Id": "mia38308-9a9b-4a6b-9db9-9e9b6238283f",
   "Email": "mia@albertnet.us",
   "Name": "Mia Albert",
   "Handle": "Mia",
   "Color": "Turquoise",
-  "Created": "2022-07-08T03:43:05",
-  "Modified": "2022-07-08T05:10:50"
+  "Created": "2022-07-06T23:11:31",
+  "Modified": "2022-07-08T00:10:38"
 }

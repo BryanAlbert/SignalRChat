@@ -1,0 +1,45 @@
+{
+  "Version": 1,
+  "DeviceId": "dc355dc7-d27f-4f20-ae6c-5106e7e88441",
+  "Friends": [
+    {
+      "Blocked": false,
+      "DeviceId": "d0699370-cfaf-4865-b979-8f3c7301fb85",
+      "BluetoothId": null,
+      "BluetoothDeviceName": null,
+      "Id": "brucef68-3c37-4aef-b8a6-1649659bbbc4",
+      "Email": "bruce@hotmail.OLD.com",
+      "Name": "Bruce OLD Albert",
+      "Handle": "BruceOLD",
+      "Color": "OLD",
+      "Created": "2022-06-06T19:03:41",
+      "Modified": "2022-07-17T01:44:27"
+    }
+  ],
+  "Operators": [
+    {
+      "Name": "Addition",
+      "Tables": []
+    },
+    {
+      "Name": "Subtraction",
+      "Tables": []
+    },
+    {
+      "Name": "Multiplication",
+      "Tables": []
+    },
+    {
+      "Name": "Division",
+      "Tables": []
+    }
+  ],
+  "MergeIndex": {},
+  "Id": "fredac24-3f25-41e0-84f2-3f34f54d072e",
+  "Email": "fred@gmail.com",
+  "Name": "Fred Sanson",
+  "Handle": "Fred",
+  "Color": "Green",
+  "Created": "2022-06-06T19:03:41",
+  "Modified": "2022-07-17T01:44:27"
+}

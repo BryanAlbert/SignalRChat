@@ -2,7 +2,7 @@ $global:test = "Test-24"
 
 function Get-Description($qkr)
 {
-	"`n${test}: Old device with Addition tables merged with new deivce with addition tables
+	"`n${test}: After second merge, merge more changes from Old and New devices
 	
 	Old Mia online, New Mia comes online, merges, lists, exits, Old merges, lists, exits.`n"
 
@@ -55,10 +55,10 @@ function Check-Test($checkQkr)
 	}
 
 	Compare-Files .\Old\Mia.qkr.json .\New\Mia.qkr.json 2 $true
-	
+
 	Compare-Files .\Old\MiaControl.txt .\Old\MiaOutput.txt 1
 	Compare-Files .\New\MiaControl.txt .\New\MiaOutput.txt 1
-	
+
 	"Warning count: $script:warningCount"
 	"Error count: $script:errorCount"
 	$global:totalWarningCount += $script:warningCount
@@ -137,10 +137,10 @@ function Get-FilteredText($file, $merge)
 			if ($_ -match "`"Created`": `".{19}") {
 				$_ -replace "`"Created`": `".{19}", "`"Created`": `"<Date>`""
 			}
-			elseif ($_ -match "`"DeviceId`": `"[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}`",") {
+			elseif ($_ -match "`"DeviceId`": `"[a-fnwol0-9]{8}-[a-f0-9]{4}-[a-fel0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}`",") {
 				("  " + $_ -replace "`"DeviceId`": ", "" -replace ",", "") + ": 0"
 			}
-			else {
+			elseif (!($_ -match "^\s*[0-9]+,?")) {
 				$_
 			}
 		}

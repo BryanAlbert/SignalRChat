@@ -1,7 +1,7 @@
 {
-  "Description": "Existing device with no data, before new device is merged.",
+  "Description": "Existing device with data, before new device is merged.",
   "Version": 1,
-  "DeviceId": "bc648e13-9aeb-41dc-aa7a-21d295f8d95d",
+  "DeviceId": "old48e13-9aeb-41dc-aa7a-21d295f8d95d",
   "Friends": [
     {
       "Blocked": false,
@@ -39,7 +39,70 @@
     },
     {
       "Name": "Multiplication",
-      "Tables": []
+      "Tables": [
+        {
+          "Base": 1,
+          "Cards": [
+            {
+              "Fact": {
+                "First": 1,
+                "Second": 1
+              },
+              "Quizzed": 3,
+              "Correct": 3,
+              "TotalTime": 1744,
+              "MergeQuizzed": null,
+              "MergeCorrect": null,
+              "MergeTime": null,
+              "BestTime": 518
+            },
+            {
+              "Fact": {
+                "First": 1,
+                "Second": 2
+              },
+              "Quizzed": 3,
+              "Correct": 3,
+              "TotalTime": 2346,
+              "MergeQuizzed": null,
+              "MergeCorrect": null,
+              "MergeTime": null,
+              "BestTime": 692
+            }
+          ]
+        },
+        {
+          "Base": 2,
+          "Cards": [
+            {
+              "Fact": {
+                "First": 2,
+                "Second": 1
+              },
+              "Quizzed": 3,
+              "Correct": 3,
+              "TotalTime": 1770,
+              "MergeQuizzed": null,
+              "MergeCorrect": null,
+              "MergeTime": null,
+              "BestTime": 542
+            },
+            {
+              "Fact": {
+                "First": 2,
+                "Second": 2
+              },
+              "Quizzed": 1,
+              "Correct": 1,
+              "TotalTime": 1532,
+              "MergeQuizzed": null,
+              "MergeCorrect": null,
+              "MergeTime": null,
+              "BestTime": 532
+            }
+          ]
+        }
+      ]
     },
     {
       "Name": "Division",

@@ -1,0 +1,61 @@
+Initializing server and connecting to URL: https://localhost:5001/chathub
+What is your handle (nickname)? 
+Mia
+Name: Mia Albert, Email: mia@albertnet.us, Favorite color: Yellow,
+Id: third7d6-2399-4557-ba66-4ccbc049e6ad, Device Id: third7d6-2399-4557-ba66-4ccbc049e6ad,
+Creation Date: 2022-07-18T21:10:09, Modified Date: 2022-07-18T21:10:09
+Pick a command: t to list tables, a to add a friend, l to list friends,
+u to unfriend a friend, c to chat, or x to exit
+Listening> 
+(Sent Hello null command to Mia.)
+Mia is online on device second65-1468-4409-a21a-f5b4f000ee4f, sending merge data...
+Mia is online on device firste13-9aeb-41dc-aa7a-21d295f8d95d, sending merge data...
+Merging data from Mia, Id mia38308-9a9b-4a6b-9db9-9e9b6238283f, on device second65-1468-4409-a21a-f5b4f000ee4f...
+Merged data from Mia on device second65-1468-4409-a21a-f5b4f000ee4f.
+Merging data from Mia on device firste13-9aeb-41dc-aa7a-21d295f8d95d...
+Merged data from Mia on device firste13-9aeb-41dc-aa7a-21d295f8d95d.
+L
+You have no friends.
+T
+Tables json:
+[
+  {
+    "Name": "Multiplication",
+    "Tables": [
+      {
+        "Base": 1,
+        "Cards": [
+          {
+            "Fact": {
+              "First": 1,
+              "Second": 1
+            },
+            "Quizzed": 9,
+            "Correct": 7,
+            "TotalTime": 5231,
+            "MergeQuizzed": [
+              2,
+              3
+            ],
+            "MergeCorrect": [
+              1,
+              3
+            ],
+            "MergeTime": [
+              1162,
+              1744
+            ],
+            "BestTime": 518
+          }
+        ]
+      }
+    ]
+  }
+]
+MergeIndex json:
+{
+  "second65-1468-4409-a21a-f5b4f000ee4f": 0,
+  "firste13-9aeb-41dc-aa7a-21d295f8d95d": 1
+}
+X
+Finished.

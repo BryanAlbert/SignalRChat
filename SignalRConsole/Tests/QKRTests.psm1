@@ -10,7 +10,7 @@ function Get-Descriptions($number)
     {
         Get-ChildItem -Recurse QKRTest.psm1 | ForEach-Object {
             Import-Module -DisableNameChecking -Force $_
-            Reset-Test $false
+            Get-Description
         }
     }
     else
@@ -22,8 +22,11 @@ function Get-Descriptions($number)
 
 function Load-Test($number, $discard)
 {
-    if ($number -lt 10) { $number = "0$number" }
-	$testPath = Join-Path ".\Test-$number" QKRTest.psm1
+    if ($number -lt 10) {
+        $number = "0$number"
+    }
+
+    $testPath = Join-Path ".\Test-$number" QKRTest.psm1
 	"Loading $testPath"
     if ($null -eq $discard -or $discard -ne $true) {
         Import-Module -DisableNameChecking -Global -Force $testPath

@@ -1,0 +1,39 @@
+{
+  "Description": "New device with no data, before being merged with existing device.",
+  "Version": 1,
+  "DeviceId": "second65-1468-4409-a21a-f5b4f000ee4f",
+  "Friends": [],
+  "Operators": [
+    {
+      "Name": "Multiplication",
+      "Tables": [
+        {
+          "Base": 1,
+          "Cards": [
+            {
+              "Fact": {
+                "First": 1,
+                "Second": 1
+              },
+              "Quizzed": 2,
+              "Correct": 1,
+              "TotalTime": 1162,
+              "MergeQuizzed": null,
+              "MergeCorrect": null,
+              "MergeTime": null,
+              "BestTime": 520
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "MergeIndex": {},
+  "Id": "second65-1468-4409-a21a-f5b4f000ee4f",
+  "Email": "mia@albertnet.us",
+  "Name": "Mia Albert",
+  "Handle": "Mia",
+  "Color": "Turquoise",
+  "Created": "2022-07-08T03:43:05",
+  "Modified": "2022-07-08T03:43:05"
+}

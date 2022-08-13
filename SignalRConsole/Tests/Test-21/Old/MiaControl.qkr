@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "DeviceId": "bc648e13-9aeb-41dc-aa7a-21d295f8d95d",
+  "DeviceId": "old48e13-9aeb-41dc-aa7a-21d295f8d95d",
   "Friends": [
     {
       "Blocked": false,
@@ -49,17 +49,17 @@
                 "First": 1,
                 "Second": 1
               },
-              "Quizzed": 4,
-              "Correct": 4,
-              "TotalTime": 2387,
+              "Quizzed": 3,
+              "Correct": 3,
+              "TotalTime": 1744,
               "MergeQuizzed": [
-                4
+                3
               ],
               "MergeCorrect": [
-                4
+                3
               ],
               "MergeTime": [
-                2387
+                1744
               ],
               "BestTime": 518
             },
@@ -68,38 +68,19 @@
                 "First": 1,
                 "Second": 2
               },
-              "Quizzed": 4,
-              "Correct": 4,
-              "TotalTime": 3041,
+              "Quizzed": 3,
+              "Correct": 3,
+              "TotalTime": 2346,
               "MergeQuizzed": [
-                4
+                3
               ],
               "MergeCorrect": [
-                4
+                3
               ],
               "MergeTime": [
-                3041
+                2346
               ],
               "BestTime": 692
-            },
-            {
-              "Fact": {
-                "First": 1,
-                "Second": 3
-              },
-              "Quizzed": 2,
-              "Correct": 2,
-              "TotalTime": 1397,
-              "MergeQuizzed": [
-                2
-              ],
-              "MergeCorrect": [
-                2
-              ],
-              "MergeTime": [
-                1397
-              ],
-              "BestTime": 670
             }
           ]
         },
@@ -111,17 +92,17 @@
                 "First": 2,
                 "Second": 1
               },
-              "Quizzed": 4,
-              "Correct": 4,
-              "TotalTime": 2437,
+              "Quizzed": 3,
+              "Correct": 3,
+              "TotalTime": 1770,
               "MergeQuizzed": [
-                4
+                3
               ],
               "MergeCorrect": [
-                4
+                3
               ],
               "MergeTime": [
-                2437
+                1770
               ],
               "BestTime": 542
             },
@@ -130,100 +111,19 @@
                 "First": 2,
                 "Second": 2
               },
-              "Quizzed": 2,
-              "Correct": 2,
-              "TotalTime": 2407,
+              "Quizzed": 1,
+              "Correct": 1,
+              "TotalTime": 1532,
               "MergeQuizzed": [
-                2
+                1
               ],
               "MergeCorrect": [
-                2
+                1
               ],
               "MergeTime": [
-                2407
+                1532
               ],
               "BestTime": 532
-            },
-            {
-              "Fact": {
-                "First": 2,
-                "Second": 3
-              },
-              "Quizzed": 1,
-              "Correct": 1,
-              "TotalTime": 1579,
-              "MergeQuizzed": [
-                1
-              ],
-              "MergeCorrect": [
-                1
-              ],
-              "MergeTime": [
-                1579
-              ],
-              "BestTime": 579
-            }
-          ]
-        },
-        {
-          "Base": 3,
-          "Cards": [
-            {
-              "Fact": {
-                "First": 3,
-                "Second": 1
-              },
-              "Quizzed": 1,
-              "Correct": 1,
-              "TotalTime": 880,
-              "MergeQuizzed": [
-                1
-              ],
-              "MergeCorrect": [
-                1
-              ],
-              "MergeTime": [
-                880
-              ],
-              "BestTime": 880
-            },
-            {
-              "Fact": {
-                "First": 3,
-                "Second": 2
-              },
-              "Quizzed": 1,
-              "Correct": 1,
-              "TotalTime": 1125,
-              "MergeQuizzed": [
-                1
-              ],
-              "MergeCorrect": [
-                1
-              ],
-              "MergeTime": [
-                1125
-              ],
-              "BestTime": 125
-            },
-            {
-              "Fact": {
-                "First": 3,
-                "Second": 3
-              },
-              "Quizzed": 1,
-              "Correct": 1,
-              "TotalTime": 880,
-              "MergeQuizzed": [
-                1
-              ],
-              "MergeCorrect": [
-                1
-              ],
-              "MergeTime": [
-                880
-              ],
-              "BestTime": 880
             }
           ]
         }
@@ -235,7 +135,7 @@
     }
   ],
   "MergeIndex": {
-    "e27f1d65-1468-4409-a21a-f5b4f000ee4f": 0
+    "newf1d65-1468-4409-a21a-f5b4f000ee4f": 0
   },
   "Id": "mia38308-9a9b-4a6b-9db9-9e9b6238283f",
   "Email": "mia@albertnet.us",
@@ -243,5 +143,5 @@
   "Handle": "Mia",
   "Color": "Turquoise",
   "Created": "2022-06-27T23:00:00",
-  "Modified": "2022-07-17T00:36:23"
+  "Modified": "2022-08-13T18:28:14"
 }

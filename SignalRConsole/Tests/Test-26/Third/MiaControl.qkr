@@ -1,0 +1,50 @@
+{
+  "Version": 1,
+  "DeviceId": "third7d6-2399-4557-ba66-4ccbc049e6ad",
+  "Friends": [],
+  "Operators": [
+    {
+      "Name": "Multiplication",
+      "Tables": [
+        {
+          "Base": 1,
+          "Cards": [
+            {
+              "Fact": {
+                "First": 1,
+                "Second": 1
+              },
+              "Quizzed": 9,
+              "Correct": 7,
+              "TotalTime": 5231,
+              "MergeQuizzed": [
+                2,
+                3
+              ],
+              "MergeCorrect": [
+                1,
+                3
+              ],
+              "MergeTime": [
+                1162,
+                1744
+              ],
+              "BestTime": 518
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "MergeIndex": {
+    "second65-1468-4409-a21a-f5b4f000ee4f": 0,
+    "firste13-9aeb-41dc-aa7a-21d295f8d95d": 1
+  },
+  "Id": "mia38308-9a9b-4a6b-9db9-9e9b6238283f",
+  "Email": "mia@albertnet.us",
+  "Name": "Mia Albert",
+  "Handle": "Mia",
+  "Color": "Turquoise",
+  "Created": "2022-07-18T21:10:09",
+  "Modified": "2022-08-13T20:53:56"
+}

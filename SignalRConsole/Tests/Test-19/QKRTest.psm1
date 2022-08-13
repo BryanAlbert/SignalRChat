@@ -2,13 +2,14 @@ $global:test = "Test-19"
 
 function Get-Description($qkr)
 {
-	"`n${test}: Merging old account with tables to empty new account
-	
-	Old Mia online, New Mia comes online, merges, lists, exits, Old merges, lists, exits.`n"
+	"`n${test}: Friends Bruce and Fred update metadata
+
+	Fred online, Bruce online, adds Fred, Fred accepts, Bruce lists and goes
+	offline, Fred lists and goes offline.`n"
 
 	if ($null -eq $qkr -or $qkr)
 	{
-	"`tTo test QKR... Test results with Check-Test.`n"
+	 "`tTo test QKR, TODO:...`n"
 	}
 }
 
@@ -16,14 +17,14 @@ function Reset-Test($showDescription)
 {
 	"Resetting $test"
 	Push-Location $test
-	Copy-Item .\New\Mia.qkr .\New\Mia.qkr.json
-	Copy-Item .\Old\Mia.qkr .\Old\Mia.qkr.json
+	Copy-Item .\BruceFriends.qkr .\Bruce.qkr.json
+	Copy-Item .\FredFriends.qkr .\Fred.qkr.json
 #	Copy-Item .\Bruce-brucef68-3c37-4aef-b8a6-1649659bbbc4.qkr (Join-Path $global:qkrLocalState Bruce-brucef68-3c37-4aef-b8a6-1649659bbbc4.json)
 #	Copy-Item .\Fred-fredac24-3f25-41e0-84f2-3f34f54d072e.qkr (Join-Path $global:qkrLocalState Fred-fredac24-3f25-41e0-84f2-3f34f54d072e.json)
-	Get-ChildItem -Recurse *Output.txt | ForEach-Object {
+	Get-ChildItem *Output.txt | ForEach-Object {
 		Remove-Item $_
 	}
-	
+
 	Pop-Location
 
 	if ($null -eq $showDescription -or $showDescription) {
@@ -45,8 +46,8 @@ function Check-Test($checkQkr)
 	Push-Location $test
 	$script:warningCount = 0
 	$script:errorCount = 0
-	Compare-Files .\Old\MiaControl.qkr .\Old\Mia.qkr.json 2
-	Compare-Files .\New\MiaControl.qkr .\New\Mia.qkr.json 2
+	Compare-Files .\BruceControl.qkr .\Bruce.qkr.json 2
+	Compare-Files .\FredControl.qkr .\Fred.qkr.json 2
 	
 	if ($null -eq $checkQkr -or $checkQkr)
 	{
@@ -54,10 +55,8 @@ function Check-Test($checkQkr)
 		Compare-Files .\Fred-fredac24-3f25-41e0-84f2-3f34f54d072eControl.qkr (Join-Path $global:qkrLocalState Fred-fredac24-3f25-41e0-84f2-3f34f54d072e.json) 2
 	}
 
-	Compare-Files .\Old\Mia.qkr.json .\New\Mia.qkr.json 2 $true
-
-	Compare-Files .\Old\MiaControl.txt .\Old\MiaOutput.txt 1
-	Compare-Files .\New\MiaControl.txt .\New\MiaOutput.txt 1
+	Compare-Files .\BruceControl.txt .\BruceOutput.txt 1
+	Compare-Files .\FredControl.txt .\FredOutput.txt 1
 
 	"Warning count: $script:warningCount"
 	"Error count: $script:errorCount"
@@ -78,10 +77,10 @@ function Update-ControlFiles($updateQkr)
 	else
 	{
 		"Updating control files for $test"
-		Copy-Item .\Old\MiaOutput.txt .\Old\MiaControl.txt
-		Copy-Item .\New\MiaOutput.txt .\New\MiaControl.txt
-		Copy-Item .\Old\Mia.qkr.json .\Old\MiaControl.qkr
-		Copy-Item .\New\Mia.qkr.json .\New\MiaControl.qkr
+		Copy-Item .\BruceOutput.txt .\BruceControl.txt
+		Copy-Item .\FredOutput.txt .\FredControl.txt
+		Copy-Item .\Bruce.qkr.json .\BruceControl.qkr
+		Copy-Item .\Fred.qkr.json .\FredControl.qkr
 	}
 
 	Pop-Location

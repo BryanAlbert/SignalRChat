@@ -1,5 +1,5 @@
 Mia
->wait-for: Merged tables from Mia.
+>wait-for: Merged data from Mia on device old48e13-9aeb-41dc-aa7a-21d295f8d95d.
 L
 T
 X
