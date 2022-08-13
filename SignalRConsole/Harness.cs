@@ -9,10 +9,6 @@ namespace SignalRConsole
 	{
 		public Harness(string[] args, string workingDirectory = null)
 		{
-			// set to 1 to receive script-mode output without script mode
-			ScriptMode = m_inputStreamFilename != null ? 2 : 0;
-			ScriptMode = 1;
-
 			m_args = new List<string>(args);
 			if (workingDirectory != null)
 			{
@@ -62,11 +58,18 @@ namespace SignalRConsole
 					Console.WriteLine($"Harness: User is {Tag}");
 				}
 			}
+
+			ScriptMode = m_inputStreamFilename == null ? 0 : 2;
+
+#if false
+			// set to 1 to receive script-mode output without script mode (for debugging)
+			ScriptMode = 1;
+#endif
 		}
 
 
 		public string Tag { get; private set; }
-		public int ScriptMode { get; set; }
+		public int ScriptMode { get; private set; }
 		public string WorkingDirectory { get; set; } = ".";
 		public int CursorLeft { get => Console.CursorLeft; set { Console.CursorLeft = value; } }
 		public int CursorTop { get => Console.CursorTop; set { Console.CursorTop = value; } }

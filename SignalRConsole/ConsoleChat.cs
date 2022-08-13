@@ -47,7 +47,6 @@ namespace SignalRConsole
 		public static SemaphoreSlim m_semaphoreSlim = new SemaphoreSlim(1, 1);
 
 
-		public bool? FirstMerge { get; set; }
 		public States PreviousState { get => m_states.Pop(); set => m_states.Push(value); }
 
 
@@ -120,6 +119,7 @@ namespace SignalRConsole
 					await m_hubConnection.SendAsync(c_leaveChannel, friend.Id ?? MakeHandleChannelName(friend), Id);
 
 				await m_hubConnection.SendAsync(c_leaveChannel, IdChannelName, Id);
+				await m_hubConnection.SendAsync(c_leaveChannel, DeviceId, Id);
 				await m_hubConnection.SendAsync(c_leaveChannel, HandleChannelName, Id);
 				await m_hubConnection.SendAsync(c_leaveChannel, ChatChannelName, Id);
 				await m_hubConnection.StopAsync();
@@ -691,14 +691,11 @@ namespace SignalRConsole
 			DateTime.TryParse(m_user.Created, out DateTime myCreated);
 			DateTime.TryParse(friend.Created, out DateTime created);
 
-			if (Id == friend.Id ? myCreated != created : myCreated < created)
+			if (myCreated != created && !m_merged.Contains(friend.DeviceId))
 			{
-				if (!m_merged.Contains(friend.DeviceId))
-				{
-					ConsoleWriteLogLine($"{friend.Handle} is online on device {friend.DeviceId}, sending merge data...");
-					m_merged.Add(friend.DeviceId);
-					await SendMergeCommandAsync(Id, friend.Id, friend.DeviceId, m_user, null);
-				}
+				ConsoleWriteLogLine($"{friend.Handle} is online on device {friend.DeviceId}, sending merge data...");
+				m_merged.Add(friend.DeviceId);
+				await SendMergeCommandAsync(Id, friend.Id, friend.DeviceId, m_user, null);
 			}
 
 			if (myCreated == DateTime.MinValue || created == DateTime.MinValue)
@@ -718,38 +715,30 @@ namespace SignalRConsole
 
 			DateTime.TryParse(m_user.Modified, out DateTime myModified);
 			DateTime.TryParse(user.Modified, out DateTime modified);
-			if (!FirstMerge.HasValue)
-				FirstMerge = m_user.Id != user.Id;
+			bool updateId = m_user.Id != user.Id && myCreated > created;
+			bool update = myModified < modified && (m_user.Name != user.Name || m_user.Handle != user.Handle ||
+				m_user.Email != user.Email || m_user.Color != user.Color);
 
-			bool save = FirstMerge == true || myModified < modified && (m_user.Name != user.Name ||
-				m_user.Handle != user.Handle || m_user.Email != user.Email || m_user.Color != user.Color);
-
-			if (save)
+			if (updateId)
 			{
 				m_user.Id = user.Id;
+				await m_hubConnection.SendAsync(c_joinChannel, IdChannelName, Id);
+			}
+
+			if (update)
+			{
 				m_user.Name = user.Name;
 				m_user.Handle = user.Handle;
 				m_user.Email = user.Email;
 				m_user.Color = user.Color;
 			}
 
-			if (FirstMerge == true)
-			{
-				ConsoleWriteLogLine($"Received tables from {Handle} on device {user.DeviceId}, sending tables then" +
-					$" merging...");
-
-				m_merged.Add(user.DeviceId);
-				await SendMergeCommandAsync(Id, user.Id, user.DeviceId, m_user, null);
-			}
-			else
-			{
-				ConsoleWriteLogLine($"Merging tables received from {Handle} on device {user.DeviceId}...");
-			}
-
-			save = MergeFriends(save, user);
-			save = MergeTables(save, user);
-			ConsoleWriteLogLine($"Merged tables from {Handle} on device {user.DeviceId}.");
-			if (save)
+			ConsoleWriteLogLine($"Merging data from {Handle}{(updateId ? $", Id {user.Id}," : "")} on device {user.DeviceId}...");
+			m_merged.Add(user.DeviceId);
+			update = MergeFriends(update, user);
+			update = MergeTables(update, user);
+			ConsoleWriteLogLine($"Merged data from {Handle} on device {user.DeviceId}.");
+			if (update || updateId)
 				SaveUser();
 		}
 
