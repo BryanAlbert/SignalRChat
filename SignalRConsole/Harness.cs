@@ -7,7 +7,7 @@ namespace SignalRConsole
 {
 	public class Harness
 	{
-		public Harness(string[] args, string workingDirectory = null)
+		public Harness(string[] args, string workingDirectory = null, bool verbose = false)
 		{
 			m_args = new List<string>(args);
 			if (workingDirectory != null)
@@ -59,12 +59,7 @@ namespace SignalRConsole
 				}
 			}
 
-			ScriptMode = m_inputStreamFilename == null ? 0 : 2;
-
-#if false
-			// set to 1 to receive script-mode output without script mode (for debugging)
-			ScriptMode = 1;
-#endif
+			ScriptMode = m_inputStreamFilename == null ? (verbose ? 1 : 0) : 2;
 		}
 
 

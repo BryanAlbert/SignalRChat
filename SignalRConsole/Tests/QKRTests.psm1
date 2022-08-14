@@ -125,7 +125,7 @@ function Start-Chat
         "Launching dotnet.exe .\SignalRConsole.dll"
         dotnet.exe .\SignalRConsole.dll
     }
-    elseif (Test-Path $args[0])
+    elseif ((Test-Path $args[0]) -or ($args[0].StartsWith("-") -and (Test-Path $args[1])))
     {
         "Launching dotnet.exe .\SignalRConsole.dll $args"
         dotnet.exe .\SignalRConsole.dll $args
