@@ -2,7 +2,8 @@ $global:test = "Test-16"
 
 function Get-Description($qkr)
 {
-	"`n${test}: Bruce friends Fred, Fred online, Bruce unfriend, Fred answers Y
+	"`n${test}: Bruce friends Fred, Fred online, Bruce unfriends and goes offline, Fred
+	answers Y
 
 	Bruce comes online, befriends Fred, Fred comes online, Bruce unfriends, lists,
 	goes offline, Fred answers Y, lists, goes offline, Fred comes online, Bruce

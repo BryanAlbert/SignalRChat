@@ -1,2 +1,0 @@
-Initializing server and connecting to URL: https://localhost:5001/chathub
-What is your handle (nickname)? 

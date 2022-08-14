@@ -6,9 +6,8 @@ Id: mom0c866-8cb0-4a10-ad96-dfe5f9ebd98e, Device Id: 618b7593-4072-401b-a9f0-d8c
 Creation Date: 2022-07-15T00:05:39, Modified Date: 2022-07-15T16:05:32
 Pick a command: t to list tables, a to add a friend, l to list friends,
 u to unfriend a friend, c to chat, or x to exit
-Listening> 
 (Sent Hello null command to Mom.)
-(Sent Hello null command to Bruce.)
+Listening> 
 (Sent Hello null command to Bruce.)
 (Sent Hello null command to Fred.)
 Busy...       
@@ -21,11 +20,11 @@ Accept friend request from Fred, email address fred@gmail.com? [y/n]
 Y
 Listening> 
 You and Fred are now friends!
-Your friend Fred is offline.
 Your friend Bruce is offline.
+Your friend Fred is offline.
 L
 Friends:
-Bruce, Bruce Albert, bruce@hotmail.com, Red, Created: 2022-07-15T00:05:39 Modified: 2022-08-13T21:58:39
-Fred, Fred Sanson, fred@gmail.com, Green, Created: 2022-07-15T00:05:39 Modified: 2022-08-13T21:58:39
+Bruce, Bruce Albert, bruce@hotmail.com, Red, Created: 2022-07-15T00:05:39 Modified: 2022-08-14T02:01:01
+Fred, Fred Sanson, fred@gmail.com, Green, Created: 2022-07-15T00:05:39 Modified: 2022-08-14T02:01:01
 X
 Finished.

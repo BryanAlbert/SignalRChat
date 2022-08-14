@@ -6,9 +6,9 @@ Id: fredac24-3f25-41e0-84f2-3f34f54d072e, Device Id: 9f8f7303-8ccc-4f9b-8e89-d78
 Creation Date: 2022-07-15T00:05:39, Modified Date: 2022-07-15T16:05:22
 Pick a command: t to list tables, a to add a friend, l to list friends,
 u to unfriend a friend, c to chat, or x to exit
+(Sent Hello null command to Fred.)
 Listening> 
 A
-(Sent Hello null command to Fred.)
 Busy...       
 What is your friend's handle? 
 Mom
@@ -20,6 +20,6 @@ Your (pending) friend Mom is online.
 You and Mom are now friends!
 L
 Friends:
-Mom, Jean Albert, jeanmariealbert@hotmail.com, Maroon, Created: 2022-07-15T00:05:39 Modified: 2022-08-13T21:58:39 (online)
+Mom, Jean Albert, jeanmariealbert@hotmail.com, Maroon, Created: 2022-07-15T00:05:39 Modified: 2022-08-14T02:01:01 (online)
 X
 Finished.
