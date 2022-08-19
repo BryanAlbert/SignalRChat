@@ -814,7 +814,7 @@ namespace SignalRConsole
 
 			foreach (OperatorTables math in m_user.Operators)
 				foreach (FactTable table in math.Tables)
-					foreach (Card card in table.Cards.Where(x => x.MergeQuizzed == null))
+					foreach (Card card in table.Cards.Where(x => (x.MergeQuizzed?.Length ?? 0) <= myMergeIndex))
 						save = MergeCards(save, null, mergeIndex, card, myMergeIndex);
 
 			return save;
@@ -825,16 +825,16 @@ namespace SignalRConsole
 			if (card == null)
 			{
 				InitializeMergeProperties(myCard, myMergeIndex);
-				myCard.MergeQuizzed[myMergeIndex] = 0;
-				myCard.MergeCorrect[myMergeIndex] = 0;
-				myCard.MergeTime[myMergeIndex] = 0;
 			}
 			else if (myCard == null)
 			{
+				int quizzed = card.Quizzed - (card.MergeQuizzed?.Sum() ?? 0);
+				int correct = card.Correct - (card.MergeCorrect?.Sum() ?? 0);
+				int time = card.TotalTime - (card.MergeTime?.Sum() ?? 0);
 				InitializeMergeProperties(card, myMergeIndex, true);
-				card.MergeQuizzed[myMergeIndex] = card.Quizzed;
-				card.MergeCorrect[myMergeIndex] = card.Correct;
-				card.MergeTime[myMergeIndex] =  card.TotalTime;
+				card.Quizzed = card.MergeQuizzed[myMergeIndex] = quizzed;
+				card.Correct = card.MergeCorrect[myMergeIndex] = correct;
+				card.TotalTime = card.MergeTime[myMergeIndex] = time;
 				save = true;
 			}
 			else
@@ -860,12 +860,9 @@ namespace SignalRConsole
 		{
 			if (card.MergeQuizzed == null || clear)
 			{
-				card.MergeQuizzed = new int[1];
-				card.MergeCorrect = new int[1];
-				card.MergeTime = new int[1];
-				card.MergeQuizzed[0] = 0;
-				card.MergeCorrect[0] = 0;
-				card.MergeTime[0] = 0;
+				card.MergeQuizzed = new int[++mergeIndex];
+				card.MergeCorrect = new int[mergeIndex];
+				card.MergeTime = new int[mergeIndex];
 			}
 			else if (mergeIndex > (card.MergeQuizzed?.Length ?? 0) - 1)
 			{

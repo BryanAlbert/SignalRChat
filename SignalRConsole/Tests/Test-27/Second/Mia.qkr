@@ -1,0 +1,164 @@
+{
+  "Version": 1,
+  "DeviceId": "second65-1468-4409-a21a-f5b4f000ee4f",
+  "Friends": [],
+  "Operators": [
+    {
+      "Name": "Multiplication",
+      "Tables": [
+        {
+          "Base": 1,
+          "Cards": [
+            {
+              "Fact": {
+                "First": 1,
+                "Second": 1
+              },
+              "Quizzed": 14,
+              "Correct": 12,
+              "TotalTime": 8902,
+              "MergeQuizzed": [
+                3,
+                4
+              ],
+              "MergeCorrect": [
+                3,
+                3
+              ],
+              "MergeTime": [
+                1744,
+                2325
+              ],
+              "BestTime": 518
+            },
+            {
+              "Fact": {
+                "First": 1,
+                "Second": 2
+              },
+              "Quizzed": 4,
+              "Correct": 3,
+              "TotalTime": 2192,
+              "MergeQuizzed": null,
+              "MergeCorrect": null,
+              "MergeTime": null,
+              "BestTime": 661
+            },
+            {
+              "Fact": {
+                "First": 1,
+                "Second": 3
+              },
+              "Quizzed": 0,
+              "Correct": 0,
+              "TotalTime": 0,
+              "MergeQuizzed": null,
+              "MergeCorrect": null,
+              "MergeTime": null,
+              "BestTime": 0
+            }
+          ]
+        },
+        {
+          "Base": 2,
+          "Cards": [
+            {
+              "Fact": {
+                "First": 2,
+                "Second": 1
+              },
+              "Quizzed": 5,
+              "Correct": 5,
+              "TotalTime": 4069,
+              "MergeQuizzed": null,
+              "MergeCorrect": null,
+              "MergeTime": null,
+              "BestTime": 24
+            },
+            {
+              "Fact": {
+                "First": 2,
+                "Second": 2
+              },
+              "Quizzed": 2,
+              "Correct": 2,
+              "TotalTime": 1595,
+              "MergeQuizzed": null,
+              "MergeCorrect": null,
+              "MergeTime": null,
+              "BestTime": 787
+            },
+            {
+              "Fact": {
+                "First": 2,
+                "Second": 3
+              },
+              "Quizzed": 1,
+              "Correct": 1,
+              "TotalTime": 856,
+              "MergeQuizzed": null,
+              "MergeCorrect": null,
+              "MergeTime": null,
+              "BestTime": 856
+            }
+          ]
+        },
+        {
+          "Base": 3,
+          "Cards": [
+            {
+              "Fact": {
+                "First": 3,
+                "Second": 1
+              },
+              "Quizzed": 0,
+              "Correct": 0,
+              "TotalTime": 0,
+              "MergeQuizzed": null,
+              "MergeCorrect": null,
+              "MergeTime": null,
+              "BestTime": 0
+            },
+            {
+              "Fact": {
+                "First": 3,
+                "Second": 2
+              },
+              "Quizzed": 2,
+              "Correct": 2,
+              "TotalTime": 1877,
+              "MergeQuizzed": null,
+              "MergeCorrect": null,
+              "MergeTime": null,
+              "BestTime": 846
+            },
+            {
+              "Fact": {
+                "First": 3,
+                "Second": 3
+              },
+              "Quizzed": 1,
+              "Correct": 0,
+              "TotalTime": 0,
+              "MergeQuizzed": null,
+              "MergeCorrect": null,
+              "MergeTime": null,
+              "BestTime": 0
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "MergeIndex": {
+    "firste13-9aeb-41dc-aa7a-21d295f8d95d": 0,
+    "third7d6-2399-4557-ba66-4ccbc049e6ad": 1
+  },
+  "Id": "mia38308-9a9b-4a6b-9db9-9e9b6238283f",
+  "Email": "mia@albertnet.us",
+  "Name": "Mia Albert",
+  "Handle": "Mia",
+  "Color": "Turquoise",
+  "Created": "2022-07-08T03:43:05",
+  "Modified": "2022-08-15T19:43:17"
+}

@@ -17,6 +17,7 @@
               "Quizzed": 9,
               "Correct": 7,
               "TotalTime": 5231,
+              "BestTime": 518,
               "MergeQuizzed": [
                 2,
                 3
@@ -28,8 +29,7 @@
               "MergeTime": [
                 1162,
                 1744
-              ],
-              "BestTime": 518
+              ]
             }
           ]
         }
@@ -46,5 +46,5 @@
   "Handle": "Mia",
   "Color": "Turquoise",
   "Created": "2022-07-18T21:10:09",
-  "Modified": "2022-08-13T20:53:56"
+  "Modified": "2022-08-17T20:27:36"
 }

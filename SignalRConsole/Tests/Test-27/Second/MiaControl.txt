@@ -2,30 +2,24 @@ Initializing server and connecting to URL: https://localhost:5001/chathub
 What is your handle (nickname)? 
 Mia
 Name: Mia Albert, Email: mia@albertnet.us, Favorite color: Turquoise,
-Id: mia38308-9a9b-4a6b-9db9-9e9b6238283f, Device Id: newf1d65-1468-4409-a21a-f5b4f000ee4f,
-Creation Date: 2022-07-08T03:43:05, Modified Date: 2022-07-08T05:10:50
+Id: mia38308-9a9b-4a6b-9db9-9e9b6238283f, Device Id: second65-1468-4409-a21a-f5b4f000ee4f,
+Creation Date: 2022-07-08T03:43:05, Modified Date: 2022-08-15T19:43:17
 Pick a command: t to list tables, a to add a friend, l to list friends,
 u to unfriend a friend, c to chat, or x to exit
-Listening> 
-Mia is online on device old48e13-9aeb-41dc-aa7a-21d295f8d95d, sending merge data...
 (Sent Hello null command to Mia.)
-Merging data from Mia on device old48e13-9aeb-41dc-aa7a-21d295f8d95d...
-Merged data from Mia on device old48e13-9aeb-41dc-aa7a-21d295f8d95d.
+Listening> 
+Mia is online on device firste13-9aeb-41dc-aa7a-21d295f8d95d, sending merge data...
+Merging data from Mia on device firste13-9aeb-41dc-aa7a-21d295f8d95d...
+Merged data from Mia on device firste13-9aeb-41dc-aa7a-21d295f8d95d.
+(Sent Hello null command to Mia.)
+Mia is online on device third7d6-2399-4557-ba66-4ccbc049e6ad, sending merge data...
+Merging data from Mia on device third7d6-2399-4557-ba66-4ccbc049e6ad...
+Merged data from Mia on device third7d6-2399-4557-ba66-4ccbc049e6ad.
 L
-Friends:
-Papa, Bryan Albert, bryan.m.albert@gmail.com, Created: 2022-06-27T23:00:00 Modified: 2022-06-27T23:00:00
-Bruce, Bruce Albert, bruce@hotmail.com, Red, Created: 2022-07-06T03:05:12 Modified: 2022-07-06T03:05:12
+You have no friends.
 T
 Tables json:
 [
-  {
-    "Name": "Addition",
-    "Tables": []
-  },
-  {
-    "Name": "Subtraction",
-    "Tables": []
-  },
   {
     "Name": "Multiplication",
     "Tables": [
@@ -37,18 +31,21 @@ Tables json:
               "First": 1,
               "Second": 1
             },
-            "Quizzed": 3,
-            "Correct": 3,
-            "TotalTime": 1744,
-            "BestTime": 518,
+            "Quizzed": 28,
+            "Correct": 25,
+            "TotalTime": 18279,
+            "BestTime": 303,
             "MergeQuizzed": [
-              3
+              7,
+              14
             ],
             "MergeCorrect": [
-              3
+              7,
+              12
             ],
             "MergeTime": [
-              1744
+              4745,
+              8701
             ]
           },
           {
@@ -56,18 +53,21 @@ Tables json:
               "First": 1,
               "Second": 2
             },
-            "Quizzed": 4,
+            "Quizzed": 6,
             "Correct": 4,
-            "TotalTime": 3041,
-            "BestTime": 692,
+            "TotalTime": 2853,
+            "BestTime": 661,
             "MergeQuizzed": [
-              4
+              2,
+              0
             ],
             "MergeCorrect": [
-              4
+              1,
+              0
             ],
             "MergeTime": [
-              3041
+              661,
+              0
             ]
           },
           {
@@ -75,18 +75,21 @@ Tables json:
               "First": 1,
               "Second": 3
             },
-            "Quizzed": 2,
-            "Correct": 2,
-            "TotalTime": 1397,
-            "BestTime": 670,
+            "Quizzed": 0,
+            "Correct": 0,
+            "TotalTime": 0,
+            "BestTime": 0,
             "MergeQuizzed": [
-              2
+              0,
+              0
             ],
             "MergeCorrect": [
-              2
+              0,
+              0
             ],
             "MergeTime": [
-              1397
+              0,
+              0
             ]
           }
         ]
@@ -99,18 +102,21 @@ Tables json:
               "First": 2,
               "Second": 1
             },
-            "Quizzed": 4,
-            "Correct": 4,
-            "TotalTime": 2437,
-            "BestTime": 542,
+            "Quizzed": 8,
+            "Correct": 8,
+            "TotalTime": 6591,
+            "BestTime": 24,
             "MergeQuizzed": [
-              4
+              3,
+              0
             ],
             "MergeCorrect": [
-              4
+              3,
+              0
             ],
             "MergeTime": [
-              2437
+              2522,
+              0
             ]
           },
           {
@@ -118,18 +124,21 @@ Tables json:
               "First": 2,
               "Second": 2
             },
-            "Quizzed": 2,
-            "Correct": 2,
-            "TotalTime": 2407,
-            "BestTime": 532,
+            "Quizzed": 3,
+            "Correct": 3,
+            "TotalTime": 2403,
+            "BestTime": 787,
             "MergeQuizzed": [
-              2
+              1,
+              0
             ],
             "MergeCorrect": [
-              2
+              1,
+              0
             ],
             "MergeTime": [
-              2407
+              808,
+              0
             ]
           },
           {
@@ -139,16 +148,19 @@ Tables json:
             },
             "Quizzed": 1,
             "Correct": 1,
-            "TotalTime": 579,
-            "BestTime": 579,
+            "TotalTime": 856,
+            "BestTime": 856,
             "MergeQuizzed": [
-              1
+              0,
+              0
             ],
             "MergeCorrect": [
-              1
+              0,
+              0
             ],
             "MergeTime": [
-              579
+              0,
+              0
             ]
           }
         ]
@@ -161,18 +173,21 @@ Tables json:
               "First": 3,
               "Second": 1
             },
-            "Quizzed": 1,
-            "Correct": 1,
-            "TotalTime": 880,
-            "BestTime": 880,
+            "Quizzed": 0,
+            "Correct": 0,
+            "TotalTime": 0,
+            "BestTime": 0,
             "MergeQuizzed": [
-              1
+              0,
+              0
             ],
             "MergeCorrect": [
-              1
+              0,
+              0
             ],
             "MergeTime": [
-              880
+              0,
+              0
             ]
           },
           {
@@ -180,18 +195,21 @@ Tables json:
               "First": 3,
               "Second": 2
             },
-            "Quizzed": 1,
-            "Correct": 1,
-            "TotalTime": 1125,
-            "BestTime": 125,
+            "Quizzed": 2,
+            "Correct": 2,
+            "TotalTime": 1877,
+            "BestTime": 846,
             "MergeQuizzed": [
-              1
+              0,
+              0
             ],
             "MergeCorrect": [
-              1
+              0,
+              0
             ],
             "MergeTime": [
-              1125
+              0,
+              0
             ]
           },
           {
@@ -200,31 +218,31 @@ Tables json:
               "Second": 3
             },
             "Quizzed": 1,
-            "Correct": 1,
-            "TotalTime": 880,
-            "BestTime": 880,
+            "Correct": 0,
+            "TotalTime": 0,
+            "BestTime": 0,
             "MergeQuizzed": [
-              1
+              0,
+              0
             ],
             "MergeCorrect": [
-              1
+              0,
+              0
             ],
             "MergeTime": [
-              880
+              0,
+              0
             ]
           }
         ]
       }
     ]
-  },
-  {
-    "Name": "Division",
-    "Tables": []
   }
 ]
 MergeIndex json:
 {
-  "old48e13-9aeb-41dc-aa7a-21d295f8d95d": 0
+  "firste13-9aeb-41dc-aa7a-21d295f8d95d": 0,
+  "third7d6-2399-4557-ba66-4ccbc049e6ad": 1
 }
 X
 Finished.

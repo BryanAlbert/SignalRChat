@@ -1,13 +1,13 @@
-$global:test = "Test-26"
+$global:test = "Test-27"
 
 function Get-Description($qkr)
 {
-	"`n${test}: Mia online, new Mia on second device comes online, merges, new Mia on third
-	device comes online, merges
+	"`n${test}: Mia online, Mia on second device with new data comes online, merges, Mia on
+	third device with new data comes online, merges
 
-	Mia with data online on First, Mia on a Second device with different data comes online
-	and merges with First, Mia on Third device with different data yet comes online and merges
-	with First and Second asynchronously.`n"
+	Mia with Test-26 results online on First, Mia on a Second device with new data comes online
+	and merges with First, Mia on Third device with new data comes online and merges with First
+	and Second asynchronously.`n"
 
 	if ($null -eq $qkr -or $qkr)
 	{

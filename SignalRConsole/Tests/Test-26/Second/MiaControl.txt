@@ -7,11 +7,11 @@ Creation Date: 2022-07-08T03:43:05, Modified Date: 2022-07-08T03:43:05
 Pick a command: t to list tables, a to add a friend, l to list friends,
 u to unfriend a friend, c to chat, or x to exit
 Listening> 
+(Sent Hello null command to Mia.)
 Mia is online on device firste13-9aeb-41dc-aa7a-21d295f8d95d, sending merge data...
-(Sent Hello null command to Mia.)
-(Sent Hello null command to Mia.)
 Merging data from Mia, Id mia38308-9a9b-4a6b-9db9-9e9b6238283f, on device firste13-9aeb-41dc-aa7a-21d295f8d95d...
 Merged data from Mia on device firste13-9aeb-41dc-aa7a-21d295f8d95d.
+(Sent Hello null command to Mia.)
 Mia is online on device third7d6-2399-4557-ba66-4ccbc049e6ad, sending merge data...
 Merging data from Mia on device third7d6-2399-4557-ba66-4ccbc049e6ad...
 Merged data from Mia on device third7d6-2399-4557-ba66-4ccbc049e6ad.
@@ -34,6 +34,7 @@ Tables json:
             "Quizzed": 9,
             "Correct": 7,
             "TotalTime": 5231,
+            "BestTime": 518,
             "MergeQuizzed": [
               3,
               4
@@ -45,8 +46,7 @@ Tables json:
             "MergeTime": [
               1744,
               2325
-            ],
-            "BestTime": 518
+            ]
           }
         ]
       }

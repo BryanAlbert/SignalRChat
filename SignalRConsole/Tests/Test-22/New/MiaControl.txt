@@ -7,8 +7,8 @@ Creation Date: 2022-07-06T23:11:31, Modified Date: 2022-07-08T00:10:38
 Pick a command: t to list tables, a to add a friend, l to list friends,
 u to unfriend a friend, c to chat, or x to exit
 Listening> 
-(Sent Hello null command to Mia.)
 Mia is online on device old48e13-9aeb-41dc-aa7a-21d295f8d95d, sending merge data...
+(Sent Hello null command to Mia.)
 Merging data from Mia on device old48e13-9aeb-41dc-aa7a-21d295f8d95d...
 Merged data from Mia on device old48e13-9aeb-41dc-aa7a-21d295f8d95d.
 L
@@ -40,6 +40,7 @@ Tables json:
             "Quizzed": 3,
             "Correct": 3,
             "TotalTime": 1744,
+            "BestTime": 518,
             "MergeQuizzed": [
               3
             ],
@@ -48,8 +49,7 @@ Tables json:
             ],
             "MergeTime": [
               1744
-            ],
-            "BestTime": 518
+            ]
           },
           {
             "Fact": {
@@ -59,6 +59,7 @@ Tables json:
             "Quizzed": 4,
             "Correct": 4,
             "TotalTime": 3041,
+            "BestTime": 692,
             "MergeQuizzed": [
               3
             ],
@@ -67,8 +68,7 @@ Tables json:
             ],
             "MergeTime": [
               2346
-            ],
-            "BestTime": 692
+            ]
           },
           {
             "Fact": {
@@ -78,6 +78,7 @@ Tables json:
             "Quizzed": 2,
             "Correct": 2,
             "TotalTime": 1397,
+            "BestTime": 670,
             "MergeQuizzed": [
               0
             ],
@@ -86,8 +87,7 @@ Tables json:
             ],
             "MergeTime": [
               0
-            ],
-            "BestTime": 670
+            ]
           }
         ]
       },
@@ -102,6 +102,7 @@ Tables json:
             "Quizzed": 4,
             "Correct": 4,
             "TotalTime": 2437,
+            "BestTime": 542,
             "MergeQuizzed": [
               3
             ],
@@ -110,8 +111,7 @@ Tables json:
             ],
             "MergeTime": [
               1770
-            ],
-            "BestTime": 542
+            ]
           },
           {
             "Fact": {
@@ -121,6 +121,7 @@ Tables json:
             "Quizzed": 2,
             "Correct": 2,
             "TotalTime": 2407,
+            "BestTime": 532,
             "MergeQuizzed": [
               1
             ],
@@ -129,8 +130,7 @@ Tables json:
             ],
             "MergeTime": [
               1532
-            ],
-            "BestTime": 532
+            ]
           },
           {
             "Fact": {
@@ -140,6 +140,7 @@ Tables json:
             "Quizzed": 1,
             "Correct": 1,
             "TotalTime": 579,
+            "BestTime": 579,
             "MergeQuizzed": [
               0
             ],
@@ -148,8 +149,7 @@ Tables json:
             ],
             "MergeTime": [
               0
-            ],
-            "BestTime": 579
+            ]
           }
         ]
       },
@@ -164,6 +164,7 @@ Tables json:
             "Quizzed": 1,
             "Correct": 1,
             "TotalTime": 880,
+            "BestTime": 880,
             "MergeQuizzed": [
               0
             ],
@@ -172,8 +173,7 @@ Tables json:
             ],
             "MergeTime": [
               0
-            ],
-            "BestTime": 880
+            ]
           },
           {
             "Fact": {
@@ -183,6 +183,7 @@ Tables json:
             "Quizzed": 1,
             "Correct": 1,
             "TotalTime": 1125,
+            "BestTime": 125,
             "MergeQuizzed": [
               0
             ],
@@ -191,8 +192,7 @@ Tables json:
             ],
             "MergeTime": [
               0
-            ],
-            "BestTime": 125
+            ]
           },
           {
             "Fact": {
@@ -202,6 +202,7 @@ Tables json:
             "Quizzed": 1,
             "Correct": 1,
             "TotalTime": 880,
+            "BestTime": 880,
             "MergeQuizzed": [
               0
             ],
@@ -210,8 +211,7 @@ Tables json:
             ],
             "MergeTime": [
               0
-            ],
-            "BestTime": 880
+            ]
           }
         ]
       }

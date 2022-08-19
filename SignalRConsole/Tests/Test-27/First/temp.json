@@ -1,0 +1,114 @@
+{
+    "Operators": [
+        {
+            "Name": "Multiplication",
+            "Tables": [
+                {
+                    "Base": 1,
+                    "Cards": [
+                        {
+                            "Fact": {
+                                "First": 1,
+                                "Second": 1
+                            },
+                            "Quizzed": 14,
+                            "Correct": 12,
+                            "TotalTime": 8902,
+                            "BestTime": 518
+                        },
+                        {
+                            "Fact": {
+                                "First": 1,
+                                "Second": 2
+                            },
+                            "Quizzed": 4,
+                            "Correct": 3,
+                            "TotalTime": 2192,
+                            "BestTime": 661
+                        },
+                        {
+                            "Fact": {
+                                "First": 1,
+                                "Second": 3
+                            },
+                            "Quizzed": 0,
+                            "Correct": 0,
+                            "TotalTime": 0,
+                            "BestTime": 0
+                        }
+                    ]
+                },
+                {
+                    "Base": 2,
+                    "Cards": [
+                        {
+                            "Fact": {
+                                "First": 2,
+                                "Second": 1
+                            },
+                            "Quizzed": 5,
+                            "Correct": 5,
+                            "TotalTime": 4069,
+                            "BestTime": 24
+                        },
+                        {
+                            "Fact": {
+                                "First": 2,
+                                "Second": 2
+                            },
+                            "Quizzed": 2,
+                            "Correct": 2,
+                            "TotalTime": 1595,
+                            "BestTime": 787
+                        },
+                        {
+                            "Fact": {
+                                "First": 2,
+                                "Second": 3
+                            },
+                            "Quizzed": 1,
+                            "Correct": 1,
+                            "TotalTime": 856,
+                            "BestTime": 856
+                        }
+                    ]
+                },
+                {
+                    "Base": 3,
+                    "Cards": [
+                        {
+                            "Fact": {
+                                "First": 3,
+                                "Second": 1
+                            },
+                            "Quizzed": 0,
+                            "Correct": 0,
+                            "TotalTime": 0,
+                            "BestTime": 0
+                        },
+                        {
+                            "Fact": {
+                                "First": 3,
+                                "Second": 2
+                            },
+                            "Quizzed": 2,
+                            "Correct": 2,
+                            "TotalTime": 1877,
+                            "BestTime": 846
+                        },
+                        {
+                            "Fact": {
+                                "First": 3,
+                                "Second": 3
+                            },
+                            "Quizzed": 1,
+                            "Correct": 0,
+                            "TotalTime": 0,
+                            "BestTime": 0
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

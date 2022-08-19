@@ -32,6 +32,7 @@ Tables json:
             "Quizzed": 10,
             "Correct": 10,
             "TotalTime": 8881,
+            "BestTime": 57,
             "MergeQuizzed": [
               7
             ],
@@ -40,8 +41,7 @@ Tables json:
             ],
             "MergeTime": [
               5962
-            ],
-            "BestTime": 57
+            ]
           },
           {
             "Fact": {
@@ -51,6 +51,7 @@ Tables json:
             "Quizzed": 10,
             "Correct": 10,
             "TotalTime": 8704,
+            "BestTime": 151,
             "MergeQuizzed": [
               4
             ],
@@ -59,8 +60,7 @@ Tables json:
             ],
             "MergeTime": [
               3460
-            ],
-            "BestTime": 151
+            ]
           },
           {
             "Fact": {
@@ -70,6 +70,7 @@ Tables json:
             "Quizzed": 6,
             "Correct": 6,
             "TotalTime": 4542,
+            "BestTime": 656,
             "MergeQuizzed": [
               4
             ],
@@ -78,8 +79,7 @@ Tables json:
             ],
             "MergeTime": [
               2918
-            ],
-            "BestTime": 656
+            ]
           },
           {
             "Fact": {
@@ -89,6 +89,7 @@ Tables json:
             "Quizzed": 3,
             "Correct": 3,
             "TotalTime": 2423,
+            "BestTime": 746,
             "MergeQuizzed": [
               0
             ],
@@ -97,8 +98,7 @@ Tables json:
             ],
             "MergeTime": [
               0
-            ],
-            "BestTime": 746
+            ]
           }
         ]
       },
@@ -113,6 +113,7 @@ Tables json:
             "Quizzed": 7,
             "Correct": 7,
             "TotalTime": 5599,
+            "BestTime": 683,
             "MergeQuizzed": [
               5
             ],
@@ -121,8 +122,7 @@ Tables json:
             ],
             "MergeTime": [
               3971
-            ],
-            "BestTime": 683
+            ]
           },
           {
             "Fact": {
@@ -132,6 +132,7 @@ Tables json:
             "Quizzed": 7,
             "Correct": 7,
             "TotalTime": 5405,
+            "BestTime": 38,
             "MergeQuizzed": [
               6
             ],
@@ -140,8 +141,7 @@ Tables json:
             ],
             "MergeTime": [
               4677
-            ],
-            "BestTime": 38
+            ]
           },
           {
             "Fact": {
@@ -151,6 +151,7 @@ Tables json:
             "Quizzed": 4,
             "Correct": 4,
             "TotalTime": 2843,
+            "BestTime": 678,
             "MergeQuizzed": [
               4
             ],
@@ -159,8 +160,7 @@ Tables json:
             ],
             "MergeTime": [
               2843
-            ],
-            "BestTime": 678
+            ]
           },
           {
             "Fact": {
@@ -170,6 +170,7 @@ Tables json:
             "Quizzed": 1,
             "Correct": 1,
             "TotalTime": 884,
+            "BestTime": 884,
             "MergeQuizzed": [
               0
             ],
@@ -178,8 +179,7 @@ Tables json:
             ],
             "MergeTime": [
               0
-            ],
-            "BestTime": 884
+            ]
           }
         ]
       },
@@ -194,6 +194,7 @@ Tables json:
             "Quizzed": 7,
             "Correct": 7,
             "TotalTime": 5542,
+            "BestTime": 744,
             "MergeQuizzed": [
               5
             ],
@@ -202,8 +203,7 @@ Tables json:
             ],
             "MergeTime": [
               4048
-            ],
-            "BestTime": 744
+            ]
           },
           {
             "Fact": {
@@ -213,6 +213,7 @@ Tables json:
             "Quizzed": 5,
             "Correct": 5,
             "TotalTime": 3948,
+            "BestTime": 50,
             "MergeQuizzed": [
               3
             ],
@@ -221,8 +222,7 @@ Tables json:
             ],
             "MergeTime": [
               2158
-            ],
-            "BestTime": 50
+            ]
           },
           {
             "Fact": {
@@ -232,6 +232,7 @@ Tables json:
             "Quizzed": 6,
             "Correct": 6,
             "TotalTime": 4760,
+            "BestTime": 702,
             "MergeQuizzed": [
               2
             ],
@@ -240,8 +241,7 @@ Tables json:
             ],
             "MergeTime": [
               1680
-            ],
-            "BestTime": 702
+            ]
           },
           {
             "Fact": {
@@ -251,6 +251,7 @@ Tables json:
             "Quizzed": 5,
             "Correct": 5,
             "TotalTime": 5568,
+            "BestTime": 183,
             "MergeQuizzed": [
               0
             ],
@@ -259,8 +260,7 @@ Tables json:
             ],
             "MergeTime": [
               0
-            ],
-            "BestTime": 183
+            ]
           }
         ]
       },
@@ -275,6 +275,7 @@ Tables json:
             "Quizzed": 2,
             "Correct": 2,
             "TotalTime": 2157,
+            "BestTime": 389,
             "MergeQuizzed": [
               0
             ],
@@ -283,8 +284,7 @@ Tables json:
             ],
             "MergeTime": [
               0
-            ],
-            "BestTime": 389
+            ]
           },
           {
             "Fact": {
@@ -294,6 +294,7 @@ Tables json:
             "Quizzed": 5,
             "Correct": 5,
             "TotalTime": 3900,
+            "BestTime": 732,
             "MergeQuizzed": [
               0
             ],
@@ -302,8 +303,7 @@ Tables json:
             ],
             "MergeTime": [
               0
-            ],
-            "BestTime": 732
+            ]
           },
           {
             "Fact": {
@@ -313,6 +313,7 @@ Tables json:
             "Quizzed": 1,
             "Correct": 1,
             "TotalTime": 1239,
+            "BestTime": 239,
             "MergeQuizzed": [
               0
             ],
@@ -321,8 +322,7 @@ Tables json:
             ],
             "MergeTime": [
               0
-            ],
-            "BestTime": 239
+            ]
           },
           {
             "Fact": {
@@ -332,6 +332,7 @@ Tables json:
             "Quizzed": 1,
             "Correct": 1,
             "TotalTime": 951,
+            "BestTime": 951,
             "MergeQuizzed": [
               0
             ],
@@ -340,8 +341,7 @@ Tables json:
             ],
             "MergeTime": [
               0
-            ],
-            "BestTime": 951
+            ]
           }
         ]
       }
