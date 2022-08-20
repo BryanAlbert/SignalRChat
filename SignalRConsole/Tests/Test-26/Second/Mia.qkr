@@ -18,10 +18,10 @@
               "Quizzed": 2,
               "Correct": 1,
               "TotalTime": 1162,
+              "BestTime": 520,
               "MergeQuizzed": null,
               "MergeCorrect": null,
-              "MergeTime": null,
-              "BestTime": 520
+              "MergeTime": null
             }
           ]
         }

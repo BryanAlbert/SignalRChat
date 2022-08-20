@@ -51,10 +51,10 @@
               "Quizzed": 3,
               "Correct": 3,
               "TotalTime": 1744,
+              "BestTime": 518,
               "MergeQuizzed": null,
               "MergeCorrect": null,
-              "MergeTime": null,
-              "BestTime": 518
+              "MergeTime": null
             },
             {
               "Fact": {
@@ -64,10 +64,10 @@
               "Quizzed": 3,
               "Correct": 3,
               "TotalTime": 2346,
+              "BestTime": 692,
               "MergeQuizzed": null,
               "MergeCorrect": null,
-              "MergeTime": null,
-              "BestTime": 692
+              "MergeTime": null
             }
           ]
         },
@@ -82,10 +82,10 @@
               "Quizzed": 3,
               "Correct": 3,
               "TotalTime": 1770,
+              "BestTime": 542,
               "MergeQuizzed": null,
               "MergeCorrect": null,
-              "MergeTime": null,
-              "BestTime": 542
+              "MergeTime": null
             },
             {
               "Fact": {
@@ -95,10 +95,10 @@
               "Quizzed": 1,
               "Correct": 1,
               "TotalTime": 1532,
+              "BestTime": 532,
               "MergeQuizzed": null,
               "MergeCorrect": null,
-              "MergeTime": null,
-              "BestTime": 532
+              "MergeTime": null
             }
           ]
         }

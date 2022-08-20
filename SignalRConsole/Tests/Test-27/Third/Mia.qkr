@@ -17,6 +17,7 @@
               "Quizzed": 19,
               "Correct": 16,
               "TotalTime": 11607,
+              "BestTime": 303,
               "MergeQuizzed": [
                 2,
                 3
@@ -28,8 +29,7 @@
               "MergeTime": [
                 1162,
                 1744
-              ],
-              "BestTime": 303
+              ]
             }
           ]
         }
