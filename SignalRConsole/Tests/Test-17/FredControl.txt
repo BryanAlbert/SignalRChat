@@ -9,17 +9,17 @@ u to unfriend a friend, c to chat, or x to exit
 Listening> 
 A
 Busy...       
-(Sent Hello null command to Fred.)
 What is your friend's handle? 
 Bruce
 What is your friend's email? 
 bruce@hotmail.com
+(Sent Hello null command to Fred.)
 A friend request has been sent to Bruce.
 Listening> 
 Your (pending) friend Bruce is online.
 You and Bruce are now friends!
 L
 Friends:
-Bruce, Bruce Albert, bruce@hotmail.com, Red, Created: 2022-07-15T00:05:39 Modified: 2022-07-17T02:09:45 (online)
+Bruce, Bruce Albert, bruce@hotmail.com, Red, Created: 2022-07-15T00:05:39 Modified: 2022-08-22T18:36:39 (online)
 X
 Finished.

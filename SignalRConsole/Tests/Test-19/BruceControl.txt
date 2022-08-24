@@ -6,14 +6,14 @@ Id: brucef68-3c37-4aef-b8a6-1649659bbbc4, Device Id: d0699370-cfaf-4865-b979-8f3
 Creation Date: 2022-06-06T19:03:41, Modified Date: 2022-07-17T01:44:27
 Pick a command: t to list tables, a to add a friend, l to list friends,
 u to unfriend a friend, c to chat, or x to exit
-(Sent Hello null command to Bruce.)
 Listening> 
 L
 Friends:
 FredOLD, Fred OLD Sanson, fred@gmail.OLD.com, OLD, Created: 2022-06-06T19:03:41 Modified: 2022-07-14T21:48:17
+(Sent Hello null command to Bruce.)
 Your friend Fred is online.
 L
 Friends:
-Fred, Fred Sanson, fred@gmail.com, Green, Created: 2022-06-06T19:03:41 Modified: 2022-07-18T17:00:20 (online)
+Fred, Fred Sanson, fred@gmail.com, Green, Created: 2022-06-06T19:03:41 Modified: 2022-08-22T18:37:10 (online)
 X
 Finished.

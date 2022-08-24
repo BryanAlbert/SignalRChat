@@ -26,15 +26,15 @@ What is your handle (nickname)?
 Bruce
 Name: Bruce Albert, Email: bruce@hotmail.com, Favorite color: Red,
 Id: brucef68-3c37-4aef-b8a6-1649659bbbc4, Device Id: ed6c36db-ae17-45a9-929c-2f21beeb1e94,
-Creation Date: 2022-06-06T19:03:41, Modified Date: 2022-07-17T02:05:19
+Creation Date: 2022-06-06T19:03:41, Modified Date: 2022-08-22T18:09:22
 Pick a command: t to list tables, a to add a friend, l to list friends,
 u to unfriend a friend, c to chat, or x to exit
-(Sent Hello null command to Bruce.)
 Listening> 
+(Sent Hello null command to Bruce.)
 Your (pending) friend Fred is online.
 You and Fred are now friends!
 L
 Friends:
-Fred, Fred Sanson, fred@gmail.com, Green, Created: 2022-06-06T19:03:41 Modified: 2022-07-14T23:41:49 (online)
+Fred, Fred Sanson, fred@gmail.com, Green, Created: 2022-06-06T19:03:41 Modified: 2022-08-22T18:09:22 (online)
 X
 Finished.

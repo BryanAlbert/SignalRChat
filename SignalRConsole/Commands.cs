@@ -37,8 +37,8 @@ namespace SignalRConsole
 
 				if (name != CommandNames.Hello && name != CommandNames.Verify)
 				{
-					Debug.WriteLine($"Error: SendCommand called with string  and bool is only valid for the {CommandNames.Hello}," +
-						$" and {CommandNames.Verify} commands, called with: {name}");
+					Debug.WriteLine($"Error: SendCommand called with string, string, string, User and bool? is only valid for the" +
+						$" {CommandNames.Hello} and {CommandNames.Verify} commands, called with: {name}");
 				}
 				else
 				{
@@ -46,7 +46,7 @@ namespace SignalRConsole
 				}
 			}
 
-			public static async Task SendMergeCommandAsync(string from, string channel, string to, User user, bool? flag)
+			public static async Task SendCommandAsync(CommandNames name, string from, string channel, string to, User user)
 			{
 				ConnectionCommand command = new ConnectionCommand()
 				{
@@ -55,10 +55,17 @@ namespace SignalRConsole
 					From = from,
 					To = to,
 					Merge = user,
-					Flag = flag
 				};
 
-				await command.SendCommandAsync();
+				if (name != CommandNames.Merge)
+				{
+					Debug.WriteLine($"Error: SendCommand called with string, string, string and User is only valid for the" +
+						$" {CommandNames.Merge} command, called with: {name}");
+				}
+				else
+				{
+					await command.SendCommandAsync();
+				}
 			}
 
 

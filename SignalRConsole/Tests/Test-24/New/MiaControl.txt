@@ -6,9 +6,9 @@ Id: mia38308-9a9b-4a6b-9db9-9e9b6238283f, Device Id: newf1d65-1468-4409-a21a-f5b
 Creation Date: 2022-07-06T23:11:31, Modified Date: 2022-07-08T10:21:36
 Pick a command: t to list tables, a to add a friend, l to list friends,
 u to unfriend a friend, c to chat, or x to exit
+Listening> 
 (Sent Hello null command to Mia.)
 Mia is online on device old48e13-9aeb-41dc-aa7a-21d295f8d95d, sending merge data...
-Listening> 
 Merging data from Mia on device old48e13-9aeb-41dc-aa7a-21d295f8d95d...
 Merged data from Mia on device old48e13-9aeb-41dc-aa7a-21d295f8d95d.
 L

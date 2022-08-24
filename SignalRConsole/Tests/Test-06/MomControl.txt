@@ -14,17 +14,17 @@ Accept friend request from Bruce, email address bruce@hotmail.com? [y/n]
 Y
 Listening> 
 You and Bruce are now friends!
+Your friend Bruce is offline.
 (Sent Hello null command to Fred.)
 Busy...       
 Accept friend request from Fred, email address fred@gmail.com? [y/n] 
 Y
 Listening> 
 You and Fred are now friends!
-Your friend Bruce is offline.
 Your friend Fred is offline.
 L
 Friends:
-Bruce, Bruce Albert, bruce@hotmail.com, Red, Created: 2022-07-15T00:05:39 Modified: 2022-07-17T02:05:46
-Fred, Fred Sanson, fred@gmail.com, Green, Created: 2022-07-15T00:05:39 Modified: 2022-07-17T02:05:46
+Bruce, Bruce Albert, bruce@hotmail.com, Red, Created: 2022-07-15T00:05:39 Modified: 2022-08-22T18:09:49
+Fred, Fred Sanson, fred@gmail.com, Green, Created: 2022-07-15T00:05:39 Modified: 2022-08-22T18:09:49
 X
 Finished.

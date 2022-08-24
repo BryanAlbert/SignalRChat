@@ -25,7 +25,7 @@ What is your handle (nickname)?
 Bruce
 Name: Bruce Albert, Email: bruce@hotmail.com, Favorite color: Red,
 Id: brucef68-3c37-4aef-b8a6-1649659bbbc4, Device Id: 29de845e-5d7d-470a-be51-0baa2199cdfb,
-Creation Date: 2022-07-15T00:05:39, Modified Date: 2022-07-15T19:04:28
+Creation Date: 2022-07-15T00:05:39, Modified Date: 2022-08-22T18:36:13
 Pick a command: t to list tables, a to add a friend, l to list friends,
 u to unfriend a friend, c to chat, or x to exit
 Listening> 

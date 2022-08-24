@@ -1,7 +1,6 @@
 {
-  "Version": 1,
+  "Version": 1.1,
   "DeviceId": "c7cf6d6c-62c0-4161-b319-957ec7fbd597",
-  "Friends": [],
   "Operators": [
     {
       "Name": "Addition",
@@ -20,6 +19,7 @@
       "Tables": []
     }
   ],
+  "Friends": [],
   "MergeIndex": {},
   "Id": "fredac24-3f25-41e0-84f2-3f34f54d072e",
   "Email": "fred@gmail.com",
@@ -27,5 +27,5 @@
   "Handle": "Fred",
   "Color": "Green",
   "Created": "2022-07-15T00:05:39",
-  "Modified": "2022-07-15T18:12:33"
+  "Modified": "2022-08-22T18:26:39"
 }

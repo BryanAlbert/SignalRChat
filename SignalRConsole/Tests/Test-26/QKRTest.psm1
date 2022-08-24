@@ -107,7 +107,13 @@ function Compare-Files($control, $file, $errorLevel, $merge)
 	"Comparing: $control with $file"
 	$controlText = Get-FilteredText $control $merge
 	$fileText = Get-FilteredText $file $merge
-	if (((Compare-Object $controlText $fileText) | Measure-Object).Count -gt 0)
+	if ($file -match "\.json$") {
+		$syncWindow = 1
+	} else {
+		$syncWindow = [int32]::MaxValue
+	}
+
+	if (((Compare-Object -SyncWindow $syncWindow $controlText $fileText) | Measure-Object).Count -gt 0)
 	{
 		if ($errorLevel -eq 1)
 		{
@@ -126,7 +132,7 @@ function Compare-Files($control, $file, $errorLevel, $merge)
 			"Files differ, check output:"
 		}
 
-		Compare-Object $controlText $fileText | Format-Table -Property SideIndicator, InputObject
+		Compare-Object -SyncWindow $syncWindow $controlText $fileText | Format-Table -Property SideIndicator, InputObject
 	}
 }
 

@@ -1,7 +1,6 @@
 {
-  "Version": 1,
+  "Version": 1.1,
   "DeviceId": "third7d6-2399-4557-ba66-4ccbc049e6ad",
-  "Friends": [],
   "Operators": [
     {
       "Name": "Multiplication",
@@ -222,6 +221,7 @@
       ]
     }
   ],
+  "Friends": [],
   "MergeIndex": {
     "second65-1468-4409-a21a-f5b4f000ee4f": 0,
     "firste13-9aeb-41dc-aa7a-21d295f8d95d": 1
@@ -232,5 +232,5 @@
   "Handle": "Mia",
   "Color": "Turquoise",
   "Created": "2022-07-18T21:10:09",
-  "Modified": "2022-08-18T23:33:34"
+  "Modified": "2022-08-22T18:49:05"
 }

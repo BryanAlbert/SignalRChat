@@ -21,12 +21,12 @@ Id: fredac24-3f25-41e0-84f2-3f34f54d072e, Device Id: dc355dc7-d27f-4f20-ae6c-510
 Creation Date: 2022-06-06T19:03:41, Modified Date: 2022-07-17T01:44:27
 Pick a command: t to list tables, a to add a friend, l to list friends,
 u to unfriend a friend, c to chat, or x to exit
-(Sent Hello null command to Fred.)
 Listening> 
+(Sent Hello null command to Fred.)
 Your friend Bruce is online.
 Your friend Bruce is offline.
 L
 Friends:
-Bruce, Bruce Albert, bruce@hotmail.com, Red, Created: 2022-06-06T19:03:41 Modified: 2022-07-18T17:00:20
+Bruce, Bruce Albert, bruce@hotmail.com, Red, Created: 2022-06-06T19:03:41 Modified: 2022-08-22T18:37:10
 X
 Finished.

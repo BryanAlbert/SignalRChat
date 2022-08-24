@@ -1,6 +1,6 @@
 {
   "Description": "New device with no data, before being merged with existing device.",
-  "Version": 1,
+  "Version": 1.1,
   "DeviceId": "third7d6-2399-4557-ba66-4ccbc049e6ad",
   "Friends": [],
   "Operators": [

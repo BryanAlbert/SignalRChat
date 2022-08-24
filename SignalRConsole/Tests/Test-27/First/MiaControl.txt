@@ -8,11 +8,11 @@ Pick a command: t to list tables, a to add a friend, l to list friends,
 u to unfriend a friend, c to chat, or x to exit
 Listening> 
 (Sent Hello null command to Mia.)
+(Sent Hello null command to Mia.)
 Mia is online on device second65-1468-4409-a21a-f5b4f000ee4f, sending merge data...
-(Sent Hello null command to Mia.)
-(Sent Hello null command to Mia.)
 Merging data from Mia on device second65-1468-4409-a21a-f5b4f000ee4f...
 Merged data from Mia on device second65-1468-4409-a21a-f5b4f000ee4f.
+(Sent Hello null command to Mia.)
 Mia is online on device third7d6-2399-4557-ba66-4ccbc049e6ad, sending merge data...
 Merging data from Mia on device third7d6-2399-4557-ba66-4ccbc049e6ad...
 Merged data from Mia on device third7d6-2399-4557-ba66-4ccbc049e6ad.

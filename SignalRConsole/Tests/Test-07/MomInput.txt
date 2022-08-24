@@ -1,6 +1,7 @@
 Mom
 >wait-for-regex: Accept friend request from (Bruce|Fred), email address (bruce@hotmail\.com)|(fred@gmail\.com)\? \[y\/n\]
 Y
+>wait-for-regex: You and (Bruce|Fred) are now friends!
 >wait-for-regex: Accept friend request from (Bruce|Fred), email address (bruce@hotmail\.com)|(fred@gmail\.com)\? \[y\/n\]
 Y
 >wait-for: Your friend Bruce is offline.

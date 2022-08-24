@@ -26,30 +26,26 @@ namespace SignalRConsole
 			FileName = fileName;
 			Friends = new List<Friend>();
 			MergeIndex = new Dictionary<string, int>();
-			Operators = new List<OperatorTables>();
-			Operators.Add(new OperatorTables() { Name = "Addition", Tables = new List<FactTable>() });
-			Operators.Add(new OperatorTables() { Name = "Subtraction", Tables = new List<FactTable>() });
-			Operators.Add(new OperatorTables() { Name = "Multiplication", Tables = new List<FactTable>() });
-			Operators.Add(new OperatorTables() { Name = "Division", Tables = new List<FactTable>() });
+			Operators = new List<OperatorTables>
+			{
+				new OperatorTables() { Name = "Addition", Tables = new List<FactTable>() },
+				new OperatorTables() { Name = "Subtraction", Tables = new List<FactTable>() },
+				new OperatorTables() { Name = "Multiplication", Tables = new List<FactTable>() },
+				new OperatorTables() { Name = "Division", Tables = new List<FactTable>() }
+			};
 		}
 
 
 		public double Version { get; set; }
 		public string DeviceId { get; set; }
-		public List<Friend> Friends { get; set; }
 		public List<OperatorTables> Operators { get; set; }
+		public List<Friend> Friends { get; set; }
 		public Dictionary<string, int> MergeIndex { get; set; }
 
 		[JsonIgnore]
 		public string FileName { get; set; }
 
 
-		public void AddFriend(Friend user)
-		{
-			Friends.Add(user);
-		}
-
-
-		public const double c_dataVersion = 1.0;
+		public const double c_dataVersion = 1.1;
 	}
 }

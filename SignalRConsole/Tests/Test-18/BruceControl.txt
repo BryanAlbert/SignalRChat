@@ -8,6 +8,7 @@ Pick a command: t to list tables, a to add a friend, l to list friends,
 u to unfriend a friend, c to chat, or x to exit
 Listening> 
 A
+(Sent Hello null command to Bruce.)
 Busy...       
 What is your friend's handle? 
 Fred
@@ -19,7 +20,6 @@ Friends:
 0: Fred
 Whom would you like to unfriend (number, Enter to abort): 
 0
-(Sent Hello null command to Bruce.)
 Fred has been unfriended.
 Listening> 
 A
@@ -40,6 +40,6 @@ Listening>
 You and Fred are now friends!
 L
 Friends:
-Fred, Fred Sanson, fred@gmail.com, Green, Created: 2022-07-15T00:05:39 Modified: 2022-07-17T02:10:53 (online)
+Fred, Fred Sanson, fred@gmail.com, Green, Created: 2022-07-15T00:05:39 Modified: 2022-08-22T18:37:00 (online)
 X
 Finished.

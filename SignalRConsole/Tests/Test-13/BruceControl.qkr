@@ -1,7 +1,6 @@
 {
-  "Version": 1,
+  "Version": 1.1,
   "DeviceId": "16f053d8-9f47-43a1-bcb5-6f0092eace52",
-  "Friends": [],
   "Operators": [
     {
       "Name": "Addition",
@@ -20,6 +19,7 @@
       "Tables": []
     }
   ],
+  "Friends": [],
   "MergeIndex": {},
   "Id": "brucef68-3c37-4aef-b8a6-1649659bbbc4",
   "Email": "bruce@hotmail.com",
@@ -27,5 +27,5 @@
   "Handle": "Bruce",
   "Color": "Red",
   "Created": "2022-07-15T00:05:39",
-  "Modified": "2022-07-15T18:12:33"
+  "Modified": "2022-08-22T18:26:39"
 }

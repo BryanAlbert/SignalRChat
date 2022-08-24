@@ -1,20 +1,6 @@
 {
-  "Version": 1,
+  "Version": 1.1,
   "DeviceId": "02d286e7-b0cd-4dc8-a7f0-e00efa02c436",
-  "Friends": [
-    {
-      "Blocked": false,
-      "BluetoothId": null,
-      "BluetoothDeviceName": null,
-      "Id": "fredac24-3f25-41e0-84f2-3f34f54d072e",
-      "Email": "fred@gmail.com",
-      "Name": "Fred Sanson",
-      "Handle": "Fred",
-      "Color": "Green",
-      "Created": null,
-      "Modified": null
-    }
-  ],
   "Operators": [
     {
       "Name": "Addition",
@@ -31,6 +17,20 @@
     {
       "Name": "Division",
       "Tables": []
+    }
+  ],
+  "Friends": [
+    {
+      "Blocked": false,
+      "BluetoothId": null,
+      "BluetoothDeviceName": null,
+      "Id": "fredac24-3f25-41e0-84f2-3f34f54d072e",
+      "Email": "fred@gmail.com",
+      "Name": "Fred Sanson",
+      "Handle": "Fred",
+      "Color": "Green",
+      "Created": null,
+      "Modified": null
     }
   ],
   "MergeIndex": {},

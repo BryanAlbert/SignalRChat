@@ -31,7 +31,7 @@ You and Bruce are now friends!
 Your friend Bruce is offline.
 L
 Friends:
-Bruce, Bruce Albert, bruce@hotmail.com, Red, Created: 2022-07-15T00:05:39 Modified: 2022-07-17T02:12:38
-Mom, Jean Albert, jeanmariealbert@hotmail.com, Maroon, Created: 2022-07-15T00:05:39 Modified: 2022-07-15T16:36:44 (online)
+Bruce, Bruce Albert, bruce@hotmail.com, Red, Created: 2022-07-15T00:05:39 Modified: 2022-08-22T18:10:40
+Mom, Jean Albert, jeanmariealbert@hotmail.com, Maroon, Created: 2022-07-15T00:05:39 Modified: 2022-08-22T18:10:40 (online)
 X
 Finished.
