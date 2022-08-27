@@ -205,6 +205,7 @@ namespace SignalRConsole
 			{
 				if (State == States.Listening)
 				{
+					// ready to chat
 					await SendCommandAsync(CommandNames.Hello, Id, channel, user, m_user, true);
 					ActiveChatChannelName = channel;
 					ActiveChatFriend = m_user.Friends.FirstOrDefault(x => x.Id == user);
@@ -212,6 +213,7 @@ namespace SignalRConsole
 				}
 				else
 				{
+					// hang up
 					await SendCommandAsync(CommandNames.Hello, Id, channel, user, m_user, false);
 				}
 
@@ -247,16 +249,17 @@ namespace SignalRConsole
 				return;
 			}
 
-			await SendCommandAsync(CommandNames.Hello, Id, channel, user, m_user, !friend?.Blocked);
-
-			if (m_console.ScriptMode > 0)
+			if (channel != Id || friend?.Blocked != false)
 			{
-				// special messages for triggering while scripting
-				if (friend == null)
-					ConsoleWriteLogLine($"(Sent Hello null command to {user}.)");
-				else if (friend.Blocked == true)
-					ConsoleWriteLogLine($"(Sent Hello {!friend?.Blocked} command to {user}.)");
+				// don't send Hello true on our own channel (it will be sent on the friend's channel)
+				await SendCommandAsync(CommandNames.Hello, Id, channel, user, m_user, !friend?.Blocked);
 			}
+
+			// special messages for triggering while scripting
+			if (friend == null)
+				ConsoleWriteLogLine($"(Sent Hello null command to {user}.)", verbose: true);
+			else if (friend.Blocked == true)
+				ConsoleWriteLogLine($"(Sent Hello {!friend?.Blocked} command to {user}.)", verbose: true);
 		}
 
 		private void OnSentMessage(string from, string message)
@@ -306,7 +309,8 @@ namespace SignalRConsole
 				}
 				finally
 				{
-					m_semaphoreSlim.Release();
+					if (m_semaphoreSlim.CurrentCount == 0)
+						m_semaphoreSlim.Release();
 				}
 			} 
 		}
@@ -676,9 +680,7 @@ namespace SignalRConsole
 		private async Task LeaveChatChannelAsync(bool send)
 		{
 			if (send)
-			{
 				await SendCommandAsync(CommandNames.Hello, Id, ActiveChatChannelName, ActiveChatFriend.Id, m_user, false);
-			}
 
 			if (ActiveChatChannelName != ChatChannelName)
 				await m_hubConnection.SendAsync(c_leaveChannel, ActiveChatChannelName, Id);
@@ -748,6 +750,8 @@ namespace SignalRConsole
 			{
 				if (command.Flag == true)
 				{
+					// don't block on the message loop
+					m_semaphoreSlim.Release();
 					_ = await MessageLoopAsync();
 				}
 				else
@@ -814,8 +818,7 @@ namespace SignalRConsole
 						await SendCommandAsync(CommandNames.Hello, Id, pending.Id, pending.Id, m_user, false);
 
 						// special message for triggering while scripting
-						if (m_console.ScriptMode > 0)
-							ConsoleWriteLogLine($"(Sent unfriend command to {pending.Handle}.)");
+						ConsoleWriteLogLine($"(Sent unfriend command to {pending.Handle}.)", verbose: true);
 					}
 					else if (!existing.Blocked.HasValue)
 					{
@@ -1211,12 +1214,15 @@ namespace SignalRConsole
 			Console.SetCursorPosition(cursor.X, cursor.Y);
 		}
 
-		private void ConsoleWriteLogLine(string line)
+		private void ConsoleWriteLogLine(string line, bool verbose = false)
 		{
-			Point cursor = MoveCursorToLog();
-			m_console.WriteLine(line);
-			m_log.Add(line);
-			m_console.SetCursorPosition(cursor.X, cursor.Y);
+			if (!verbose || m_console.ScriptMode > 0)
+			{
+				Point cursor = MoveCursorToLog();
+				m_console.WriteLine(line);
+				m_log.Add(line);
+				m_console.SetCursorPosition(cursor.X, cursor.Y);
+			}
 		}
 
 		private Point ConsoleWriteLogRead(string line, out string value)
