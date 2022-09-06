@@ -9,22 +9,28 @@ function Get-Description($qkr)
 
 	if ($null -eq $qkr -or $qkr)
 	{
-	"`tTo test QKR, run Test-QKRas Bruce, log in as Fred on QKR, verify that
-	Bruce exits, pop to Home.
+	"`tTo test QKR, run Reset-Test `$true then run Start-TestFor Bruce, connect as
+	Fred on QKR, verify that Bruce is in the Friends list, pop to Home.
 		
-	Next log in as Bruce on QKR and run Test-QKRas Fred. Pop to Home and verify
-	that Fred exits. Test results with Check-Test.`n"
+	Next connect as Bruce on QKR and run Start-TestFor Fred. Verify that Fred is 
+	online, pop to Home and verify that Fred exits. Test results with 
+	Check-Test `$true.`n"
 	}
 }
 
-function Reset-Test($showDescription)
+function Reset-Test($resetQkr, $showDescription)
 {
 	"Resetting $test"
 	Push-Location $test
 	Copy-Item .\BruceFriends.qkr .\Bruce.qkr.json
 	Copy-Item .\FredFriends.qkr .\Fred.qkr.json
-	Copy-Item .\Bruce-brucef68-3c37-4aef-b8a6-1649659bbbc4.qkr (Join-Path $global:qkrLocalState Bruce-brucef68-3c37-4aef-b8a6-1649659bbbc4.json)
-	Copy-Item .\Fred-fredac24-3f25-41e0-84f2-3f34f54d072e.qkr (Join-Path $global:qkrLocalState Fred-fredac24-3f25-41e0-84f2-3f34f54d072e.json)
+
+	if ($resetQkr -eq $true) {
+		"Resetting QKR files at $global:qkrLocalState"
+		Copy-Item .\Bruce-brucef68-3c37-4aef-b8a6-1649659bbbc4.qkr (Join-Path $global:qkrLocalState Bruce-brucef68-3c37-4aef-b8a6-1649659bbbc4.json)
+		Copy-Item .\Fred-fredac24-3f25-41e0-84f2-3f34f54d072e.qkr (Join-Path $global:qkrLocalState Fred-fredac24-3f25-41e0-84f2-3f34f54d072e.json)
+	}
+
 	Get-ChildItem *Output.txt | ForEach-Object {
 		Remove-Item $_
 	}
@@ -40,7 +46,7 @@ function Run-Test
 {
 	$script = Join-Path $test "Test.txt"
 	"Running script $script"
-	Reset-Test $true
+	Reset-Test $false $true
 	dotnet.exe .\SignalRConsole.dll $script
 	Check-Test $false
 }
@@ -140,6 +146,9 @@ function Get-FilteredText($file, $merge)
 		}
 		elseif ($_ -match "Modified Date: .{19}") {
 			$_ -replace "Modified Date: .{19}", "Modified Date: `"<Date>`""
+		}
+		elseif ($_ -match "(con|qkr).{5}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}") {
+			$_ -replace "(con|qkr)", "xxx"
 		}
 		elseif ($merge)
 		{

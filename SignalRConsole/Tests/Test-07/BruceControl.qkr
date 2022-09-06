@@ -1,6 +1,21 @@
 {
-  "Version": 1.1,
-  "DeviceId": "033c8c3c-b9e0-4651-88fd-2284b93b51b0",
+  "DataVersion": "1.1",
+  "MergeIndex": {},
+  "Friends": [
+    {
+      "Blocked": false,
+      "BluetoothId": null,
+      "BluetoothDeviceName": null,
+      "DeviceId": "qkrmomd2-7ace-4e26-9e5e-2ac2afc2ead2",
+      "Id": "mom0c866-8cb0-4a10-ad96-dfe5f9ebd98e",
+      "Email": "jeanmariealbert@hotmail.com",
+      "Name": "Jean Albert",
+      "Handle": "Mom",
+      "Color": "Maroon",
+      "Created": "2022-06-06T19:03:43",
+      "Modified": "2022-08-31T16:12:19"
+    }
+  ],
   "Operators": [
     {
       "Name": "Addition",
@@ -19,27 +34,12 @@
       "Tables": []
     }
   ],
-  "Friends": [
-    {
-      "Blocked": false,
-      "DeviceId": null,
-      "BluetoothId": null,
-      "BluetoothDeviceName": null,
-      "Id": "mom0c866-8cb0-4a10-ad96-dfe5f9ebd98e",
-      "Email": "jeanmariealbert@hotmail.com",
-      "Name": "Jean Albert",
-      "Handle": "Mom",
-      "Color": "Maroon",
-      "Created": "2022-07-15T00:05:39",
-      "Modified": "2022-08-22T18:10:24"
-    }
-  ],
-  "MergeIndex": {},
+  "DeviceId": "conbruce-7ace-4e26-9e5e-2ac2afc2ead2",
   "Id": "brucef68-3c37-4aef-b8a6-1649659bbbc4",
   "Email": "bruce@hotmail.com",
   "Name": "Bruce Albert",
   "Handle": "Bruce",
   "Color": "Red",
-  "Created": "2022-07-15T00:05:39",
-  "Modified": "2022-08-22T18:10:24"
+  "Created": "2022-06-06T19:03:41",
+  "Modified": "2022-08-31T16:12:19"
 }

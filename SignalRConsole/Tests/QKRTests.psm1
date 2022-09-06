@@ -42,7 +42,7 @@ function Reset-Tests
     Get-ChildItem .\Test-* -Directory | ForEach-Object {
         $testCount++
         Import-Module -DisableNameChecking -Force (Join-Path $_ QKRTest.psm1)
-        Reset-Test $false
+        Reset-Test $false $false
     }
 
     "Reset $testCount tests."
@@ -61,7 +61,7 @@ function Run-Tests
         $testCount++
         Import-Module -DisableNameChecking -Force (Join-Path $_ QKRTest.psm1)
         "`nRunning test from: $test"
-        Reset-Test $false
+        Reset-Test $false $false
         Run-Test
     }
 
@@ -104,7 +104,7 @@ function Print-Files($inputFiles)
 	Pop-Location
 }
 
-function Test-QKRas($user, $number)
+function Start-TestFor($user, $number)
 {
     if ($null -eq $number)
     {

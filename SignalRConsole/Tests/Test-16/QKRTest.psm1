@@ -11,24 +11,32 @@ function Get-Description($qkr)
 
 	if ($null -eq $qkr -or $qkr)
 	{
-	"`tTo test QKR, run Test-QKRas Bruce 1, log in as Fred on QKR, when Bruce finishes,
-	accept the friend request and pop back to Home. Log in as Fred again then run
-	Test-QKRas Bruce 2, verify the Status message and pop back to Home.
+	"`tTo test QKR, run Reset-Test `$true then run Start-TestFor Bruce 1, connect as
+	Fred on QKR, when Bruce finishes, accept the friend request, verify that Fred
+	has unfriended you and exited, then pop back to Home. Connect as Fred again then
+	run Start-TestFor Bruce 2, verify no friends, that Bruce has exited and pop back
+	to Home.
 
-	Next, log in as Bruce on QKR, add Fred, then run Test-QKRas Fred 1. Unfriend
-	Fred, pop back to Home, log in as Bruce again, run Test-QKRas Fred 2 then pop
-	to Home. Run Check-Test to validate the test.`n"
+	Next, connect as Bruce on QKR, add Fred, then run Start-TestFor Fred 1. Unfriend
+	Fred, verify Status message, verify Fred exits, and pop back to Home. Connect
+	as Bruce again, run Start-TestFor Fred 2, verify no friends and that Fred exits,
+	then pop to Home. Run Check-Test `$true to validate the test.`n"
 	}
 }
 
-function Reset-Test($showDescription)
+function Reset-Test($resetQkr, $showDescription)
 {
 	"Resetting $test"
 	Push-Location $test
 	Copy-Item .\BruceNoFriends.qkr .\Bruce.qkr.json
 	Copy-Item .\FredNoFriends.qkr .\Fred.qkr.json
-	Copy-Item .\Bruce-brucef68-3c37-4aef-b8a6-1649659bbbc4.qkr (Join-Path $global:qkrLocalState Bruce-brucef68-3c37-4aef-b8a6-1649659bbbc4.json)
-	Copy-Item .\Fred-fredac24-3f25-41e0-84f2-3f34f54d072e.qkr (Join-Path $global:qkrLocalState Fred-fredac24-3f25-41e0-84f2-3f34f54d072e.json)
+
+	if ($resetQkr -eq $true) {
+		"Resetting QKR files at $global:qkrLocalState"
+		Copy-Item .\Bruce-brucef68-3c37-4aef-b8a6-1649659bbbc4.qkr (Join-Path $global:qkrLocalState Bruce-brucef68-3c37-4aef-b8a6-1649659bbbc4.json)
+		Copy-Item .\Fred-fredac24-3f25-41e0-84f2-3f34f54d072e.qkr (Join-Path $global:qkrLocalState Fred-fredac24-3f25-41e0-84f2-3f34f54d072e.json)
+	}
+
 	Get-ChildItem *Output.txt | ForEach-Object {
 		Remove-Item $_
 	}
@@ -44,7 +52,7 @@ function Run-Test
 {
 	$script = Join-Path $test "Test.txt"
 	"Running script $script"
-	Reset-Test $true
+	Reset-Test $false $true
 	dotnet.exe .\SignalRConsole.dll $script
 	Check-Test $false
 }
@@ -144,6 +152,9 @@ function Get-FilteredText($file, $merge)
 		}
 		elseif ($_ -match "Modified Date: .{19}") {
 			$_ -replace "Modified Date: .{19}", "Modified Date: `"<Date>`""
+		}
+		elseif ($_ -match "(con|qkr).{5}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}") {
+			$_ -replace "(con|qkr)", "xxx"
 		}
 		elseif ($merge)
 		{

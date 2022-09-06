@@ -1,5 +1,6 @@
 Fred
 >wait-for: Your (pending) friend Bruce is offline.
 Y
+>wait-for: Bruce has unfriended you.
 L
 X

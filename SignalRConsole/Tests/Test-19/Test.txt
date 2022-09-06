@@ -1,4 +1,4 @@
 test-harness Friends Bruce and Fred update metadata
 start-wait FredInput1.txt FredOutput.txt Fred
-start-wait-for-regex: "^FredOLD," BruceInput.txt BruceOutput.txt Bruce
+start-wait-for-regex: "^OLD Fred," BruceInput.txt BruceOutput.txt Bruce
 start FredInput2.txt FredOutput.txt Fred

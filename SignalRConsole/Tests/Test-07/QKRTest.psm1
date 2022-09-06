@@ -9,26 +9,31 @@ function Get-Description($qkr)
 
 	if ($null -eq $qkr -or $qkr)
 	{
-	"`tTo test QKR, run Test-QKRas Bruce in one console and Test-QKRas Fred in another.
-	Log in as Mom on QKR, accept requests, verify that Bruce and Fred have exited and
-	pop to Home. Test intermediate output with Check-QKRTest 1.
+	"`tTo test QKR, run run Reset-Test `$true then run Start-TestFor Bruce in one console
+	and Start-TestFor Fred in another. Log in as Mom on QKR, accept requests, verify 
+	friendships and pop to Home. Verify that Bruce and Fred have exited. Test
+	intermediate output with Check-QKRTest 1.
 	
-	Next run Test-QKRas Fred in one console, log in as Bruce on QKR and add Mom. Run
-	Test-QKRas Mom in the other console. Pop to Home on QKR and verify that Fred and
+	Next run Start-TestFor Fred in one console, log in as Bruce on QKR and add Mom. Run
+	Start-TestFor Mom in the other console. Pop to Home on QKR and verify that Fred and
 	Mom have exited. Run Check-QKRTest 2 to validate the test.`n"
 	}
 }
 
-function Reset-Test($showDescription)
+function Reset-Test($resetQkr, $showDescription)
 {
 	"Resetting $test"
 	Push-Location $test
 	Copy-Item .\BruceNoFriends.qkr .\Bruce.qkr.json
 	Copy-Item .\FredNoFriends.qkr .\Fred.qkr.json
 	Copy-Item .\MomNoFriends.qkr .\Mom.qkr.json
-	Copy-Item .\Bruce-brucef68-3c37-4aef-b8a6-1649659bbbc4.qkr (Join-Path $global:qkrLocalState Bruce-brucef68-3c37-4aef-b8a6-1649659bbbc4.json)
-	Copy-Item .\Fred-fredac24-3f25-41e0-84f2-3f34f54d072e.qkr (Join-Path $global:qkrLocalState Fred-fredac24-3f25-41e0-84f2-3f34f54d072e.json)
-	Copy-Item .\Mom-mom0c866-8cb0-4a10-ad96-dfe5f9ebd98e.qkr (Join-Path $global:qkrLocalState Mom-mom0c866-8cb0-4a10-ad96-dfe5f9ebd98e.json)
+
+	if ($resetQkr -eq $true) {
+		"Resetting QKR files at $global:qkrLocalState"
+		Copy-Item .\Bruce-brucef68-3c37-4aef-b8a6-1649659bbbc4.qkr (Join-Path $global:qkrLocalState Bruce-brucef68-3c37-4aef-b8a6-1649659bbbc4.json)
+		Copy-Item .\Mom-mom0c866-8cb0-4a10-ad96-dfe5f9ebd98e.qkr (Join-Path $global:qkrLocalState Mom-mom0c866-8cb0-4a10-ad96-dfe5f9ebd98e.json)
+	}
+	
 	Get-ChildItem *Output.txt | ForEach-Object {
 		Remove-Item $_
 	}
@@ -44,7 +49,7 @@ function Run-Test
 {
 	$script = Join-Path $test "Test.txt"
 	"Running script $script"
-	Reset-Test $true
+	Reset-Test $false $true
 	dotnet.exe .\SignalRConsole.dll $script
 	Check-Test
 }
@@ -79,20 +84,20 @@ function Check-QKRTest($stage)
 	$script:errorCount = 0
 	$tempWarningList = $global:warningList
 	$tempErrorList = $global:errorList
-	switch ($stage) {
+	Compare-Files .\BruceControl.qkr .\Bruce.qkr.json 2
+	Compare-Files .\FredControl.qkr .\Fred.qkr.json 2
+
+	switch ($stage)
+	{
 		1 {
-			Compare-Files .\BruceControl.qkr .\Bruce.qkr.json 2
-			Compare-Files .\FredControl.qkr .\Fred.qkr.json 2
-			Compare-Files .\Mom-mom0c866-8cb0-4a10-ad96-dfe5f9ebd98eControl.qkr (Join-Path $global:qkrLocalState Mom-mom0c866-8cb0-4a10-ad96-dfe5f9ebd98e.json) 2
+			Compare-Files .\Mom-mom0c866-8cb0-4a10-ad96-dfe5f9ebd98eControl.qkr (Join-Path $global:qkrLocalState Mom-mom0c866-8cb0-4a10-ad96-dfe5f9ebd98e.json) 2 7
 			Compare-Files .\BruceControl.txt .\BruceOutput.txt 1
 			Compare-Files .\FredControl.txt .\FredOutput.txt 1
 			Copy-Item .\FredNoFriends.qkr .\Fred.qkr.json
 		}
 		2 {
-			Compare-Files .\BruceControl.qkr .\Bruce.qkr.json 2
-			Compare-Files .\FredControl.qkr .\Fred.qkr.json 2
 			Compare-Files .\Bruce-brucef68-3c37-4aef-b8a6-1649659bbbc4Control.qkr (Join-Path $global:qkrLocalState Bruce-brucef68-3c37-4aef-b8a6-1649659bbbc4.json) 2
-			Compare-Files .\Mom-mom0c866-8cb0-4a10-ad96-dfe5f9ebd98eControl.qkr (Join-Path $global:qkrLocalState Mom-mom0c866-8cb0-4a10-ad96-dfe5f9ebd98e.json) 2
+			Compare-Files .\Mom-mom0c866-8cb0-4a10-ad96-dfe5f9ebd98eControl.qkr (Join-Path $global:qkrLocalState Mom-mom0c866-8cb0-4a10-ad96-dfe5f9ebd98e.json) 2 7
 			Compare-Files .\BruceControl2.txt .\BruceOutput.txt 1
 			Compare-Files .\FredControl2.txt .\FredOutput.txt 1
 			Compare-Files .\MomControl.txt .\MomOutput.txt 1
@@ -140,15 +145,18 @@ function Update-SignalRConsole
 	Get-ChildItem ..\bin\Debug\netcoreapp3.1\* -File | Copy-Item -Destination .
 }
 
-function Compare-Files($control, $file, $errorLevel, $merge)
+function Compare-Files($control, $file, $errorLevel, $syncWindow, $merge)
 {
 	"Comparing: $control with $file"
 	$controlText = Get-FilteredText $control $merge
 	$fileText = Get-FilteredText $file $merge
-	if ($file -match "\.json$") {
-		$syncWindow = 0
-	} else {
-		$syncWindow = [int32]::MaxValue
+	if ($null -eq $syncWindow)
+	{
+		if ($file -match "\.json$") {
+			$syncWindow = 0
+		} else {
+			$syncWindow = [int32]::MaxValue
+		}
 	}
 
 	if (((Compare-Object -SyncWindow $syncWindow $controlText $fileText) | Measure-Object).Count -gt 0)
@@ -185,6 +193,9 @@ function Get-FilteredText($file, $merge)
 		}
 		elseif ($_ -match "Modified Date: .{19}") {
 			$_ -replace "Modified Date: .{19}", "Modified Date: `"<Date>`""
+		}
+		elseif ($_ -match "(con|qkr).{5}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}") {
+			$_ -replace "(con|qkr)", "xxx"
 		}
 		elseif ($merge)
 		{

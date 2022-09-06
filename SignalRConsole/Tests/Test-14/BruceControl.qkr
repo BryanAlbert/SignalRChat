@@ -1,6 +1,7 @@
 {
-  "Version": 1.1,
-  "DeviceId": "56d47b98-4070-4da7-96b1-6901fcfc59f5",
+  "DataVersion": "1.1",
+  "MergeIndex": {},
+  "Friends": [],
   "Operators": [
     {
       "Name": "Addition",
@@ -19,13 +20,12 @@
       "Tables": []
     }
   ],
-  "Friends": [],
-  "MergeIndex": {},
+  "DeviceId": "conbruce-7ace-4e26-9e5e-2ac2afc2ead2",
   "Id": "brucef68-3c37-4aef-b8a6-1649659bbbc4",
   "Email": "bruce@hotmail.com",
   "Name": "Bruce Albert",
   "Handle": "Bruce",
   "Color": "Red",
-  "Created": "2022-07-15T00:05:39",
-  "Modified": "2022-08-22T18:26:51"
+  "Created": "2022-06-06T19:03:41",
+  "Modified": "2022-09-01T00:34:32"
 }

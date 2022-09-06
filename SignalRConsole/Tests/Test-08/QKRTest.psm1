@@ -12,29 +12,32 @@ function Get-Description($qkr)
 
 	if ($null -eq $qkr -or $qkr)
 	{
-	"`tTo test QKR, run Test-QKRas Bruce 1 in one console and wait for it to finish. Run
-	Test-QKRas Fred in another console, log in as Mom on QKR and accept friend request,
-	then run Test-QKRas Bruce 2 in the first console. Accept friend request in QKR, verify
-	that Bruce and Fred have finished and pop to Home. Test intermediate output with
-	Check-QKRTest 1.
+	"`tTo test QKR, run Reset-Test `$true then run Start-TestFor Bruce 1 in one console and
+	wait for it to finish. Run Start-TestFor Fred in another console, connect as Mom on QKR
+	and accept the friend request, then run Start-TestFor Bruce 2 in the first console. Accept
+	the friend request in QKR, verify friendship, pop to Home and verify that Bruce and 
+	Fred have exited. Test intermediate output with Check-QKRTest 1.
 	
-	Next, log in as Bruce on QKR and add Mom and Fred then pop back to Home. Run Test-QKRas
-	Fred in one console and Test-QKRas Mom in the other then log in as Bruce again in QKR.
-	Accpet the friend request then pop back to Home. Verify that Mom and Fred have exited
-	and run Check-QKRTest 2 to validate the test.`n"
+	Next, connect as Bruce on QKR and add Mom and Fred then pop back to Home. Run Start-TestFor
+	Fred in one console and Start-TestFor Mom in the other, then log in as Bruce again in QKR.
+	Accpet the friend request, verify friendship then pop back to Home. Verify that Mom and
+	Fred have exited and run Check-QKRTest 2 to validate the test.`n"
 	}
 }
 
-function Reset-Test($showDescription)
+function Reset-Test($resetQkr, $showDescription)
 {
 	"Resetting $test"
 	Push-Location $test
 	Copy-Item .\BruceNoFriends.qkr .\Bruce.qkr.json
 	Copy-Item .\FredNoFriends.qkr .\Fred.qkr.json
 	Copy-Item .\MomNoFriends.qkr .\Mom.qkr.json
-	Copy-Item .\Bruce-brucef68-3c37-4aef-b8a6-1649659bbbc4.qkr (Join-Path $global:qkrLocalState Bruce-brucef68-3c37-4aef-b8a6-1649659bbbc4.json)
-	Copy-Item .\Fred-fredac24-3f25-41e0-84f2-3f34f54d072e.qkr (Join-Path $global:qkrLocalState Fred-fredac24-3f25-41e0-84f2-3f34f54d072e.json)
-	Copy-Item .\Mom-mom0c866-8cb0-4a10-ad96-dfe5f9ebd98e.qkr (Join-Path $global:qkrLocalState Mom-mom0c866-8cb0-4a10-ad96-dfe5f9ebd98e.json)
+	if ($resetQkr -eq $true) {
+		"Resetting QKR files at $global:qkrLocalState"
+		Copy-Item .\Bruce-brucef68-3c37-4aef-b8a6-1649659bbbc4.qkr (Join-Path $global:qkrLocalState Bruce-brucef68-3c37-4aef-b8a6-1649659bbbc4.json)
+		Copy-Item .\Mom-mom0c866-8cb0-4a10-ad96-dfe5f9ebd98e.qkr (Join-Path $global:qkrLocalState Mom-mom0c866-8cb0-4a10-ad96-dfe5f9ebd98e.json)
+	}
+	
 	Get-ChildItem *Output.txt | ForEach-Object {
 		Remove-Item $_
 	}
@@ -50,7 +53,7 @@ function Run-Test
 {
 	$script = Join-Path $test "Test.txt"
 	"Running script $script"
-	Reset-Test $true
+	Reset-Test $false $true
 	dotnet.exe .\SignalRConsole.dll $script
 	Check-Test
 }
@@ -85,18 +88,18 @@ function Check-QKRTest($stage)
 	$script:errorCount = 0
 	$tempWarningList = $global:warningList
 	$tempErrorList = $global:errorList
-	switch ($stage) {
+	Compare-Files .\BruceControl.qkr .\Bruce.qkr.json 2
+	Compare-Files .\FredControl.qkr .\Fred.qkr.json 2
+
+	switch ($stage)
+	{
 		1 {
-			Compare-Files .\BruceControl.qkr .\Bruce.qkr.json 2
-			Compare-Files .\FredControl.qkr .\Fred.qkr.json 2
 			Compare-Files .\Mom-mom0c866-8cb0-4a10-ad96-dfe5f9ebd98eControl.qkr (Join-Path $global:qkrLocalState Mom-mom0c866-8cb0-4a10-ad96-dfe5f9ebd98e.json) 2
 			Compare-Files .\BruceControl.txt .\BruceOutput.txt 1
 			Compare-Files .\FredControl.txt .\FredOutput.txt 1
 			Copy-Item .\FredNoFriends.qkr .\Fred.qkr.json
 		}
 		2 {
-			Compare-Files .\BruceControl.qkr .\Bruce.qkr.json 2
-			Compare-Files .\FredControl.qkr .\Fred.qkr.json 2
 			Compare-Files .\Bruce-brucef68-3c37-4aef-b8a6-1649659bbbc4Control.qkr (Join-Path $global:qkrLocalState Bruce-brucef68-3c37-4aef-b8a6-1649659bbbc4.json) 2
 			Compare-Files .\Mom-mom0c866-8cb0-4a10-ad96-dfe5f9ebd98eControl.qkr (Join-Path $global:qkrLocalState Mom-mom0c866-8cb0-4a10-ad96-dfe5f9ebd98e.json) 2
 			Compare-Files .\BruceControl2.txt .\BruceOutput.txt 1
@@ -117,7 +120,7 @@ function Update-ControlFiles($updateQkr)
 	Push-Location $test
 	if ($updateQkr -eq $true)
 	{
-		"Updating QKR control files for $test"
+		"Updating QKR control files for $test from $global:qkrLocalState"
 		Copy-Item .\Bruce.qkr.json .\BruceControl.qkr
 		Copy-Item .\Fred.qkr.json .\FredControl.qkr
 		Copy-Item .\Mom.qkr.json .\MomControl.qkr
@@ -191,6 +194,9 @@ function Get-FilteredText($file, $merge)
 		}
 		elseif ($_ -match "Modified Date: .{19}") {
 			$_ -replace "Modified Date: .{19}", "Modified Date: `"<Date>`""
+		}
+		elseif ($_ -match "(con|qkr).{5}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}") {
+			$_ -replace "(con|qkr)", "xxx"
 		}
 		elseif ($merge)
 		{

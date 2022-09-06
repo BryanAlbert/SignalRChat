@@ -1,6 +1,23 @@
 {
-  "Version": 1.1,
-  "DeviceId": "newf1d65-1468-4409-a21a-f5b4f000ee4f",
+  "DataVersion": "1.1",
+  "MergeIndex": {
+    "conmia08-9a9b-4a6b-9db9-9e9b6238283f": 0
+  },
+  "Friends": [
+    {
+      "Blocked": false,
+      "BluetoothId": null,
+      "BluetoothDeviceName": null,
+      "DeviceId": "conbruce-7ace-4e26-9e5e-2ac2afc2ead2",
+      "Id": "brucef68-3c37-4aef-b8a6-1649659bbbc4",
+      "Email": "bruce@hotmail.com",
+      "Name": "Bruce Albert",
+      "Handle": "Bruce",
+      "Color": "Red",
+      "Created": "2022-07-06T03:05:12",
+      "Modified": "2022-07-06T03:05:12"
+    }
+  ],
   "Operators": [
     {
       "Name": "Addition",
@@ -106,42 +123,12 @@
       "Tables": []
     }
   ],
-  "Friends": [
-    {
-      "Blocked": false,
-      "DeviceId": null,
-      "BluetoothId": null,
-      "BluetoothDeviceName": null,
-      "Id": "a1b4828b-4a1b-42ff-aaf2-e153fccee6d4",
-      "Email": "bryan.m.albert@gmail.com",
-      "Name": "Bryan Albert",
-      "Handle": "Papa",
-      "Color": null,
-      "Created": "2022-06-27T23:00:00",
-      "Modified": "2022-06-27T23:00:00"
-    },
-    {
-      "Blocked": false,
-      "DeviceId": null,
-      "BluetoothId": null,
-      "BluetoothDeviceName": null,
-      "Id": "brucef68-3c37-4aef-b8a6-1649659bbbc4",
-      "Email": "bruce@hotmail.com",
-      "Name": "Bruce Albert",
-      "Handle": "Bruce",
-      "Color": "Red",
-      "Created": "2022-07-06T03:05:12",
-      "Modified": "2022-07-06T03:05:12"
-    }
-  ],
-  "MergeIndex": {
-    "old48e13-9aeb-41dc-aa7a-21d295f8d95d": 0
-  },
+  "DeviceId": "connew65-1468-4409-a21a-f5b4f000ee4f",
   "Id": "mia38308-9a9b-4a6b-9db9-9e9b6238283f",
   "Email": "mia@albertnet.us",
   "Name": "Mia Albert",
   "Handle": "Mia",
   "Color": "Yellow",
   "Created": "2022-07-08T03:43:05",
-  "Modified": "2022-08-22T18:42:02"
+  "Modified": "2022-09-05T19:39:51"
 }

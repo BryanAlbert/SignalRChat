@@ -2,8 +2,8 @@ Initializing server and connecting to URL: https://localhost:5001/chathub
 What is your handle (nickname)? 
 Fred
 Name: Fred Sanson, Email: fred@gmail.com, Favorite color: Green,
-Id: fredac24-3f25-41e0-84f2-3f34f54d072e, Device Id: 9270bb8c-6fbe-4952-9cc9-8e2fd0c9b005,
-Creation Date: 2022-07-15T00:07:37, Modified Date: 2022-07-15T00:07:54
+Id: fredac24-3f25-41e0-84f2-3f34f54d072e, Device Id: confred2-7ace-4e26-9e5e-2ac2afc2ead2,
+Creation Date: 2022-06-06T19:03:42, Modified Date: 2022-08-30T21:51:08
 Pick a command: t to list tables, a to add a friend, l to list friends,
 u to unfriend a friend, c to chat, or x to exit
 Listening> 
@@ -17,22 +17,22 @@ Listening>
 You and Bruce are now friends!
 L
 Friends:
-Bruce, Bruce Albert, bruce@hotmail.com, Red, Created: 2022-07-15T00:05:39 Modified: 2022-08-22T18:09:29
+Bruce, Bruce Albert, bruce@hotmail.com, Red, Created: 2022-06-06T19:03:41 Modified: 2022-08-30T21:55:05
 X
 Finished.
 Initializing server and connecting to URL: https://localhost:5001/chathub
 What is your handle (nickname)? 
 Fred
 Name: Fred Sanson, Email: fred@gmail.com, Favorite color: Green,
-Id: fredac24-3f25-41e0-84f2-3f34f54d072e, Device Id: 9270bb8c-6fbe-4952-9cc9-8e2fd0c9b005,
-Creation Date: 2022-07-15T00:07:37, Modified Date: 2022-08-22T18:09:29
+Id: fredac24-3f25-41e0-84f2-3f34f54d072e, Device Id: confred2-7ace-4e26-9e5e-2ac2afc2ead2,
+Creation Date: 2022-06-06T19:03:42, Modified Date: 2022-08-30T21:55:05
 Pick a command: t to list tables, a to add a friend, l to list friends,
 u to unfriend a friend, c to chat, or x to exit
-Listening> 
 (Sent Hello null command to Fred.)
+Listening> 
 Your friend Bruce is online.
 L
 Friends:
-Bruce, Bruce Albert, bruce@hotmail.com, Red, Created: 2022-07-15T00:05:39 Modified: 2022-08-22T18:09:29 (online)
+Bruce, Bruce Albert, bruce@hotmail.com, Red, Created: 2022-06-06T19:03:41 Modified: 2022-08-30T21:55:05 (online)
 X
 Finished.

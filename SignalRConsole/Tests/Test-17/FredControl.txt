@@ -2,8 +2,8 @@ Initializing server and connecting to URL: https://localhost:5001/chathub
 What is your handle (nickname)? 
 Fred
 Name: Fred Sanson, Email: fred@gmail.com, Favorite color: Green,
-Id: fredac24-3f25-41e0-84f2-3f34f54d072e, Device Id: cae18a1e-04ac-43a5-9c36-588d85553827,
-Creation Date: 2022-07-15T00:05:39, Modified Date: 2022-07-15T19:14:20
+Id: fredac24-3f25-41e0-84f2-3f34f54d072e, Device Id: confred2-7ace-4e26-9e5e-2ac2afc2ead2,
+Creation Date: 2022-06-06T19:03:42, Modified Date: 2022-08-31T20:43:00
 Pick a command: t to list tables, a to add a friend, l to list friends,
 u to unfriend a friend, c to chat, or x to exit
 Listening> 
@@ -11,15 +11,15 @@ A
 Busy...       
 What is your friend's handle? 
 Bruce
+(Sent Hello null command to Fred.)
 What is your friend's email? 
 bruce@hotmail.com
-(Sent Hello null command to Fred.)
 A friend request has been sent to Bruce.
 Listening> 
 Your (pending) friend Bruce is online.
 You and Bruce are now friends!
 L
 Friends:
-Bruce, Bruce Albert, bruce@hotmail.com, Red, Created: 2022-07-15T00:05:39 Modified: 2022-08-22T18:36:39 (online)
+Bruce, Bruce Albert, bruce@hotmail.com, Red, Created: 2022-06-06T19:03:41 Modified: 2022-09-01T19:05:21 (online)
 X
 Finished.

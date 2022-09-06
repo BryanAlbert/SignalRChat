@@ -1,6 +1,34 @@
 {
-  "Version": 1.1,
-  "DeviceId": "618b7593-4072-401b-a9f0-d8c12106bec6",
+  "DataVersion": "1.1",
+  "MergeIndex": {},
+  "Friends": [
+    {
+      "Blocked": false,
+      "BluetoothId": null,
+      "BluetoothDeviceName": null,
+      "DeviceId": "confred2-7ace-4e26-9e5e-2ac2afc2ead2",
+      "Id": "fredac24-3f25-41e0-84f2-3f34f54d072e",
+      "Email": "fred@gmail.com",
+      "Name": "Fred Sanson",
+      "Handle": "Fred",
+      "Color": "Green",
+      "Created": "2022-06-06T19:03:42",
+      "Modified": "2022-08-31T16:14:15"
+    },
+    {
+      "Blocked": false,
+      "BluetoothId": null,
+      "BluetoothDeviceName": null,
+      "DeviceId": "qkrbruce-7ace-4e26-9e5e-2ac2afc2ead2",
+      "Id": "brucef68-3c37-4aef-b8a6-1649659bbbc4",
+      "Email": "bruce@hotmail.com",
+      "Name": "Bruce Albert",
+      "Handle": "Bruce",
+      "Color": "Red",
+      "Created": "2022-06-06T19:03:41",
+      "Modified": "2022-08-31T16:14:15"
+    }
+  ],
   "Operators": [
     {
       "Name": "Addition",
@@ -19,40 +47,12 @@
       "Tables": []
     }
   ],
-  "Friends": [
-    {
-      "Blocked": false,
-      "DeviceId": "033c8c3c-b9e0-4651-88fd-2284b93b51b0",
-      "BluetoothId": null,
-      "BluetoothDeviceName": null,
-      "Id": "brucef68-3c37-4aef-b8a6-1649659bbbc4",
-      "Email": "bruce@hotmail.com",
-      "Name": "Bruce Albert",
-      "Handle": "Bruce",
-      "Color": "Red",
-      "Created": "2022-07-15T00:05:39",
-      "Modified": "2022-08-22T18:10:24"
-    },
-    {
-      "Blocked": false,
-      "DeviceId": "9f8f7303-8ccc-4f9b-8e89-d7896013eb0d",
-      "BluetoothId": null,
-      "BluetoothDeviceName": null,
-      "Id": "fredac24-3f25-41e0-84f2-3f34f54d072e",
-      "Email": "fred@gmail.com",
-      "Name": "Fred Sanson",
-      "Handle": "Fred",
-      "Color": "Green",
-      "Created": "2022-07-15T00:05:39",
-      "Modified": "2022-08-22T18:10:24"
-    }
-  ],
-  "MergeIndex": {},
+  "DeviceId": "conmomd2-7ace-4e26-9e5e-2ac2afc2ead2",
   "Id": "mom0c866-8cb0-4a10-ad96-dfe5f9ebd98e",
   "Email": "jeanmariealbert@hotmail.com",
   "Name": "Jean Albert",
   "Handle": "Mom",
   "Color": "Maroon",
-  "Created": "2022-07-15T00:05:39",
-  "Modified": "2022-08-22T18:10:24"
+  "Created": "2022-06-06T19:03:43",
+  "Modified": "2022-08-31T16:14:15"
 }

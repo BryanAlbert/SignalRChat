@@ -1,6 +1,7 @@
 {
-  "Version": 1.1,
-  "DeviceId": "b56d7de8-19c4-4eba-be43-f14e86cd5b3f",
+  "DataVersion": "1.1",
+  "MergeIndex": {},
+  "Friends": [],
   "Operators": [
     {
       "Name": "Addition",
@@ -19,13 +20,12 @@
       "Tables": []
     }
   ],
-  "Friends": [],
-  "MergeIndex": {},
+  "DeviceId": "confred2-7ace-4e26-9e5e-2ac2afc2ead2",
   "Id": "fredac24-3f25-41e0-84f2-3f34f54d072e",
   "Email": "fred@gmail.com",
   "Name": "Fred Sanson",
   "Handle": "Fred",
   "Color": "Green",
-  "Created": "2022-07-15T00:05:39",
-  "Modified": "2022-08-22T18:36:13"
+  "Created": "2022-06-06T19:03:42",
+  "Modified": "2022-09-01T15:03:50"
 }
