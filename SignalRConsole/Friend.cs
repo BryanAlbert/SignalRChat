@@ -21,9 +21,9 @@ namespace SignalRConsole
 
 
 		public bool? Blocked { get; set; }
-		public string DeviceId { get; set; }
 		public string BluetoothId { get; set; }
 		public string BluetoothDeviceName { get; set; }
+		public string DeviceId { get; set; }
 
 		[JsonIgnore]
 		public bool HelloInitiated { get; set; }

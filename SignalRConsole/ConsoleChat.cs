@@ -114,8 +114,9 @@ namespace SignalRConsole
 				foreach (Friend friend in m_user.Friends.Where(x => x.Blocked != true))
 					await m_hubConnection.SendAsync(c_leaveChannel, friend.Id ?? MakeHandleChannelName(friend), Id);
 
-				await m_hubConnection.SendAsync(c_leaveChannel, IdChannelName, Id);
+				// if we change our Id in a merge, it leaves us listening to the DeviceId channel, so leave that channel
 				await m_hubConnection.SendAsync(c_leaveChannel, DeviceId, Id);
+				await m_hubConnection.SendAsync(c_leaveChannel, IdChannelName, Id);
 				await m_hubConnection.SendAsync(c_leaveChannel, HandleChannelName, Id);
 				await m_hubConnection.SendAsync(c_leaveChannel, ChatChannelName, Id);
 				await m_hubConnection.StopAsync();
@@ -205,7 +206,7 @@ namespace SignalRConsole
 			{
 				if (State == States.Listening)
 				{
-					// ready to chat
+					// signal ready to chat
 					await SendCommandAsync(CommandNames.Hello, Id, channel, user, m_user, true);
 					ActiveChatChannelName = channel;
 					ActiveChatFriend = m_user.Friends.FirstOrDefault(x => x.Id == user);
@@ -213,7 +214,7 @@ namespace SignalRConsole
 				}
 				else
 				{
-					// hang up
+					// can't chat right now
 					await SendCommandAsync(CommandNames.Hello, Id, channel, user, m_user, false);
 				}
 
@@ -310,7 +311,7 @@ namespace SignalRConsole
 				finally
 				{
 					if (m_semaphoreSlim.CurrentCount == 0)
-						m_semaphoreSlim.Release();
+						_ = m_semaphoreSlim.Release();
 				}
 			} 
 		}
@@ -322,7 +323,7 @@ namespace SignalRConsole
 			if (channel == IdChannelName)
 			{
 				Friend friend = m_user.Friends.FirstOrDefault(u => u.Id == user);
-				if (friend != null && (!friend.Blocked ?? true))
+				if (friend != null && friend.Blocked != true)
 				{
 					ConsoleWriteLogLine($"Your {(friend.Blocked.HasValue ? "" : "(pending) ")}friend {friend.Handle} is offline.");
 					m_online.Remove(friend);
@@ -409,7 +410,7 @@ namespace SignalRConsole
 			}
 			else
 			{
-				if (m_user.Version != User.c_dataVersion)
+				if (m_user.DataVersion != User.c_dataVersion)
 					UpgradeJson(m_user);
 			}
 
@@ -422,8 +423,8 @@ namespace SignalRConsole
 		private void UpgradeJson(User m_user)
 		{
 			// upgrade old version to Version 1.1
-			m_console.WriteLine($"{FileName} has Version {m_user.Version}, updating to version {User.c_dataVersion}");
-			m_user.Version = User.c_dataVersion;
+			m_console.WriteLine($"{FileName} has DataVersion {m_user.DataVersion}, updating to {User.c_dataVersion}");
+			m_user.DataVersion = User.c_dataVersion;
 			m_user.DeviceId ??= Guid.NewGuid().ToString();
 			m_user.Operators ??= new List<OperatorTables>
 			{
@@ -751,7 +752,7 @@ namespace SignalRConsole
 				if (command.Flag == true)
 				{
 					// don't block on the message loop
-					m_semaphoreSlim.Release();
+					_ = m_semaphoreSlim.Release();
 					_ = await MessageLoopAsync();
 				}
 				else
@@ -870,12 +871,7 @@ namespace SignalRConsole
 				SaveUser();
 
 				if (m_online.Contains(pending))
-				{
 					await SendCommandAsync(CommandNames.Verify, Id, HandleChannelName, from, m_user, !pending.Blocked);
-				}
-
-				if (!pending.Blocked ?? false)
-					await m_hubConnection.SendAsync(c_joinChannel, verify.Racer);
 
 				m_console.SetCursorPosition(confirm.Item1.X, confirm.Item1.Y);
 				existing = pending;
@@ -949,8 +945,11 @@ namespace SignalRConsole
 
 			if (updateId)
 			{
+				// don't leave the DeviceId channel since other Merge commands may be coming in on it
+				await m_hubConnection.SendAsync(c_leaveChannel, ChatChannelName, Id);
 				m_user.Id = user.Id;
 				await m_hubConnection.SendAsync(c_joinChannel, IdChannelName, Id);
+				await m_hubConnection.SendAsync(c_joinChannel, ChatChannelName, Id);
 			}
 
 			if (update)
@@ -1136,6 +1135,7 @@ namespace SignalRConsole
 					friend.Name = updated.Name;
 					friend.Color = updated.Color;
 					friend.Id = updated.Id;
+					friend.DeviceId = updated.DeviceId;
 					friend.Created = updated.Created;
 					friend.Modified = updated.Modified;
 					SaveUser();

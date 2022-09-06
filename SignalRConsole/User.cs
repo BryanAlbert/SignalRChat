@@ -19,7 +19,7 @@ namespace SignalRConsole
 		public User(string handle, string email, string name, string color, string fileName) :
 			this(handle, email, name, color)
 		{
-			Version = c_dataVersion;
+			DataVersion = c_dataVersion;
 			Id = DeviceId = Guid.NewGuid().ToString();
 			Created = DateTime.UtcNow.ToString("s");
 			Modified = Created;
@@ -36,16 +36,16 @@ namespace SignalRConsole
 		}
 
 
-		public double Version { get; set; }
-		public string DeviceId { get; set; }
-		public List<OperatorTables> Operators { get; set; }
-		public List<Friend> Friends { get; set; }
+		public static Version c_dataVersion = new Version(1, 1);
+
+
+		public Version DataVersion { get; set; }
 		public Dictionary<string, int> MergeIndex { get; set; }
+		public List<Friend> Friends { get; set; }
+		public List<OperatorTables> Operators { get; set; }
+		public string DeviceId { get; set; }
 
 		[JsonIgnore]
 		public string FileName { get; set; }
-
-
-		public const double c_dataVersion = 1.1;
 	}
 }
