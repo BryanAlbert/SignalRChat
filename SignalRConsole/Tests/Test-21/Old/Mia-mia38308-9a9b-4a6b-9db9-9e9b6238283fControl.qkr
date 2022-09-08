@@ -1,21 +1,29 @@
 {
   "DataVersion": "1.1",
+  "Id": "mia38308-9a9b-4a6b-9db9-9e9b6238283f",
+  "DeviceId": "conmia08-9a9b-4a6b-9db9-9e9b6238283f",
+  "Email": "mia@albertnet.us",
+  "Name": "Mia Albert",
+  "Handle": "Mia",
+  "Color": "Turquoise",
+  "Created": "2022-06-27T23:00:00",
+  "Modified": "2022-09-07T00:00:22",
   "MergeIndex": {
     "connew65-1468-4409-a21a-f5b4f000ee4f": 0
   },
   "Friends": [
     {
-      "Blocked": false,
-      "BluetoothId": null,
-      "BluetoothDeviceName": null,
-      "DeviceId": "conbruce-7ace-4e26-9e5e-2ac2afc2ead2",
       "Id": "brucef68-3c37-4aef-b8a6-1649659bbbc4",
+      "DeviceId": "qkrbruce-7ace-4e26-9e5e-2ac2afc2ead2",
       "Email": "bruce@hotmail.com",
       "Name": "Bruce Albert",
       "Handle": "Bruce",
       "Color": "Red",
       "Created": "2022-07-06T03:05:12",
-      "Modified": "2022-07-06T03:05:12"
+      "Modified": "2022-07-06T03:05:12",
+      "Blocked": false,
+      "BluetoothId": null,
+      "BluetoothDeviceName": null
     }
   ],
   "Operators": [
@@ -122,13 +130,5 @@
       "Name": "Division",
       "Tables": []
     }
-  ],
-  "DeviceId": "conmia08-9a9b-4a6b-9db9-9e9b6238283f",
-  "Id": "mia38308-9a9b-4a6b-9db9-9e9b6238283f",
-  "Email": "mia@albertnet.us",
-  "Name": "Mia Albert",
-  "Handle": "Mia",
-  "Color": "Turquoise",
-  "Created": "2022-06-27T23:00:00",
-  "Modified": "2022-09-07T22:45:51"
+  ]
 }

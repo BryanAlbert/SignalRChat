@@ -2,18 +2,18 @@ Initializing server and connecting to URL: https://localhost:5001/chathub
 What is your handle (nickname)? 
 Mia
 Name: Mia Albert, Email: mia@albertnet.us, Favorite color: Turquoise,
-Id: newf1d65-1468-4409-a21a-f5b4f000ee4f, Device Id: newf1d65-1468-4409-a21a-f5b4f000ee4f,
-Creation Date: 2022-07-08T03:43:05, Modified Date: 2022-07-08T04:20:51
+Id: mia38308-9a9b-4a6b-9db9-9e9b6238283f, Device Id: conmia08-9a9b-4a6b-9db9-9e9b6238283f,
+Creation Date: 2022-06-27T23:00:00, Modified Date: 2022-09-06T22:16:19
 Pick a command: t to list tables, a to add a friend, l to list friends,
 u to unfriend a friend, c to chat, or x to exit
 Listening> 
 (Sent Hello null command to Mia.)
-Mia is online on device old48e13-9aeb-41dc-aa7a-21d295f8d95d, sending merge data...
-Merging data from Mia, Id mia38308-9a9b-4a6b-9db9-9e9b6238283f, on device old48e13-9aeb-41dc-aa7a-21d295f8d95d...
-Merged data from Mia on device old48e13-9aeb-41dc-aa7a-21d295f8d95d.
+(Sent Hello null command to Mia.)
+Mia is online on device connew65-1468-4409-a21a-f5b4f000ee4f, sending merge data...
+Merging data from Mia on device connew65-1468-4409-a21a-f5b4f000ee4f...
+Merged data from Mia on device connew65-1468-4409-a21a-f5b4f000ee4f.
 L
 Friends:
-Papa, Bryan Albert, bryan.m.albert@gmail.com, Created: 2022-06-27T23:00:00 Modified: 2022-06-27T23:00:00
 Bruce, Bruce Albert, bruce@hotmail.com, Red, Created: 2022-07-06T03:05:12 Modified: 2022-07-06T03:05:12
 T
 Tables json:
@@ -42,13 +42,13 @@ Tables json:
             "TotalTime": 1744,
             "BestTime": 518,
             "MergeQuizzed": [
-              0
+              3
             ],
             "MergeCorrect": [
-              0
+              3
             ],
             "MergeTime": [
-              0
+              1744
             ]
           },
           {
@@ -61,13 +61,13 @@ Tables json:
             "TotalTime": 2346,
             "BestTime": 692,
             "MergeQuizzed": [
-              0
+              3
             ],
             "MergeCorrect": [
-              0
+              3
             ],
             "MergeTime": [
-              0
+              2346
             ]
           }
         ]
@@ -85,13 +85,13 @@ Tables json:
             "TotalTime": 1770,
             "BestTime": 542,
             "MergeQuizzed": [
-              0
+              3
             ],
             "MergeCorrect": [
-              0
+              3
             ],
             "MergeTime": [
-              0
+              1770
             ]
           },
           {
@@ -104,13 +104,13 @@ Tables json:
             "TotalTime": 1532,
             "BestTime": 532,
             "MergeQuizzed": [
-              0
+              1
             ],
             "MergeCorrect": [
-              0
+              1
             ],
             "MergeTime": [
-              0
+              1532
             ]
           }
         ]
@@ -124,7 +124,7 @@ Tables json:
 ]
 MergeIndex json:
 {
-  "old48e13-9aeb-41dc-aa7a-21d295f8d95d": 0
+  "connew65-1468-4409-a21a-f5b4f000ee4f": 0
 }
 X
 Finished.

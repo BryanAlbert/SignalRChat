@@ -2,11 +2,12 @@ $global:test = "Test-20"
 
 function Get-Description($qkr)
 {
-	"`n${test}: Merging old account with tables to new, empty account
+	"`n${test}: Merging old account with tables with a new, empty account
 	
 	Old Mia online, New Mia comes online, merges, lists, exits, Old merges, lists, exits.
 	
 	Run Reset-Test with the following arguments to reset and configure:
+	<none> Reset everything
 	`$false Reset only Console json files
 	QKR    Delete json files from QKR's LocalState folder
 	Old    Configure QKR with Old json file
@@ -17,10 +18,12 @@ function Get-Description($qkr)
 
 	if ($null -eq $qkr -or $qkr) {
 	"`tTo test QKR, run Reset-Test New, run Start-TestFor Old then connect as Mia on QKR.
-	Close QKR and check preliminary results with Check-Test New.
+	Pop back to Home and verify that Mia is yellow, then close QKR. Check preliminary
+	results with Check-Test New.
 	
-	Next, run Reset-Test Old, connect as Mia on QKR then run Start-TestFor New. Close QKR
-	and check results with Check-Test Old.`n"
+	Next, run Reset-Test Old, connect as Mia on QKR then run Start-TestFor New. Pop back
+	to Home and verify that Mia is yellow, then close QKR. check results with
+	Check-Test Old.`n"
 	}
 }
 
@@ -36,17 +39,19 @@ function Reset-Test($reset, $showDescription)
 	{
 		"QKR"
 		{
-			Remove-QKR-Files $oldPath, $newPath
+			Remove-Files $oldPath, $newPath
 		}
 		"Old"
 		{
-			Remove-QKR-Files $oldPath, $newPath
+			Remove-Files $oldPath, $newPath, .\New\Output.txt
+			Copy-Item .\New\Mia.qkr .\New\Mia.qkr.json
 			"Resetting QKR to Old at $global:qkrLocalState"
 			Copy-Item .\Old\Mia-mia38308-9a9b-4a6b-9db9-9e9b6238283f.qkr $oldPath
 		}
 		"New"
 		{
-			Remove-QKR-Files $oldPath, $newPath
+			Remove-Files $oldPath, $newPath, .\Old\Output.txt
+			Copy-Item .\Old\Mia.qkr .\Old\Mia.qkr.json 
 			"Resetting QKR to New at $global:qkrLocalState"
 			Copy-Item .\New\Mia-qkrnew65-1468-4409-a21a-f5b4f000ee4f.qkr $newPath
 		}
@@ -63,23 +68,22 @@ function Reset-Test($reset, $showDescription)
 		"Third"
 		{
 			"Resetting QKR to Third at $global:qkrLocalState"
-			"QKR is Thirs"
+			"QKR is Third"
 		}
 		$false
 		{
 			"Resetting Console..."
+			Remove-Files .\Old\Output.txt, .\New\Output.txt
+			Copy-Item .\New\Mia.qkr .\New\Mia.qkr.json
+			Copy-Item .\Old\Mia.qkr .\Old\Mia.qkr.json 
 		}
 		Default
 		{
-			"Resetting Console..."
+			"Resetting all..."
+			Remove-Files $oldPath, $newPath, .\Old\Output.txt, .\New\Output.txt
+			Copy-Item .\New\Mia.qkr .\New\Mia.qkr.json
+			Copy-Item .\Old\Mia.qkr .\Old\Mia.qkr.json 
 		}
-	}
-	
-	Copy-Item .\New\Mia.qkr .\New\Mia.qkr.json
-	Copy-Item .\Old\Mia.qkr .\Old\Mia.qkr.json 
-
-	Get-ChildItem -Recurse *Output.txt | ForEach-Object {
-		Remove-Item $_
 	}
 	
 	Pop-Location
@@ -89,15 +93,19 @@ function Reset-Test($reset, $showDescription)
 	}
 }
 
-function Remove-QKR-Files($files)
+function Remove-Files($files)
 {
-	foreach ($file in $files)
+	foreach ($file in $files) {
+		Remove-File $file
+	}
+}
+
+function Remove-File($file)
+{
+	if (Test-Path $file)
 	{
-		if (Test-Path $file)
-		{
-			"Deleting $file"
-			Remove-Item $file
-		}
+		"Deleting $file"
+		Remove-Item $file
 	}
 }
 
@@ -105,7 +113,7 @@ function Start-TestFor($age)
 {
 	$where = Join-Path $test $age
 	"Calling Start-Chat in $where for Mia"
-	Start-Chat (Join-Path $where "MiaInput.txt") (Join-Path $where "Output.txt") Mia
+	Start-Chat (Join-Path $where "Input.txt") (Join-Path $where "Output.txt") $age
 }
 
 
@@ -132,7 +140,7 @@ function Check-Test($stage)
 			Compare-Files .\New\MiaControl.qkr .\New\Mia.qkr.json 2
 			Compare-Files .\Old\Mia-mia38308-9a9b-4a6b-9db9-9e9b6238283fControl.qkr $qkrPath 2
 			Compare-Files $qkrPath .\New\Mia.qkr.json 2 $true
-			Compare-Files .\New\MiaControl.txt .\New\Output.txt 1
+			Compare-Files .\New\Control.txt .\New\Output.txt 1
 		}
 		New
 		{
@@ -140,15 +148,15 @@ function Check-Test($stage)
 			Compare-Files .\Old\MiaControl.qkr .\Old\Mia.qkr.json 2
 			Compare-Files .\New\Mia-mia38308-9a9b-4a6b-9db9-9e9b6238283fControl.qkr $qkrPath 2
 			Compare-Files .\Old\Mia.qkr.json $qkrPath 2 $true
-			Compare-Files .\Old\MiaControl.txt .\Old\Output.txt 1
+			Compare-Files .\Old\Control.txt .\Old\Output.txt 1
 		}
 		Default
 		{
 			Compare-Files .\Old\MiaControl.qkr .\Old\Mia.qkr.json 2
 			Compare-Files .\New\MiaControl.qkr .\New\Mia.qkr.json 2
 			Compare-Files .\Old\Mia.qkr.json .\New\Mia.qkr.json 2 $true
-			Compare-Files .\Old\MiaControl.txt .\Old\Output.txt 1
-			Compare-Files .\New\MiaControl.txt .\New\Output.txt 1
+			Compare-Files .\Old\Control.txt .\Old\Output.txt 1
+			Compare-Files .\New\Control.txt .\New\Output.txt 1
 		}
 	}	
 
@@ -177,8 +185,8 @@ function Update-ControlFiles($stage)
 		Default
 		{
 			"Updating control files for $test"
-			Copy-Item .\Old\MiaOutput.txt .\Old\MiaControl.txt
-			Copy-Item .\New\MiaOutput.txt .\New\MiaControl.txt
+			Copy-Item .\Old\Output.txt .\Old\Control.txt
+			Copy-Item .\New\Output.txt .\New\Control.txt
 			Copy-Item .\Old\Mia.qkr.json .\Old\MiaControl.qkr
 			Copy-Item .\New\Mia.qkr.json .\New\MiaControl.qkr
 		}

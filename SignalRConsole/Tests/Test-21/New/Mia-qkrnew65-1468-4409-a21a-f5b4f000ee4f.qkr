@@ -1,30 +1,16 @@
 {
-  "Description": "Existing device with data, before new device is merged.",
+  "Description": "New device with data, before old device is merged.",
   "DataVersion": "1.1",
-  "Id": "mia38308-9a9b-4a6b-9db9-9e9b6238283f",
-  "DeviceId": "qkrmia08-9a9b-4a6b-9db9-9e9b6238283f",
+  "Id": "qkrnew65-1468-4409-a21a-f5b4f000ee4f",
+  "DeviceId": "qkrnew65-1468-4409-a21a-f5b4f000ee4f",
   "Email": "mia@albertnet.us",
   "Name": "Mia Albert",
   "Handle": "Mia",
-  "Color": "Turquoise",
-  "Created": "2022-06-27T23:00:00",
-  "Modified": "2022-09-02T04:21:28",
+  "Color": "Yellow",
+  "Created": "2022-07-08T03:43:05",
+  "Modified": "2022-09-02T15:53:59",
   "MergeIndex": {},
-  "Friends": [
-    {
-      "Id": "brucef68-3c37-4aef-b8a6-1649659bbbc4",
-      "DeviceId": "qkrbruce-7ace-4e26-9e5e-2ac2afc2ead2",
-      "Email": "bruce@hotmail.com",
-      "Name": "Bruce Albert",
-      "Handle": "Bruce",
-      "Color": "Red",
-      "Created": "2022-07-06T03:05:12",
-      "Modified": "2022-07-06T03:05:12",
-      "Blocked": false,
-      "BluetoothId": null,
-      "BluetoothDeviceName": null
-    }
-  ],
+  "Friends": [],
   "Operators": [
     {
       "Name": "Addition",
