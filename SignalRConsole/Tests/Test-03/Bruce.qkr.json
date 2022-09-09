@@ -1,7 +1,21 @@
 {
   "DataVersion": "1.1",
   "MergeIndex": {},
-  "Friends": [],
+  "Friends": [
+    {
+      "Blocked": false,
+      "BluetoothId": null,
+      "BluetoothDeviceName": null,
+      "DeviceId": "44941b58-d7de-461e-809e-a8ae67cc3073",
+      "Id": "44941b58-d7de-461e-809e-a8ae67cc3073",
+      "Email": "mia@albertnet.us",
+      "Name": "Mia Albert",
+      "Handle": "Mia",
+      "Color": "PaleTurquoise",
+      "Created": "2022-09-09T16:22:24",
+      "Modified": "2022-09-09T16:28:16"
+    }
+  ],
   "Operators": [
     {
       "Name": "Addition",
@@ -27,5 +41,5 @@
   "Handle": "Bruce",
   "Color": "Red",
   "Created": "2022-06-06T19:03:41",
-  "Modified": "2022-08-30T21:00:13"
+  "Modified": "2022-09-09T16:28:40"
 }

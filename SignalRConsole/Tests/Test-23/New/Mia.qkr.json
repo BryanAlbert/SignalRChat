@@ -1,35 +1,10 @@
 {
   "Description": "After first merge.",
-  "Version": 1.1,
-  "DeviceId": "newf1d65-1468-4409-a21a-f5b4f000ee4f",
-  "Friends": [
-    {
-      "Blocked": false,
-      "DeviceId": null,
-      "BluetoothId": null,
-      "BluetoothDeviceName": null,
-      "Id": "a1b4828b-4a1b-42ff-aaf2-e153fccee6d4",
-      "Email": "bryan.m.albert@gmail.com",
-      "Name": "Bryan Albert",
-      "Handle": "Papa",
-      "Color": null,
-      "Created": "2022-06-27T23:00:00",
-      "Modified": "2022-06-27T23:00:00"
-    },
-    {
-      "Blocked": false,
-      "DeviceId": null,
-      "BluetoothId": null,
-      "BluetoothDeviceName": null,
-      "Id": "brucef68-3c37-4aef-b8a6-1649659bbbc4",
-      "Email": "bruce@hotmail.com",
-      "Name": "Bruce Albert",
-      "Handle": "Bruce",
-      "Color": "Red",
-      "Created": "2022-07-06T03:05:12",
-      "Modified": "2022-07-06T03:05:12"
-    }
-  ],
+  "DataVersion": "1.1",
+  "MergeIndex": {
+    "xxxmia08-9a9b-4a6b-9db9-9e9b6238283f": 0
+  },
+  "Friends": [],
   "Operators": [
     {
       "Name": "Addition",
@@ -135,14 +110,12 @@
       "Tables": []
     }
   ],
-  "MergeIndex": {
-    "old48e13-9aeb-41dc-aa7a-21d295f8d95d": 0
-  },
+  "DeviceId": "xxxnew65-1468-4409-a21a-f5b4f000ee4f",
   "Id": "mia38308-9a9b-4a6b-9db9-9e9b6238283f",
   "Email": "mia@albertnet.us",
   "Name": "Mia Albert",
   "Handle": "Mia",
   "Color": "Turquoise",
-  "Created": "2022-07-08T03:43:05",
-  "Modified": "2022-07-08T05:10:50"
+  "Created": "2022-07-06T23:11:31",
+  "Modified": "2022-07-08T00:10:38"
 }

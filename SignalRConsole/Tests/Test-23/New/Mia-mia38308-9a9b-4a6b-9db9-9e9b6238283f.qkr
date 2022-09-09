@@ -1,6 +1,14 @@
 {
   "Description": "After first merge.",
   "DataVersion": "1.1",
+  "Id": "mia38308-9a9b-4a6b-9db9-9e9b6238283f",
+  "DeviceId": "xxxnew65-1468-4409-a21a-f5b4f000ee4f",
+  "Email": "mia@albertnet.us",
+  "Name": "Mia Albert",
+  "Handle": "Mia",
+  "Color": "Yellow",
+  "Created": "2022-07-06T23:11:31",
+  "Modified": "2022-07-08T00:10:38",
   "MergeIndex": {
     "xxxmia08-9a9b-4a6b-9db9-9e9b6238283f": 0
   },
@@ -109,13 +117,5 @@
       "Name": "Division",
       "Tables": []
     }
-  ],
-  "DeviceId": "xxxnew65-1468-4409-a21a-f5b4f000ee4f",
-  "Id": "mia38308-9a9b-4a6b-9db9-9e9b6238283f",
-  "Email": "mia@albertnet.us",
-  "Name": "Mia Albert",
-  "Handle": "Mia",
-  "Color": "Turquoise",
-  "Created": "2022-07-06T23:11:31",
-  "Modified": "2022-07-08T00:10:38"
+  ]
 }
