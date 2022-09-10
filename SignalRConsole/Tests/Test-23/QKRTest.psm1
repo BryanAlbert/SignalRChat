@@ -115,7 +115,6 @@ function Start-TestFor($age)
 	Start-Chat (Join-Path $where "Input.txt") (Join-Path $where "Output.txt") $age
 }
 
-
 function Run-Test
 {
 	$script = Join-Path $test "Test.txt"

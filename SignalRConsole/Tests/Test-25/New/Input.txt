@@ -1,0 +1,5 @@
+Mia
+>wait-for-regex: Merged data from Mia on device (con|qkr)mia08-9a9b-4a6b-9db9-9e9b6238283f.
+L
+T
+X

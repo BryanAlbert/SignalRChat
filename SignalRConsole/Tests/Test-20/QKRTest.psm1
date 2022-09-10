@@ -116,7 +116,6 @@ function Start-TestFor($age)
 	Start-Chat (Join-Path $where "Input.txt") (Join-Path $where "Output.txt") $age
 }
 
-
 function Run-Test
 {
 	$script = Join-Path $test "Test.txt"
@@ -159,7 +158,6 @@ function Check-Test($stage)
 			Compare-Files .\New\Control.txt .\New\Output.txt 1
 		}
 	}	
-
 
 	"Warning count: $script:warningCount"
 	"Error count: $script:errorCount"

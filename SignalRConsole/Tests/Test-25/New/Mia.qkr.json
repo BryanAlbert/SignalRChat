@@ -1,7 +1,6 @@
 {
-  "Description": "New device with Addition tables, before being merged with existing device.",
-  "Version": 1.1,
-  "DeviceId": "newf1d65-1468-4409-a21a-f5b4f000ee4f",
+  "DataVersion": "1.1",
+  "MergeIndex": {},
   "Friends": [],
   "Operators": [
     {
@@ -250,12 +249,12 @@
       "Tables": []
     }
   ],
-  "MergeIndex": {},
-  "Id": "newf1d65-1468-4409-a21a-f5b4f000ee4f",
+  "DeviceId": "connew65-1468-4409-a21a-f5b4f000ee4f",
+  "Id": "connew65-1468-4409-a21a-f5b4f000ee4f",
   "Email": "mia@albertnet.us",
   "Name": "Mia Albert",
   "Handle": "Mia",
   "Color": "Yellow",
   "Created": "2022-07-08T03:43:05",
-  "Modified": "2022-07-08T03:43:05"
+  "Modified": "2022-09-10T04:06:55"
 }
