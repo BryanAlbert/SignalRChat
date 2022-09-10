@@ -1,21 +1,29 @@
 {
   "DataVersion": "1.1",
+  "Id": "mia38308-9a9b-4a6b-9db9-9e9b6238283f",
+  "DeviceId": "xxxmia08-9a9b-4a6b-9db9-9e9b6238283f",
+  "Email": "mia@albertnet.us",
+  "Name": "Mia Albert",
+  "Handle": "Mia",
+  "Color": "Yellow",
+  "Created": "2022-06-27T23:00:00",
+  "Modified": "2022-09-10T02:16:47",
   "MergeIndex": {
-    "xxxmia08-9a9b-4a6b-9db9-9e9b6238283f": 0
+    "xxxnew65-1468-4409-a21a-f5b4f000ee4f": 0
   },
   "Friends": [
     {
-      "Blocked": false,
-      "BluetoothId": null,
-      "BluetoothDeviceName": null,
-      "DeviceId": "conbruce-7ace-4e26-9e5e-2ac2afc2ead2",
       "Id": "brucef68-3c37-4aef-b8a6-1649659bbbc4",
+      "DeviceId": "conbruce-7ace-4e26-9e5e-2ac2afc2ead2",
       "Email": "bruce@hotmail.com",
       "Name": "Bruce Albert",
       "Handle": "Bruce",
       "Color": "Red",
       "Created": "2022-07-06T03:05:12",
-      "Modified": "2022-07-06T03:05:12"
+      "Modified": "2022-07-06T03:05:12",
+      "Blocked": false,
+      "BluetoothId": null,
+      "BluetoothDeviceName": null
     }
   ],
   "Operators": [
@@ -43,13 +51,13 @@
               "TotalTime": 5808,
               "BestTime": 518,
               "MergeQuizzed": [
-                5
+                4
               ],
               "MergeCorrect": [
-                5
+                4
               ],
               "MergeTime": [
-                3026
+                2782
               ]
             },
             {
@@ -68,7 +76,7 @@
                 4
               ],
               "MergeTime": [
-                3082
+                2894
               ]
             },
             {
@@ -81,13 +89,13 @@
               "TotalTime": 6134,
               "BestTime": 670,
               "MergeQuizzed": [
-                1
+                6
               ],
               "MergeCorrect": [
-                1
+                6
               ],
               "MergeTime": [
-                605
+                5529
               ]
             },
             {
@@ -100,13 +108,13 @@
               "TotalTime": 2344,
               "BestTime": 681,
               "MergeQuizzed": [
-                2
+                1
               ],
               "MergeCorrect": [
-                2
+                1
               ],
               "MergeTime": [
-                1384
+                960
               ]
             },
             {
@@ -119,13 +127,13 @@
               "TotalTime": 581,
               "BestTime": 581,
               "MergeQuizzed": [
-                1
+                0
               ],
               "MergeCorrect": [
-                1
+                0
               ],
               "MergeTime": [
-                581
+                0
               ]
             }
           ]
@@ -143,13 +151,13 @@
               "TotalTime": 5689,
               "BestTime": 542,
               "MergeQuizzed": [
-                7
+                1
               ],
               "MergeCorrect": [
-                7
+                1
               ],
               "MergeTime": [
-                5022
+                667
               ]
             },
             {
@@ -168,7 +176,7 @@
                 3
               ],
               "MergeTime": [
-                3116
+                2559
               ]
             },
             {
@@ -181,13 +189,13 @@
               "TotalTime": 6367,
               "BestTime": 579,
               "MergeQuizzed": [
-                2
+                4
               ],
               "MergeCorrect": [
-                2
+                4
               ],
               "MergeTime": [
-                2468
+                3899
               ]
             },
             {
@@ -200,13 +208,13 @@
               "TotalTime": 2406,
               "BestTime": 755,
               "MergeQuizzed": [
-                1
+                2
               ],
               "MergeCorrect": [
-                1
+                2
               ],
               "MergeTime": [
-                866
+                1540
               ]
             },
             {
@@ -243,13 +251,13 @@
               "TotalTime": 1611,
               "BestTime": 880,
               "MergeQuizzed": [
-                0
+                2
               ],
               "MergeCorrect": [
-                0
+                2
               ],
               "MergeTime": [
-                0
+                1611
               ]
             },
             {
@@ -262,13 +270,13 @@
               "TotalTime": 5139,
               "BestTime": 125,
               "MergeQuizzed": [
-                4
+                2
               ],
               "MergeCorrect": [
-                4
+                2
               ],
               "MergeTime": [
-                3324
+                1815
               ]
             },
             {
@@ -287,7 +295,7 @@
                 2
               ],
               "MergeTime": [
-                1759
+                1656
               ]
             },
             {
@@ -300,13 +308,13 @@
               "TotalTime": 3779,
               "BestTime": 92,
               "MergeQuizzed": [
-                3
+                1
               ],
               "MergeCorrect": [
-                3
+                1
               ],
               "MergeTime": [
-                2922
+                857
               ]
             },
             {
@@ -319,13 +327,13 @@
               "TotalTime": 2107,
               "BestTime": 171,
               "MergeQuizzed": [
-                2
+                0
               ],
               "MergeCorrect": [
-                2
+                0
               ],
               "MergeTime": [
-                2107
+                0
               ]
             }
           ]
@@ -349,7 +357,7 @@
                 2
               ],
               "MergeTime": [
-                1218
+                1317
               ]
             },
             {
@@ -362,13 +370,13 @@
               "TotalTime": 3188,
               "BestTime": 731,
               "MergeQuizzed": [
-                1
+                3
               ],
               "MergeCorrect": [
-                1
+                3
               ],
               "MergeTime": [
-                809
+                2379
               ]
             },
             {
@@ -387,7 +395,7 @@
                 1
               ],
               "MergeTime": [
-                1020
+                951
               ]
             },
             {
@@ -400,13 +408,13 @@
               "TotalTime": 3099,
               "BestTime": 54,
               "MergeQuizzed": [
-                1
+                2
               ],
               "MergeCorrect": [
-                1
+                2
               ],
               "MergeTime": [
-                1132
+                1967
               ]
             },
             {
@@ -419,13 +427,13 @@
               "TotalTime": 2169,
               "BestTime": 6,
               "MergeQuizzed": [
-                2
+                0
               ],
               "MergeCorrect": [
-                2
+                0
               ],
               "MergeTime": [
-                2169
+                0
               ]
             }
           ]
@@ -443,13 +451,13 @@
               "TotalTime": 1259,
               "BestTime": 595,
               "MergeQuizzed": [
-                2
+                0
               ],
               "MergeCorrect": [
-                2
+                0
               ],
               "MergeTime": [
-                1259
+                0
               ]
             },
             {
@@ -462,13 +470,13 @@
               "TotalTime": 2111,
               "BestTime": 86,
               "MergeQuizzed": [
-                2
+                0
               ],
               "MergeCorrect": [
-                2
+                0
               ],
               "MergeTime": [
-                2111
+                0
               ]
             },
             {
@@ -519,13 +527,13 @@
               "TotalTime": 3391,
               "BestTime": 204,
               "MergeQuizzed": [
-                3
+                0
               ],
               "MergeCorrect": [
-                3
+                0
               ],
               "MergeTime": [
-                3391
+                0
               ]
             }
           ]
@@ -536,13 +544,5 @@
       "Name": "Division",
       "Tables": []
     }
-  ],
-  "DeviceId": "xxxnew65-1468-4409-a21a-f5b4f000ee4f",
-  "Id": "mia38308-9a9b-4a6b-9db9-9e9b6238283f",
-  "Email": "mia@albertnet.us",
-  "Name": "Mia Albert",
-  "Handle": "Mia",
-  "Color": "Yellow",
-  "Created": "2022-07-06T23:11:31",
-  "Modified": "2022-09-10T02:05:52"
+  ]
 }

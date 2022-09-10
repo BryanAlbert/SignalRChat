@@ -137,8 +137,8 @@ function Check-Test($stage)
 		Old
 		{
 			$qkrPath = Join-Path $global:qkrLocalState Mia-mia38308-9a9b-4a6b-9db9-9e9b6238283f.json
-			Compare-Files .\New\MiaControl.qkr .\New\Mia.qkr.json 2
 			Compare-Files .\Old\Mia-mia38308-9a9b-4a6b-9db9-9e9b6238283fControl.qkr $qkrPath 2
+			Compare-Files .\New\MiaControl.qkr .\New\Mia.qkr.json 2
 			Compare-Files $qkrPath .\New\Mia.qkr.json 2 $true
 			Compare-Files .\New\Control.txt .\New\Output.txt 1
 		}

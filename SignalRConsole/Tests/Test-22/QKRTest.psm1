@@ -18,22 +18,21 @@ function Get-Description($qkr)
 
 	if ($null -eq $qkr -or $qkr) {
 	"`tTo test QKR, run Reset-Test New, run Start-TestFor Old then connect as Mia on QKR.
-	Pop back to Home and verify that Mia is turquoise, then close QKR. Check        preliminary
-	
+	Pop back to Home and verify that Mia is turquoise, then close QKR. Check preliminary
 	results with Check-Test New.
+	
 	Next, run Reset-Test Old, connect as Mia on QKR then run Start-TestFor New. Pop back
 	to Home and verify that Mia is turquoise, then close QKR. check results with
 	Check-Test Old.`n"
 	}
-	}
+}
 
 function Reset-Test($reset, $showDescription)
 {
 	"Resetting $test"
 	Push-Location $test
 	
-	$oldPath = Join-Path $global:qkrLocalState Mia-mia38308-9a9b-4a6b-9db9-9e9b6238283f.json
-	$newPath = Join-Path $global:qkrLocalState Mia-xxxnew65-1468-4409-a21a-f5b4f000ee4f.json
+	$oldPath = $newPath = Join-Path $global:qkrLocalState Mia-mia38308-9a9b-4a6b-9db9-9e9b6238283f.json
 	
 	switch ($reset)
 	{
@@ -53,7 +52,7 @@ function Reset-Test($reset, $showDescription)
 			Remove-Files $oldPath, $newPath, .\Old\Output.txt
 			Copy-Item .\Old\Mia.qkr .\Old\Mia.qkr.json
 			"Resetting QKR to New at $global:qkrLocalState"
-			Copy-Item .\New\Mia-xxxnew65-1468-4409-a21a-f5b4f000ee4f.qkr $newPath
+			Copy-Item .\New\Mia-mia38308-9a9b-4a6b-9db9-9e9b6238283f.qkr $newPath
 		}
 		"First"
 		{
@@ -137,8 +136,8 @@ function Check-Test($stage)
 		Old
 		{
 			$qkrPath = Join-Path $global:qkrLocalState Mia-mia38308-9a9b-4a6b-9db9-9e9b6238283f.json
-			Compare-Files .\New\MiaControl.qkr .\New\Mia.qkr.json 2
 			Compare-Files .\Old\Mia-mia38308-9a9b-4a6b-9db9-9e9b6238283fControl.qkr $qkrPath 2
+			Compare-Files .\New\MiaControl.qkr .\New\Mia.qkr.json 2
 			Compare-Files $qkrPath .\New\Mia.qkr.json 2 $true
 			Compare-Files .\New\Control.txt .\New\Output.txt 1
 		}
