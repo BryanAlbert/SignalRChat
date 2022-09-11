@@ -2,20 +2,23 @@ Initializing server and connecting to URL: https://localhost:5001/chathub
 What is your handle (nickname)? 
 Mia
 Name: Mia Albert, Email: mia@albertnet.us, Favorite color: Yellow,
-Id: third7d6-2399-4557-ba66-4ccbc049e6ad, Device Id: third7d6-2399-4557-ba66-4ccbc049e6ad,
-Creation Date: 2022-07-18T21:10:09, Modified Date: 2022-07-18T21:10:09
+Id: mia38308-9a9b-4a6b-9db9-9e9b6238283f, Device Id: firste13-9aeb-41dc-aa7a-21d295f8d95d,
+Creation Date: 2022-06-27T23:00:00, Modified Date: 2022-09-10T20:48:44
 Pick a command: t to list tables, a to add a friend, l to list friends,
 u to unfriend a friend, c to chat, or x to exit
 Listening> 
 (Sent Hello null command to Mia.)
+(Sent Hello null command to Mia.)
 Mia is online on device second65-1468-4409-a21a-f5b4f000ee4f, sending merge data...
-Mia is online on device firste13-9aeb-41dc-aa7a-21d295f8d95d, sending merge data...
-Merging data from Mia, Id mia38308-9a9b-4a6b-9db9-9e9b6238283f, on device firste13-9aeb-41dc-aa7a-21d295f8d95d...
-Merged data from Mia on device firste13-9aeb-41dc-aa7a-21d295f8d95d.
 Merging data from Mia on device second65-1468-4409-a21a-f5b4f000ee4f...
 Merged data from Mia on device second65-1468-4409-a21a-f5b4f000ee4f.
+(Sent Hello null command to Mia.)
+Mia is online on device third7d6-2399-4557-ba66-4ccbc049e6ad, sending merge data...
+Merging data from Mia on device third7d6-2399-4557-ba66-4ccbc049e6ad...
+Merged data from Mia on device third7d6-2399-4557-ba66-4ccbc049e6ad.
 L
-You have no friends.
+Friends:
+Bruce, Bruce Albert, bruce@hotmail.com, Red, Created: 2022-07-06T03:05:12 Modified: 2022-07-06T03:05:12
 T
 Tables json:
 [
@@ -35,16 +38,16 @@ Tables json:
             "TotalTime": 5231,
             "BestTime": 518,
             "MergeQuizzed": [
-              3,
-              2
+              2,
+              4
             ],
             "MergeCorrect": [
-              3,
-              1
+              1,
+              3
             ],
             "MergeTime": [
-              1744,
-              1162
+              1162,
+              2325
             ]
           }
         ]
@@ -54,8 +57,8 @@ Tables json:
 ]
 MergeIndex json:
 {
-  "firste13-9aeb-41dc-aa7a-21d295f8d95d": 0,
-  "second65-1468-4409-a21a-f5b4f000ee4f": 1
+  "second65-1468-4409-a21a-f5b4f000ee4f": 0,
+  "third7d6-2399-4557-ba66-4ccbc049e6ad": 1
 }
 X
 Finished.

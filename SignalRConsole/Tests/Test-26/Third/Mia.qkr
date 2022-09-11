@@ -1,8 +1,22 @@
 {
-  "Description": "New device with no data, before being merged with existing device.",
-  "Version": 1.1,
-  "DeviceId": "third7d6-2399-4557-ba66-4ccbc049e6ad",
-  "Friends": [],
+  "Description": "Existing device with data, before merging with existing device and new device.",
+  "DataVersion": "1.1",
+  "MergeIndex": {},
+  "Friends": [
+    {
+      "Blocked": false,
+      "BluetoothId": null,
+      "BluetoothDeviceName": null,
+      "DeviceId": "conbruce-7ace-4e26-9e5e-2ac2afc2ead2",
+      "Id": "brucef68-3c37-4aef-b8a6-1649659bbbc4",
+      "Email": "bruce@hotmail.com",
+      "Name": "Bruce Albert",
+      "Handle": "Bruce",
+      "Color": "Red",
+      "Created": "2022-07-06T03:05:12",
+      "Modified": "2022-07-06T03:05:12"
+    }
+  ],
   "Operators": [
     {
       "Name": "Multiplication",
@@ -28,12 +42,12 @@
       ]
     }
   ],
-  "MergeIndex": {},
+  "DeviceId": "third7d6-2399-4557-ba66-4ccbc049e6ad",
   "Id": "third7d6-2399-4557-ba66-4ccbc049e6ad",
   "Email": "mia@albertnet.us",
   "Name": "Mia Albert",
   "Handle": "Mia",
   "Color": "Yellow",
   "Created": "2022-07-18T21:10:09",
-  "Modified": "2022-07-18T21:10:09"
+  "Modified": "2022-09-10T20:49:56"
 }

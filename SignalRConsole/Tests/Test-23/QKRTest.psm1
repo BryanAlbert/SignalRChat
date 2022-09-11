@@ -11,10 +11,7 @@ function Get-Description($qkr)
 	`$false Reset only Console json files
 	QKR    Delete json files from QKR's LocalState folder
 	Old    Configure QKR with Old json file
-	New    Configure QKR with New json file
-	First  Configure QKR with First json file
-	Second Configure QKR with Second json file
-	Third  Configure QKR with Third json file`n"
+	New    Configure QKR with New json file`n"
 
 	if ($null -eq $qkr -or $qkr) {
 	"`tTo test QKR, run Reset-Test New, run Start-TestFor Old then connect as Mia on QKR.
@@ -53,21 +50,6 @@ function Reset-Test($reset, $showDescription)
 			Copy-Item .\Old\Mia.qkr .\Old\Mia.qkr.json
 			"Resetting QKR to New at $global:qkrLocalState"
 			Copy-Item .\New\Mia-mia38308-9a9b-4a6b-9db9-9e9b6238283f.qkr $newPath
-		}
-		"First"
-		{
-			"Resetting QKR to First at $global:qkrLocalState"
-			"QKR is First"
-		}
-		"Second"
-		{
-			"Resetting QKR to Second at $global:qkrLocalState"
-			"QKR is Second"
-		}
-		"Third"
-		{
-			"Resetting QKR to Third at $global:qkrLocalState"
-			"QKR is Third"
 		}
 		$false
 		{
