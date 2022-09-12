@@ -1,4 +1,4 @@
 test-harness Merging old account with tables to empty new account
-start-wait-for: "(Sent Hello null command to Mia.)" First MiaInput.txt MiaOutput.txt First
-start-wait-for: "(Sent Hello null command to Mia.)" Second MiaInput.txt MiaOutput.txt Second
-start Third MiaInput.txt MiaOutput.txt Third
+start-wait-for: "(Sent Hello null command to Mia.)" First Input.txt Output.txt First
+start-wait-for: "(Sent Hello null command to Mia.)" Second Input.txt Output.txt Second
+start Third Input.txt Output.txt Third

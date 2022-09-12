@@ -1,6 +1,24 @@
 {
-  "Version": 1.1,
-  "DeviceId": "firste13-9aeb-41dc-aa7a-21d295f8d95d",
+  "DataVersion": "1.1",
+  "MergeIndex": {
+    "second65-1468-4409-a21a-f5b4f000ee4f": 0,
+    "third7d6-2399-4557-ba66-4ccbc049e6ad": 1
+  },
+  "Friends": [
+    {
+      "Blocked": false,
+      "BluetoothId": null,
+      "BluetoothDeviceName": null,
+      "DeviceId": "conbruce-7ace-4e26-9e5e-2ac2afc2ead2",
+      "Id": "brucef68-3c37-4aef-b8a6-1649659bbbc4",
+      "Email": "bruce@hotmail.com",
+      "Name": "Bruce Albert",
+      "Handle": "Bruce",
+      "Color": "Red",
+      "Created": "2022-07-06T03:05:12",
+      "Modified": "2022-07-06T03:05:12"
+    }
+  ],
   "Operators": [
     {
       "Name": "Multiplication",
@@ -221,16 +239,12 @@
       ]
     }
   ],
-  "Friends": [],
-  "MergeIndex": {
-    "second65-1468-4409-a21a-f5b4f000ee4f": 0,
-    "third7d6-2399-4557-ba66-4ccbc049e6ad": 1
-  },
+  "DeviceId": "firste13-9aeb-41dc-aa7a-21d295f8d95d",
   "Id": "mia38308-9a9b-4a6b-9db9-9e9b6238283f",
   "Email": "mia@albertnet.us",
   "Name": "Mia Albert",
   "Handle": "Mia",
-  "Color": "Turquoise",
+  "Color": "Yellow",
   "Created": "2022-06-27T23:00:00",
-  "Modified": "2022-08-22T18:49:05"
+  "Modified": "2022-09-12T19:55:25"
 }

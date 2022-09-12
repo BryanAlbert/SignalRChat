@@ -6,16 +6,15 @@ function Get-Description($qkr)
 	device comes online, merges
 
 	Mia with data online on First, Mia on a Second device with different data comes online
-	and merges with First, Mia on Third device with different data yet comes online and
-	merges with First and Second asynchronously.
+	and merges with First, Mia on Third device with different data yet and a friend comes
+	online and merges with First and Second asynchronously.
 
 	Run Reset-Test with the following arguments to reset and configure:
 	<none> Reset everything
 	`$false Reset only Console json files
 	QKR    Delete json files from QKR's LocalState folder
 	First  Configure QKR with First json file
-	Second Configure QKR with Second json file
-	Third  Configure QKR with Third json file`n" 
+	Second Configure QKR with Second json file`n" 
 
 	if ($null -eq $qkr -or $qkr) {
 	"`tTo test QKR, run Reset-Test First and launch QKR, note that Mia is Yellow, connect
@@ -26,7 +25,7 @@ function Get-Description($qkr)
 	
 	Next, run Reset-Test Second, run Start-TestFor First, launch QKR and connect as Mia.
 	Note that Mia is friendless, then run Start-TestFor Third. Verify that QKR gains friend
-	Fred, Pop back to Home and verify that Mia is turquoise then close QKR. Check results
+	Bruce, pop back to Home and verify that Mia is turquoise then close QKR. Check results
 	with Check-Test Second.`n"
 	}
 }

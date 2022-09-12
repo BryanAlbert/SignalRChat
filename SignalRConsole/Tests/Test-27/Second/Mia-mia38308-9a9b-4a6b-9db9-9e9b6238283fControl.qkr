@@ -1,22 +1,30 @@
 {
   "DataVersion": "1.1",
+  "Id": "mia38308-9a9b-4a6b-9db9-9e9b6238283f",
+  "DeviceId": "second65-1468-4409-a21a-f5b4f000ee4f",
+  "Email": "mia@albertnet.us",
+  "Name": "Mia Albert",
+  "Handle": "Mia",
+  "Color": "Yellow",
+  "Created": "2022-07-08T03:43:05",
+  "Modified": "2022-09-12T20:11:22",
   "MergeIndex": {
-    "second65-1468-4409-a21a-f5b4f000ee4f": 0,
-    "firste13-9aeb-41dc-aa7a-21d295f8d95d": 1
+    "firste13-9aeb-41dc-aa7a-21d295f8d95d": 0,
+    "third7d6-2399-4557-ba66-4ccbc049e6ad": 1
   },
   "Friends": [
     {
-      "Blocked": false,
-      "BluetoothId": null,
-      "BluetoothDeviceName": null,
-      "DeviceId": "conbruce-7ace-4e26-9e5e-2ac2afc2ead2",
       "Id": "brucef68-3c37-4aef-b8a6-1649659bbbc4",
+      "DeviceId": "conbruce-7ace-4e26-9e5e-2ac2afc2ead2",
       "Email": "bruce@hotmail.com",
       "Name": "Bruce Albert",
       "Handle": "Bruce",
       "Color": "Red",
       "Created": "2022-07-06T03:05:12",
-      "Modified": "2022-07-06T03:05:12"
+      "Modified": "2022-07-06T03:05:12",
+      "Blocked": false,
+      "BluetoothId": null,
+      "BluetoothDeviceName": null
     }
   ],
   "Operators": [
@@ -37,15 +45,15 @@
               "BestTime": 303,
               "MergeQuizzed": [
                 7,
-                7
+                14
               ],
               "MergeCorrect": [
-                6,
-                7
+                7,
+                12
               ],
               "MergeTime": [
-                4833,
-                4745
+                4745,
+                8701
               ]
             },
             {
@@ -58,16 +66,16 @@
               "TotalTime": 2853,
               "BestTime": 661,
               "MergeQuizzed": [
-                4,
-                2
+                2,
+                0
               ],
               "MergeCorrect": [
-                3,
-                1
+                1,
+                0
               ],
               "MergeTime": [
-                2192,
-                661
+                661,
+                0
               ]
             },
             {
@@ -107,16 +115,16 @@
               "TotalTime": 6591,
               "BestTime": 24,
               "MergeQuizzed": [
-                5,
-                3
+                3,
+                0
               ],
               "MergeCorrect": [
-                5,
-                3
+                3,
+                0
               ],
               "MergeTime": [
-                4069,
-                2522
+                2522,
+                0
               ]
             },
             {
@@ -129,16 +137,16 @@
               "TotalTime": 2403,
               "BestTime": 787,
               "MergeQuizzed": [
-                2,
-                1
+                1,
+                0
               ],
               "MergeCorrect": [
-                2,
-                1
+                1,
+                0
               ],
               "MergeTime": [
-                1595,
-                808
+                808,
+                0
               ]
             },
             {
@@ -151,15 +159,15 @@
               "TotalTime": 856,
               "BestTime": 856,
               "MergeQuizzed": [
-                1,
+                0,
                 0
               ],
               "MergeCorrect": [
-                1,
+                0,
                 0
               ],
               "MergeTime": [
-                856,
+                0,
                 0
               ]
             }
@@ -200,15 +208,15 @@
               "TotalTime": 1877,
               "BestTime": 846,
               "MergeQuizzed": [
-                2,
+                0,
                 0
               ],
               "MergeCorrect": [
-                2,
+                0,
                 0
               ],
               "MergeTime": [
-                1877,
+                0,
                 0
               ]
             },
@@ -222,7 +230,7 @@
               "TotalTime": 0,
               "BestTime": 0,
               "MergeQuizzed": [
-                1,
+                0,
                 0
               ],
               "MergeCorrect": [
@@ -238,13 +246,5 @@
         }
       ]
     }
-  ],
-  "DeviceId": "third7d6-2399-4557-ba66-4ccbc049e6ad",
-  "Id": "mia38308-9a9b-4a6b-9db9-9e9b6238283f",
-  "Email": "mia@albertnet.us",
-  "Name": "Mia Albert",
-  "Handle": "Mia",
-  "Color": "Yellow",
-  "Created": "2022-07-18T21:10:09",
-  "Modified": "2022-09-12T19:55:25"
+  ]
 }
