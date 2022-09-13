@@ -101,6 +101,10 @@ namespace SignalRConsole
 					case "verbose":
 						Verbose = true;
 						break;
+					case "checkmerge":
+						CheckMerge();
+						return false;
+						break;
 					default:
 						Console.WriteLine($"\nError: unrecognized command line switch: {@switch}");
 						Usage();
@@ -113,8 +117,13 @@ namespace SignalRConsole
 
 		private static void Usage()
 		{
+			Console.WriteLine("\nUsage: -checkmerge Folder Handle");
+			Console.WriteLine("After running a merge test, validates json files in Folder with the base name Mia. For example," +
+				"\nTest-25 Mia will analyze Old\\Mia.qkr, Old\\Mia.qkr.json, New\\Mia.qkr, and New\\Mia.qkr.json for" +
+				"\nconsistency. Test-26 Mia would analyze Mia.qkr and Mia.qkr.json in Test-26's First, Second, and" +
+				"\nThird folders.");
 			Console.WriteLine("\nUsage: [-verbose][Folder][Handle][TestHarness][ScriptFile][Folder InputFileName OutputFileName Tag]");
-			Console.WriteLine("\n-verbose: show output used for scripting triggers\n");
+			Console.WriteLine("-verbose: show output used for scripting triggers\n");
 			Console.WriteLine("Folder          Run from the directory Folder: .\\Test-01\\");
 			Console.WriteLine("Handle          Load user with Handle Handle: Mia");
 			Console.WriteLine("TestHarness     Load the test-harness file by the path TestHarness, setting the working directory" +
@@ -126,6 +135,18 @@ namespace SignalRConsole
 			Console.WriteLine("OutputFileName  Write output to OutputFileName, relative to Folder");
 			Console.WriteLine("Tag             Prepend console output with Tag, typically a Handle or sub-directory");
 			Console.WriteLine("\nReturns 0 for success, negative values for various errors.");
+		}
+
+		private static void CheckMerge()
+		{
+			if (m_args.Count < 2)
+			{
+				Console.WriteLine("Specify Folder and Handle on the command line.");
+				return;
+			}
+
+			CheckMerge check = new CheckMerge(NextArg(), NextArg());
+			Console.WriteLine($"\nCheck {(check.RunCheck() ? "succeeded" : "failed")}.");
 		}
 
 		private static string NextArg()
