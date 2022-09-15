@@ -30,12 +30,14 @@ namespace SignalRConsole
 				{
 					foreach (Card card in table.Cards)
 					{
-						Dictionary<string, int> quizzed = new Dictionary<string, int>();
+						Console.WriteLine($"Checking {kind.Name} card {card.Fact.First} by {card.Fact.Second}");
+						Dictionary<string, Tuple<int?, int?, int?, int?>> quizzed = new Dictionary<string, Tuple<int?, int?, int?, int?>>();
+						_ = GetQuizzedData(Users[0], kind, card, quizzed, table.Base);
+
 						Dictionary<string, int> correct = new Dictionary<string, int>();
 						Dictionary<string, int> time = new Dictionary<string, int>();
-						GetQuizzed(Users[0][1], kind, card, quizzed);
-						GetCorrect(Users[0][1], kind, card, correct);
-						GetTime(Users[0][1], kind, card, time);
+						_ = GetCorrect(Users[0][1], kind, card, correct);
+						_ = GetTime(Users[0][1], kind, card, time);
 
 						for (int index = 1; index < Users.Count; index++)
 						{
@@ -43,10 +45,8 @@ namespace SignalRConsole
 								Tables.FirstOrDefault(x => x.Base == table.Base).Cards.FirstOrDefault(x =>
 								x.Fact.First == card.Fact.First && x.Fact.Second == card.Fact.Second);
 
-							if (!CheckCardTotals(Users[index][1], kind, card, match))
-								return false;
-
-							if (!GetQuizzed(Users[index][1], kind, card: match, quizzed: quizzed) ||
+							if (!CheckCardTotals(Users[index][1], kind, card, match) ||
+								!GetQuizzedData(Users[index], kind, match, quizzed, table.Base) ||
 								!GetCorrect(Users[index][1], kind, match, correct) ||
 								!GetTime(Users[index][1], kind, match, time))
 							{
@@ -54,8 +54,8 @@ namespace SignalRConsole
 							}
 						}
 
-						if (!CheckTotals(kind, card, quizzed.Sum(x => x.Value), correct.Sum(x => x.Value),
-							time.Sum(x => x.Value)))
+						if (!CheckNewCounts(card, quizzed) ||
+							!CheckTotals(kind, card, quizzed, correct, time))
 						{
 							return false;
 						}
@@ -66,27 +66,79 @@ namespace SignalRConsole
 			return true;
 		}
 
-		private bool GetQuizzed(User user, OperatorTables kind, Card card, Dictionary<string, int> quizzed)
+		private bool GetQuizzedData(User[] user, OperatorTables kind, Card card, Dictionary<string,
+			Tuple<int?, int?, int?, int?>> quizzed, int tableBase)
 		{
-			for (int index = 0; index < card.MergeQuizzed.Length; index++)
-			{
-				string device = user.MergeIndex.FirstOrDefault(x => x.Value == index).Key;
-				if (!quizzed.ContainsKey(device))
-				{
-					quizzed[device] = card.MergeQuizzed[index];
-					continue;
-				}
+			Card initialCard = user[0].Operators.FirstOrDefault(x =>
+				x.Name == kind.Name).Tables.FirstOrDefault(x =>
+				x.Base == tableBase)?.Cards.FirstOrDefault(x =>
+				x.Fact.First == card.Fact.First && x.Fact.Second == card.Fact.Second);
 
-				if (quizzed[device] != card.MergeQuizzed[index])
+			if (initialCard != null && !GetQuizzedData(user[0], kind, initialCard, quizzed, true, tableBase))
+				return false;
+
+			return GetQuizzedData(user[1], kind, card, quizzed, false, tableBase);
+		}
+
+		private bool GetQuizzedData(User user, OperatorTables kind, Card card, Dictionary<string,
+			Tuple<int?, int?, int?, int?>> quizzed, bool initialFile = false, int? tableBase = null)
+		{
+			if (initialFile)
+				UpdateDictionary(quizzed, user.DeviceId, card.Quizzed, null, null, null);
+			else
+				UpdateDictionary(quizzed, user.DeviceId, null, null, card.Quizzed, null);
+
+			bool success = true;
+			string device = "<not specified>";
+			int index = 0;
+			for (; index < card.MergeQuizzed?.Length; index++)
+			{
+				device = user.MergeIndex.FirstOrDefault(x => x.Value == index).Key;
+				if (initialFile)
 				{
-					Console.WriteLine($"Error: MergeQuizzed mismatch for {device} in {user.FileName} for {kind.Name}," +
-						$" card {card.Fact.First} by {card.Fact.Second}, should be {quizzed[device]} not {card.MergeQuizzed[index]}");
-	
-					return false;
+					if (!quizzed.ContainsKey(device) || quizzed[device].Item2 == null)
+					{
+						UpdateDictionary(quizzed, device, null, card.MergeQuizzed[index], null, null);
+						continue;
+					}
+
+					if (!(success = quizzed[device].Item2 == card.MergeQuizzed[index]))
+						break;
+				}
+				else
+				{
+					if (!quizzed.ContainsKey(device) || quizzed[device].Item4 == null)
+					{
+						UpdateDictionary(quizzed, device, null, null, null, card.MergeQuizzed[index]);
+						continue;
+					}
+
+					if (!(success = quizzed[device].Item4 == card.MergeQuizzed[index]))
+						break;
 				}
 			}
 
-			return true;
+			if (success)
+				return true;
+
+			Console.WriteLine($"Error: MergeQuizzed mismatch for {device} in {user.FileName} for {kind.Name}," +
+				$" card {card.Fact.First} by {card.Fact.Second}, should be {quizzed[device].Item1} not {card.MergeQuizzed[index]}");
+
+			return false;
+		}
+
+		private void UpdateDictionary(Dictionary<string, Tuple<int?, int?, int?, int?>> dictionary, string deviceId,
+			int? initial, int? initialMerge, int? final, int? finalMerge)
+		{
+			if (!dictionary.ContainsKey(deviceId))
+			{
+				dictionary[deviceId] = new Tuple<int?, int?, int?, int?>(initial, initialMerge, final, finalMerge);
+				return;
+			}
+
+			dictionary[deviceId] = new Tuple<int?, int?, int?, int?>(
+				initial ?? dictionary[deviceId].Item1, initialMerge ?? dictionary[deviceId].Item2,
+				final ?? dictionary[deviceId].Item3, finalMerge ?? dictionary[deviceId].Item4);
 		}
 
 		private bool GetCorrect(User user, OperatorTables kind, Card card, Dictionary<string, int> correct)
@@ -164,17 +216,19 @@ namespace SignalRConsole
 			return true;
 		}
 
-		private bool CheckTotals(OperatorTables kind, Card card, int quizzed, int correct, int time)
+		private bool CheckTotals(OperatorTables kind, Card card, Dictionary<string, Tuple<int?, int?, int?, int?>> quizzed,
+			Dictionary<string, int> correct, Dictionary<string, int> time)
 		{
-			if (card.Quizzed != quizzed)
+			int? sum = quizzed.Sum(x => x.Value.Item4);
+			if (card.Quizzed != sum)
 			{
-				Console.WriteLine($"Error: MergeQuizzed total {quizzed} does not match {kind.Name} card" +
-					$" {card.Fact.First} by {card.Fact.Second} Quizzed {card.Quizzed}.");
+				Console.WriteLine($"Error: MergeQuizzed total {sum} does not match {kind.Name} card" +
+					$" {card.Fact.First} by {card.Fact.Second} Quizzed value {card.Quizzed}.");
 
 				return false;
 			}
 
-			if (card.Correct != correct)
+			if (card.Correct != correct.Sum(x => x.Value))
 			{
 				Console.WriteLine($"Error: MergeCorrect total {correct} does not match {kind.Name} card" +
 					$" {card.Fact.First} by {card.Fact.Second} Correct {card.Correct}.");
@@ -182,11 +236,39 @@ namespace SignalRConsole
 				return false;
 			}
 
-			if (card.TotalTime != time)
+			if (card.TotalTime != time.Sum(x => x.Value))
 			{
 				Console.WriteLine($"Error: MergeTotalTime total {time} does not match {kind.Name} card" +
 					$" {card.Fact.First} by {card.Fact.Second} TotalTime {card.TotalTime}.");
 
+				return false;
+			}
+
+			return true;
+		}
+
+		private bool CheckNewCounts(Card card, Dictionary<string, Tuple<int?, int?, int?, int?>> quizzed)
+		{
+			int? initial = quizzed.Sum(x => x.Value?.Item2);
+			int total = initial.Value;
+			Console.WriteLine($"Last Quizzed value is {initial} (computed from MergeQuizzed values), current Quizzed value is {card.Quizzed}");
+			foreach (string deviceId in quizzed.Keys)
+			{
+				int added = (quizzed[deviceId]?.Item1 ?? 0) - initial.Value;
+				total += added;
+				Console.WriteLine($"Device {deviceId} added {added} quizzed {(added == 1 ? "card" : "cards")} and has quizzed" +
+					$" {quizzed[deviceId].Item4} {(quizzed[deviceId].Item4 == 1 ? "card" : "cards")} total");
+
+				if (added + (quizzed[deviceId]?.Item2 ?? 0) != quizzed[deviceId].Item4)
+				{
+					Console.WriteLine($"Error: starting value {quizzed[deviceId]?.Item2 ?? 0} plus the added value" +
+						$" {added} does not match the MergeQuizzed value {quizzed[deviceId].Item4}");
+				}
+			}
+
+			if (total != card.Quizzed)
+			{
+				Console.WriteLine($"Error: Card totals {total} don't add up to Quizzed value {card.Quizzed}");
 				return false;
 			}
 
