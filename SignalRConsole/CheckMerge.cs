@@ -8,19 +8,25 @@ namespace SignalRConsole
 {
 	public class CheckMerge
 	{
-		public CheckMerge(string folder, string handle)
+		public CheckMerge(string folder, string handle, string qkrAs, string qkrFolder)
 		{
 			Folder = folder;
 			Handle = handle;
+			QkrAs = qkrAs;
+			QkrFolder = qkrFolder;
 		}
 
+
 		public string Folder { get; }
+		public string QkrFolder { get; }
 		public string Handle { get; }
+		public string QkrAs { get; }
 		public List<User[]> Users { get; } = new List<User[]>();
 		public List<string> Devices { get; } = new List<string>();
 
-		internal bool RunCheck()
+		public bool RunCheck()
 		{
+			Console.WriteLine("\nRunning merge validity checks...");
 			if (!LoadTables())
 				return false;
 
@@ -69,14 +75,48 @@ namespace SignalRConsole
 
 		private bool LoadTables()
 		{
+			bool qkrMatch = false;
 			foreach (string directory in Directory.GetDirectories(Folder))
 			{
-				string path = Path.Combine(directory, $"{Handle}.qkr");
-				Console.WriteLine($"Loading {path} and {Handle}.qkr.json...");
+				string initialPath = null;
+				string finalPath = null;
+				string qkrAs = QkrAs?.ToLower();
+				if (Path.GetFileName(directory).ToLower() == qkrAs)
+				{
+					qkrMatch = true;
+					foreach (string file in Directory.GetFiles(directory))
+					{
+						if (Path.GetExtension(file) == ".qkr")
+						{
+							string subFilename = Path.GetFileNameWithoutExtension(file);
+							string subSubFilename = Path.GetFileNameWithoutExtension(subFilename);
+							if (subSubFilename == Handle)
+								continue;
+
+							if (Path.GetExtension(subFilename) == ".control")
+								finalPath = Path.Combine(QkrFolder, $"{subSubFilename}.json");
+							else
+								initialPath = file;
+
+							if (initialPath != null && finalPath != null)
+								break;
+						}
+					}
+				}
+				else
+				{
+					initialPath = Path.Combine(directory, $"{Handle}.qkr");
+					finalPath = initialPath + ".json";
+				}
+
+				if (initialPath == null || finalPath == null)
+					throw new InvalidOperationException("Failed to identify initial and final json filenames.");
+
+				Console.WriteLine($"Loading {initialPath} and {finalPath}...");
 				User[] user = new User[]
 				{
-					JsonSerializer.Deserialize<User>(File.ReadAllText(path)),
-					JsonSerializer.Deserialize<User>(File.ReadAllText(path + ".json"))
+					JsonSerializer.Deserialize<User>(File.ReadAllText(initialPath)),
+					JsonSerializer.Deserialize<User>(File.ReadAllText(finalPath))
 				};
 
 				if (user[1].Operators.Any(x => x.Tables.Any(y => y.Cards.Any(z => z.MergeQuizzed == null))))
@@ -85,14 +125,18 @@ namespace SignalRConsole
 					return false;
 				}
 
-				user[0].FileName = path;
-				user[1].FileName = path + ".json";
+				user[0].FileName = initialPath;
+				user[1].FileName = finalPath;
 				Devices.Add(user[1].DeviceId);
 
 				Users.Add(user);
 			}
 
-			return true;
+			if (qkrMatch)
+				return true;
+
+			Console.WriteLine($"Error: Folder match for -kqr folder {QkrAs} not found.");
+			return false;
 		}
 
 		private bool GetData(User[] user, OperatorTables kind, Card card, Func<Card, int> cardData, string mergeTitle,
@@ -150,8 +194,9 @@ namespace SignalRConsole
 			if (success)
 				return true;
 
-			Console.WriteLine($"Error: {mergeTitle} mismatch for {device} in {user.FileName} for {kind.Name}," +
-				$" card {card.Fact.First} by {card.Fact.Second}, should be {data[device].Item1} not {mergeData(card, index)}");
+			Console.WriteLine($"Error: {mergeTitle} mismatch for {device} in {user.FileName} for {kind.Name}, card" +
+				$" {card.Fact.First} by {card.Fact.Second}, expected {(initialFile ? data[device].Item2 : data[device].Item4)}" +
+				$" instead of {mergeData(card, index)}");
 
 			return false;
 		}

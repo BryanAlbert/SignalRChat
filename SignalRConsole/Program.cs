@@ -16,7 +16,7 @@ namespace SignalRConsole
 				if (m_args.Count > 0)
 				{
 					if (!ProcessCommandLineSwitches())
-						return 0;
+						return ExitCode;
 
 					if (m_args.Count > 0 && File.Exists(m_args[0]))
 					{
@@ -85,10 +85,14 @@ namespace SignalRConsole
 
 
 		public static bool Verbose { get; private set; }
+		public static int ExitCode { get; set; }
 
 
 		private static bool ProcessCommandLineSwitches()
 		{
+			bool checkMerge = false;
+			bool qkr = false;
+
 			while (m_args.Count > 0 && m_args[0][0] == '-')
 			{
 				string @switch = NextArg()[1..];
@@ -102,14 +106,23 @@ namespace SignalRConsole
 						Verbose = true;
 						break;
 					case "checkmerge":
-						CheckMerge();
-						return false;
+						checkMerge = true;
+						break;
+					case "qkr":
+						qkr = true;
 						break;
 					default:
 						Console.WriteLine($"\nError: unrecognized command line switch: {@switch}");
+						ExitCode = -1;
 						Usage();
 						return false;
 				}
+			}
+
+			if (checkMerge)
+			{
+				CheckMerge(qkr);
+				return false;
 			}
 
 			return true;
@@ -117,36 +130,60 @@ namespace SignalRConsole
 
 		private static void Usage()
 		{
-			Console.WriteLine("\nUsage: -checkmerge Folder Handle");
-			Console.WriteLine("After running a merge test, validates json files in Folder with the base name Mia. For example," +
-				"\nTest-25 Mia will analyze Old\\Mia.qkr, Old\\Mia.qkr.json, New\\Mia.qkr, and New\\Mia.qkr.json for" +
-				"\nconsistency. Test-26 Mia would analyze Mia.qkr and Mia.qkr.json in Test-26's First, Second, and" +
-				"\nThird folders.");
-			Console.WriteLine("\nUsage: [-verbose][Folder][Handle][TestHarness][ScriptFile][Folder InputFileName OutputFileName Tag]");
-			Console.WriteLine("-verbose: show output used for scripting triggers\n");
+			Console.WriteLine("\nUsage: -checkmerge [-qkr As QkrFolder] Folder Handle");
+			Console.WriteLine("After running a merge test, validates json files in Folder with the base name Mia." +
+				"\nFor example, Test-25 Mia will analyze json files from the Test-25 folder Old\\Mia.qkr," +
+				"\nOld\\Mia.qkr.json, New\\Mia.qkr, and New\\Mia.qkr.json for consistency. Test-26 Mia will" +
+				"\nanalyze Mia.qkr and Mia.qkr.json in Test-26's First, Second, and Third folders. If QKR" +
+				"\nwas tested, use -qkr As QkrFolder to specify which user was run on QKR, e.g. Old, New," +
+				"\nFirst, etc. and the folder QKR stores its json files in."); 
+			Console.WriteLine("\nUsage: [-verbose][Folder][Handle][TestHarness][ScriptFile][Folder InputFileName" +
+				"\nOutputFileName Tag]");
+			Console.WriteLine("\n-verbose        show output used for scripting triggers");
+			Console.WriteLine("As              Folder QKR was tested from: Old, New, First, etc.");
 			Console.WriteLine("Folder          Run from the directory Folder: .\\Test-01\\");
+			Console.WriteLine("QkrFolder       The directory containing QKR json files: C:\\User\\...\\LocalState");
 			Console.WriteLine("Handle          Load user with Handle Handle: Mia");
-			Console.WriteLine("TestHarness     Load the test-harness file by the path TestHarness, setting the working directory" +
-				"\n                to the file's parent folder: .\\Test-01\\Test.txt");
-			Console.WriteLine("ScriptFile      Load the script file specified by the path ScriptFile, setting the working directory" +
-				"\n                to the file's parent folder: MiaInput.txt (when specified in a test harnes file, the" +
-				"\n                working folder is that file's parent directory)");
+			Console.WriteLine("TestHarness     Load the test-harness file by the path TestHarness, setting the" +
+				"\n                working directory to the file's parent folder: .\\Test-01\\Test.txt");
+			Console.WriteLine("ScriptFile      Load the script file specified by the path ScriptFile, setting the"  +
+				"\n                working directory to the file's parent folder: MiaInput.txt (when" +
+				"\n                specified in a test harnes file, the working folder is that file's" +
+				"\n                parent directory)");
 			Console.WriteLine("InputFileName   Run the commands in the script file InputFileName, relative to Folder");
 			Console.WriteLine("OutputFileName  Write output to OutputFileName, relative to Folder");
 			Console.WriteLine("Tag             Prepend console output with Tag, typically a Handle or sub-directory");
 			Console.WriteLine("\nReturns 0 for success, negative values for various errors.");
 		}
 
-		private static void CheckMerge()
+		private static void CheckMerge(bool checkQkr)
 		{
+			string qkrAs = null;
+			string qkrFolder = null;
+			if (checkQkr)
+			{
+				if (m_args.Count < 4)
+				{
+					Console.WriteLine("Specify a child folder and the QKR folder with the -qkr switch.");
+					Usage();
+					return;
+				}
+
+				qkrAs = NextArg();
+				qkrFolder = NextArg();
+			}
+
 			if (m_args.Count < 2)
 			{
 				Console.WriteLine("Specify Folder and Handle on the command line.");
+				Usage();
 				return;
 			}
 
-			CheckMerge check = new CheckMerge(NextArg(), NextArg());
-			Console.WriteLine($"\nCheck {(check.RunCheck() ? "succeeded" : "failed")}.");
+			Console.WriteLine("\nValidating merge results...");
+			CheckMerge check = new CheckMerge(NextArg(), NextArg(), qkrAs, qkrFolder);
+			ExitCode = check.RunCheck() ? 0 : -1;
+			Console.WriteLine($"\nCheck {(ExitCode == 0 ? "succeeded" : "failed")}.");
 		}
 
 		private static string NextArg()
