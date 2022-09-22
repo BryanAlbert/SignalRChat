@@ -42,6 +42,7 @@ function Reset-Test($reset, $showDescription)
 	{
 		"QKR"
 		{
+			"Resetting QKR"
 			Remove-Files $firstPath, $secondPath
 		}
 		"First"
@@ -128,45 +129,54 @@ function Check-Test($stage)
 	{
 		First
 		{
-			Compare-Files .\First\Mia-mia38308-9a9b-4a6b-9db9-9e9b6238283fControl.qkr $qkrPath 1 1
-			Compare-Files .\Second\MiaControl.qkr .\Second\Mia.qkr.json 1 1
-			Compare-Files .\Third\MiaControl.qkr .\Third\Mia.qkr.json 1 1
+			Compare-Files .\First\Mia-mia38308-9a9b-4a6b-9db9-9e9b6238283f.control.qkr $qkrPath 1 1
+			Compare-Files .\Second\Mia.control.qkr .\Second\Mia.qkr.json 1 1
+			Compare-Files .\Third\Mia.control.qkr .\Third\Mia.qkr.json 1 1
 			Compare-Files $qkrPath .\Second\Mia.qkr.json 2 100 $true
 			Compare-Files .\Second\Mia.qkr.json .\Third\Mia.qkr.json 2 100 $true
 			Compare-Files $qkrPath .\Third\Mia.qkr.json 2 100 $true
 			Compare-Files .\Second\Control.txt .\Second\Output.txt 1 2
 			Compare-Files .\Third\Control.txt .\Third\Output.txt 1 2
+			$mergeTest = "-checkmerge -qkr First $global:qkrLocalState $test Mia"
 		}
 		Second
 		{
-			Compare-Files .\First\MiaControl.qkr .\First\Mia.qkr.json 1 1
-			Compare-Files .\Second\Mia-mia38308-9a9b-4a6b-9db9-9e9b6238283fControl.qkr $qkrPath 1 1
-			Compare-Files .\Third\MiaControl.qkr .\Third\Mia.qkr.json 1 1
+			Compare-Files .\First\Mia.control.qkr .\First\Mia.qkr.json 1 1
+			Compare-Files .\Second\Mia-mia38308-9a9b-4a6b-9db9-9e9b6238283f.control.qkr $qkrPath 1 1
+			Compare-Files .\Third\Mia.control.qkr .\Third\Mia.qkr.json 1 1
 			Compare-Files .\First\Mia.qkr.json $qkrPath 2 100 $true
 			Compare-Files $qkrPath .\Third\Mia.qkr.json 2 100 $true
 			Compare-Files .\First\Mia.qkr.json .\Third\Mia.qkr.json 2 100 $true
 			Compare-Files .\First\Control.txt .\First\Output.txt 1 2
 			Compare-Files .\Third\Control.txt .\Third\Output.txt 1 2
+			$mergeTest = "-checkmerge -qkr Second $global:qkrLocalState $test Mia"
 		}
 		Default
 		{
-			Compare-Files .\First\MiaControl.qkr .\First\Mia.qkr.json 1 1
-			Compare-Files .\Second\MiaControl.qkr .\Second\Mia.qkr.json 1 1
-			Compare-Files .\Third\MiaControl.qkr .\Third\Mia.qkr.json 1 1
+			Compare-Files .\First\Mia.control.qkr .\First\Mia.qkr.json 1 1
+			Compare-Files .\Second\Mia.control.qkr .\Second\Mia.qkr.json 1 1
+			Compare-Files .\Third\Mia.control.qkr .\Third\Mia.qkr.json 1 1
 			Compare-Files .\First\Mia.qkr.json .\Second\Mia.qkr.json 2 100 $true
 			Compare-Files .\Second\Mia.qkr.json .\Third\Mia.qkr.json 2 100 $true
 			Compare-Files .\First\Mia.qkr.json .\Third\Mia.qkr.json 2 100 $true
 			Compare-Files .\First\Control.txt .\First\Output.txt 1 2
 			Compare-Files .\Second\Control.txt .\Second\Output.txt 1 2
 			Compare-Files .\Third\Control.txt .\Third\Output.txt 1 2
+			$mergeTest = "-checkmerge $test Mia"
 		}
+	}	
+	
+	Pop-Location
+	"Calling SignalRConsole with: $mergeTest"
+	dotnet.exe .\SignalRConsole.dll $mergeTest.Split()
+	if ($LASTEXITCODE -lt 0) {
+		$script:errorCount++
 	}	
 
 	"`nWarning count: $script:warningCount"
 	"Error count: $script:errorCount"
 	$global:totalWarningCount += $script:warningCount
 	$global:totalErrorCount += $script:errorCount
-	Pop-Location
 }
 
 function Update-ControlFiles($stage)
@@ -176,12 +186,12 @@ function Update-ControlFiles($stage)
 		First
 		{
 			"Updating QKR control files for $test from $global:qkrLocalState"
-			Copy-Item (Join-Path $global:qkrLocalState Mia-mia38308-9a9b-4a6b-9db9-9e9b6238283f.json) .\First\Mia-mia38308-9a9b-4a6b-9db9-9e9b6238283fControl.qkr 
+			Copy-Item (Join-Path $global:qkrLocalState Mia-mia38308-9a9b-4a6b-9db9-9e9b6238283f.json) .\First\Mia-mia38308-9a9b-4a6b-9db9-9e9b6238283f.control.qkr 
 		}
 		Second
 		{
 			"Updating QKR control files for $test from $global:qkrLocalState"
-			Copy-Item (Join-Path $global:qkrLocalState Mia-mia38308-9a9b-4a6b-9db9-9e9b6238283f.json) .\Second\Mia-mia38308-9a9b-4a6b-9db9-9e9b6238283fControl.qkr 
+			Copy-Item (Join-Path $global:qkrLocalState Mia-mia38308-9a9b-4a6b-9db9-9e9b6238283f.json) .\Second\Mia-mia38308-9a9b-4a6b-9db9-9e9b6238283f.control.qkr 
 		}
 		Default
 		{
@@ -189,9 +199,9 @@ function Update-ControlFiles($stage)
 			Copy-Item .\First\Output.txt .\First\Control.txt
 			Copy-Item .\Second\Output.txt .\Second\Control.txt
 			Copy-Item .\Third\Output.txt .\Third\Control.txt
-			Copy-Item .\First\Mia.qkr.json .\First\MiaControl.qkr
-			Copy-Item .\Second\Mia.qkr.json .\Second\MiaControl.qkr
-			Copy-Item .\Third\Mia.qkr.json .\Third\MiaControl.qkr
+			Copy-Item .\First\Mia.qkr.json .\First\Mia.control.qkr
+			Copy-Item .\Second\Mia.qkr.json .\Second\Mia.control.qkr
+			Copy-Item .\Third\Mia.qkr.json .\Third\Mia.control.qkr
 		}
 	}
 
@@ -234,7 +244,8 @@ function Compare-Files($control, $file, $errorLevel, $syncWindow, $merge)
 
 function Get-FilteredText($file, $merge)
 {
-	Get-Content $file | ForEach-Object {
+	Get-Content $file | ForEach-Object `
+	{
 		if ($_ -match "Modified: ") {
 			$_ -replace "Modified: .{19}", "Modified <Date>"
 		}

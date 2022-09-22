@@ -1,4 +1,6 @@
 Mom
+# so that we don't crash by exiting too quickly while initializing with the server
+>wait-for: (Sent Hello null command to Mom.)
 >wait-for-regex: Accept friend request from (Bruce|Fred), email address (bruce@hotmail\.com)|(fred@gmail\.com)\? \[y\/n\]
 Y
 >wait-for-regex: You and (Bruce|Fred) are now friends!

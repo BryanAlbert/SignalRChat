@@ -8,7 +8,8 @@ function Get-Descriptions($number)
 {
     if ($null -eq $number)
     {
-        Get-ChildItem -Recurse QKRTest.psm1 | ForEach-Object {
+        Get-ChildItem -Recurse QKRTest.psm1 |Get-Content $file | ForEach-Object `
+	    {
             Import-Module -DisableNameChecking -Force $_
             Get-Description
         }

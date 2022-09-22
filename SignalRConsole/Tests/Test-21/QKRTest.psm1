@@ -11,10 +11,7 @@ function Get-Description($qkr)
 	`$false Reset only Console json files
 	QKR    Delete json files from QKR's LocalState folder
 	Old    Configure QKR with Old json file
-	New    Configure QKR with New json file
-	First  Configure QKR with First json file
-	Second Configure QKR with Second json file
-	Third  Configure QKR with Third json file`n"
+	New    Configure QKR with New json file`n"
 
 	if ($null -eq $qkr -or $qkr) {
 	"`tTo test QKR, run Reset-Test New, run Start-TestFor Old then connect as Mia on QKR.
@@ -39,6 +36,7 @@ function Reset-Test($reset, $showDescription)
 	{
 		"QKR"
 		{
+			"Resetting QKR"
 			Remove-Files $oldPath, $newPath
 		}
 		"Old"
@@ -55,29 +53,12 @@ function Reset-Test($reset, $showDescription)
 			"Resetting QKR to New at $global:qkrLocalState"
 			Copy-Item .\New\Mia-qkrnew65-1468-4409-a21a-f5b4f000ee4f.qkr $newPath
 		}
-		"First"
-		{
-			"Resetting QKR to First at $global:qkrLocalState"
-			"QKR is First"
-		}
-		"Second"
-		{
-			"Resetting QKR to Second at $global:qkrLocalState"
-			"QKR is Second"
-		}
-		"Third"
-		{
-			"Resetting QKR to Third at $global:qkrLocalState"
-			"QKR is Third"
-		}
 		$false
 		{
 			"Resetting Console..."
 			Remove-Files .\Old\Output.txt, .\New\Output.txt
 			Copy-Item .\New\Mia.qkr .\New\Mia.qkr.json
 			Copy-Item .\Old\Mia.qkr .\Old\Mia.qkr.json
-			Remove-File .\Old\Output.txt
-			Remove-File .\New\Output.txt
 		}
 		Default
 		{
@@ -118,7 +99,6 @@ function Start-TestFor($age)
 	Start-Chat (Join-Path $where "Input.txt") (Join-Path $where "Output.txt") $age
 }
 
-
 function Run-Test
 {
 	$script = Join-Path $test "Test.txt"
@@ -133,41 +113,48 @@ function Check-Test($stage)
 	Push-Location $test
 	$script:warningCount = 0
 	$script:errorCount = 0
+	$qkrPath = Join-Path $global:qkrLocalState Mia-mia38308-9a9b-4a6b-9db9-9e9b6238283f.json
 	
 	switch ($stage)
 	{
 		Old
 		{
-			$qkrPath = Join-Path $global:qkrLocalState Mia-mia38308-9a9b-4a6b-9db9-9e9b6238283f.json
-			Compare-Files .\New\MiaControl.qkr .\New\Mia.qkr.json 2
-			Compare-Files .\Old\Mia-mia38308-9a9b-4a6b-9db9-9e9b6238283fControl.qkr $qkrPath 2
-			Compare-Files $qkrPath .\New\Mia.qkr.json 2 $true
-			Compare-Files .\New\Control.txt .\New\Output.txt 1
+			Compare-Files .\Old\Mia-mia38308-9a9b-4a6b-9db9-9e9b6238283f.control.qkr $qkrPath 1 1
+			Compare-Files .\New\Mia.control.qkr .\New\Mia.qkr.json 1 1
+			Compare-Files $qkrPath .\New\Mia.qkr.json 2 100 $true
+			Compare-Files .\New\Control.txt .\New\Output.txt 1 2
+			$mergeTest = "-checkmerge -qkr Old $global:qkrLocalState $test Mia"
 		}
 		New
 		{
-			$qkrPath = Join-Path $global:qkrLocalState Mia-mia38308-9a9b-4a6b-9db9-9e9b6238283f.json
-			Compare-Files .\Old\MiaControl.qkr .\Old\Mia.qkr.json 2
-			Compare-Files .\New\Mia-mia38308-9a9b-4a6b-9db9-9e9b6238283fControl.qkr $qkrPath 2
-			Compare-Files .\Old\Mia.qkr.json $qkrPath 2 $true
-			Compare-Files .\Old\Control.txt .\Old\Output.txt 1
+			Compare-Files .\Old\Mia.control.qkr .\Old\Mia.qkr.json 1 1
+			Compare-Files .\New\Mia-mia38308-9a9b-4a6b-9db9-9e9b6238283f.control.qkr $qkrPath 1 1
+			Compare-Files .\Old\Mia.qkr.json $qkrPath 2 100 $true
+			Compare-Files .\Old\Control.txt .\Old\Output.txt 1 2
+			$mergeTest = "-checkmerge -qkr New $global:qkrLocalState $test Mia"
 		}
 		Default
 		{
-			Compare-Files .\Old\MiaControl.qkr .\Old\Mia.qkr.json 2
-			Compare-Files .\New\MiaControl.qkr .\New\Mia.qkr.json 2
-			Compare-Files .\Old\Mia.qkr.json .\New\Mia.qkr.json 2 $true
-			Compare-Files .\Old\Control.txt .\Old\Output.txt 1
-			Compare-Files .\New\Control.txt .\New\Output.txt 1
+			Compare-Files .\Old\Mia.control.qkr .\Old\Mia.qkr.json 1 1
+			Compare-Files .\New\Mia.control.qkr .\New\Mia.qkr.json 1 1
+			Compare-Files .\Old\Mia.qkr.json .\New\Mia.qkr.json 2 100 $true
+			Compare-Files .\Old\Control.txt .\Old\Output.txt 1 2
+			Compare-Files .\New\Control.txt .\New\Output.txt 1 2
+			$mergeTest = "-checkmerge $test Mia"
 		}
 	}	
 
+	Pop-Location
+	"Calling SignalRConsole with: $mergeTest"
+	dotnet.exe .\SignalRConsole.dll $mergeTest.Split()
+	if ($LASTEXITCODE -lt 0) {
+		$script:errorCount++
+	}
 
-	"Warning count: $script:warningCount"
+	"`nWarning count: $script:warningCount"
 	"Error count: $script:errorCount"
 	$global:totalWarningCount += $script:warningCount
 	$global:totalErrorCount += $script:errorCount
-	Pop-Location
 }
 
 function Update-ControlFiles($stage)
@@ -177,20 +164,20 @@ function Update-ControlFiles($stage)
 		Old
 		{
 			"Updating QKR control files for $test from $global:qkrLocalState"
-			Copy-Item (Join-Path $global:qkrLocalState Mia-mia38308-9a9b-4a6b-9db9-9e9b6238283f.json) .\Old\Mia-mia38308-9a9b-4a6b-9db9-9e9b6238283fControl.qkr 
+			Copy-Item (Join-Path $global:qkrLocalState Mia-mia38308-9a9b-4a6b-9db9-9e9b6238283f.json) .\Old\Mia-mia38308-9a9b-4a6b-9db9-9e9b6238283f.control.qkr 
 		}
 		New
 		{
 			"Updating QKR control files for $test from $global:qkrLocalState"
-			Copy-Item (Join-Path $global:qkrLocalState Mia-mia38308-9a9b-4a6b-9db9-9e9b6238283f.json) .\New\Mia-mia38308-9a9b-4a6b-9db9-9e9b6238283fControl.qkr 
+			Copy-Item (Join-Path $global:qkrLocalState Mia-mia38308-9a9b-4a6b-9db9-9e9b6238283f.json) .\New\Mia-mia38308-9a9b-4a6b-9db9-9e9b6238283f.control.qkr 
 		}
 		Default
 		{
 			"Updating control files for $test"
 			Copy-Item .\Old\Output.txt .\Old\Control.txt
 			Copy-Item .\New\Output.txt .\New\Control.txt
-			Copy-Item .\Old\Mia.qkr.json .\Old\MiaControl.qkr
-			Copy-Item .\New\Mia.qkr.json .\New\MiaControl.qkr
+			Copy-Item .\Old\Mia.qkr.json .\Old\Mia.control.qkr
+			Copy-Item .\New\Mia.qkr.json .\New\Mia.control.qkr
 		}
 	}
 
@@ -202,16 +189,11 @@ function Update-SignalRConsole
 	Get-ChildItem ..\bin\Debug\netcoreapp3.1\* -File | Copy-Item -Destination .
 }
 
-function Compare-Files($control, $file, $errorLevel, $merge)
+function Compare-Files($control, $file, $errorLevel, $syncWindow, $merge)
 {
 	"Comparing: $control with $file"
 	$controlText = Get-FilteredText $control $merge
 	$fileText = Get-FilteredText $file $merge
-	if (($file -match "\.json$") -and !$merge) {
-		$syncWindow = 1
-	} else {
-		$syncWindow = [int32]::MaxValue
-	}
 
 	if (((Compare-Object -SyncWindow $syncWindow $controlText $fileText) | Measure-Object).Count -gt 0)
 	{
@@ -238,7 +220,8 @@ function Compare-Files($control, $file, $errorLevel, $merge)
 
 function Get-FilteredText($file, $merge)
 {
-	Get-Content $file | ForEach-Object {
+	Get-Content $file | ForEach-Object `
+	{
 		if ($_ -match "Modified: ") {
 			$_ -replace "Modified: .{19}", "Modified <Date>"
 		}
@@ -264,10 +247,10 @@ function Get-FilteredText($file, $merge)
 			elseif ($_ -match "`"BluetoothDeviceName`": null,") {
 				$_ -replace ",", ""
 			}
-			elseif ($_ -match "^  ],") {
-				$_ -replace ",", ""
+			elseif ($_ -match "^  ],$") {
+				$_ -replace ",$", ""
 			}
-			elseif (!($_ -match "^\s*[0-9]+,?")) {
+			elseif (!($_ -match "^\s*[0-9]+,?$")) {
 				$_
 			}
 		}

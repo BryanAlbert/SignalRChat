@@ -1,4 +1,5 @@
 {
+  "Description": "Existing device with new data, before previously-merged devices with more data are merged.",
   "DataVersion": "1.1",
   "MergeIndex": {
     "second65-1468-4409-a21a-f5b4f000ee4f": 0,

@@ -11,14 +11,14 @@ function Get-Description($qkr)
 
 	if ($null -eq $qkr -or $qkr)
 	{
-	"`tTo test QKR, run Reset-Test `$true, connect as Fred on QKR and run Start-TestFor Bruce.
-	When Bruce is waiting, unfriend Bruce in QKR, add Bruce, verify Status message,
-	verify that Bruce has exited, then pop to Home.
+	"`tTo test QKR, run Reset-Test `$true, connect as Fred on QKR and run Start-TestFor
+	Bruce. When Bruce is waiting, unfriend Bruce in QKR, add Bruce (bruce@hotmail.com),
+	verify Status message, verify that Bruce has exited, then pop to Home.
 	
-	Next, run Start-TestFor Fred, connect as Bruce on QKR, add Fred and note Status message.
-	Unfriend Fred then Add Fred again, noting status message. Accept friend request.
-	Verify Status message, pop to Home and verify that Fred has exited. Run Check-Test
-	`$true to validate the test.`n"
+	Next, run Start-TestFor Fred, connect as Bruce on QKR, add Fred (fred@gmail.com) and
+	note Status message. Unfriend Fred then Add Fred again, noting status message. Accept
+	friend request. Verify Status message, pop to Home and verify that Fred exits then 
+	close QKR. Run Check-Test `$true to validate the test.`n"
 	}
 }
 
@@ -29,7 +29,8 @@ function Reset-Test($resetQkr, $showDescription)
 	Copy-Item .\BruceBlocked.qkr .\Bruce.qkr.json
 	Copy-Item .\FredBlocked.qkr .\Fred.qkr.json
 	
-	if ($resetQkr -eq $true) {
+	if ($resetQkr -eq $true)
+	{
 		"Resetting QKR files at $global:qkrLocalState"
 		Copy-Item .\Bruce-brucef68-3c37-4aef-b8a6-1649659bbbc4.qkr (Join-Path $global:qkrLocalState Bruce-brucef68-3c37-4aef-b8a6-1649659bbbc4.json)
 		Copy-Item .\Fred-fredac24-3f25-41e0-84f2-3f34f54d072e.qkr (Join-Path $global:qkrLocalState Fred-fredac24-3f25-41e0-84f2-3f34f54d072e.json)
@@ -60,13 +61,13 @@ function Check-Test($checkQkr)
 	Push-Location $test
 	$script:warningCount = 0
 	$script:errorCount = 0
-	Compare-Files .\BruceControl.qkr .\Bruce.qkr.json 2
-	Compare-Files .\FredControl.qkr .\Fred.qkr.json 2
+	Compare-Files .\Bruce.control.qkr .\Bruce.qkr.json 2
+	Compare-Files .\Fred.control.qkr .\Fred.qkr.json 2
 	
 	if ($null -eq $checkQkr -or $checkQkr)
 	{
-		Compare-Files .\Bruce-brucef68-3c37-4aef-b8a6-1649659bbbc4Control.qkr (Join-Path $global:qkrLocalState Bruce-brucef68-3c37-4aef-b8a6-1649659bbbc4.json) 2
-		Compare-Files .\Fred-fredac24-3f25-41e0-84f2-3f34f54d072eControl.qkr (Join-Path $global:qkrLocalState Fred-fredac24-3f25-41e0-84f2-3f34f54d072e.json) 2
+		Compare-Files .\Bruce-brucef68-3c37-4aef-b8a6-1649659bbbc4.control.qkr (Join-Path $global:qkrLocalState Bruce-brucef68-3c37-4aef-b8a6-1649659bbbc4.json) 2
+		Compare-Files .\Fred-fredac24-3f25-41e0-84f2-3f34f54d072e.control.qkr (Join-Path $global:qkrLocalState Fred-fredac24-3f25-41e0-84f2-3f34f54d072e.json) 2
 	}
 
 	Compare-Files .\BruceControl.txt .\BruceOutput.txt 1
@@ -85,16 +86,16 @@ function Update-ControlFiles($updateQkr)
 	if ($updateQkr -eq $true)
 	{
 		"Updating QKR control files for $test from $global:qkrLocalState"
-		Copy-Item (Join-Path $global:qkrLocalState Bruce-brucef68-3c37-4aef-b8a6-1649659bbbc4.json) .\Bruce-brucef68-3c37-4aef-b8a6-1649659bbbc4Control.qkr 
-		Copy-Item (Join-Path $global:qkrLocalState Fred-fredac24-3f25-41e0-84f2-3f34f54d072e.json) .\Fred-fredac24-3f25-41e0-84f2-3f34f54d072eControl.qkr 
+		Copy-Item (Join-Path $global:qkrLocalState Bruce-brucef68-3c37-4aef-b8a6-1649659bbbc4.json) .\Bruce-brucef68-3c37-4aef-b8a6-1649659bbbc4.control.qkr 
+		Copy-Item (Join-Path $global:qkrLocalState Fred-fredac24-3f25-41e0-84f2-3f34f54d072e.json) .\Fred-fredac24-3f25-41e0-84f2-3f34f54d072e.control.qkr 
 	}
 	else
 	{
 		"Updating control files for $test"
 		Copy-Item .\BruceOutput.txt .\BruceControl.txt
 		Copy-Item .\FredOutput.txt .\FredControl.txt
-		Copy-Item .\Bruce.qkr.json .\BruceControl.qkr
-		Copy-Item .\Fred.qkr.json .\FredControl.qkr
+		Copy-Item .\Bruce.qkr.json .\Bruce.control.qkr
+		Copy-Item .\Fred.qkr.json .\Fred.control.qkr
 	}
 	
 	Pop-Location
@@ -141,7 +142,8 @@ function Compare-Files($control, $file, $errorLevel, $merge)
 
 function Get-FilteredText($file, $merge)
 {
-	Get-Content $file | ForEach-Object {
+	Get-Content $file | ForEach-Object `
+	{
 		if ($_ -match "Modified: ") {
 			$_ -replace "Modified: .{19}", "Modified <Date>"
 		}

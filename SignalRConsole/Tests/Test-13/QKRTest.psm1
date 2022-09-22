@@ -10,7 +10,7 @@ function Get-Description($qkr)
 	if ($null -eq $qkr -or $qkr)
 	{
 	"`tTo test QKR, run Reset-Test `$true then Start-TestFor Bruce and connect as Fred
-	on QKR. Verify status and pop to Home. Run Check-Test to validate the test.
+	on QKR. Verify status and close QKR. Run Check-Test `$true to validate the test.
 	
 	Note that this test can't be run with QKR as Bruce since QKR requires the friend
 	to be offline before he can be selected and the Remove button tapped.`n"
@@ -24,7 +24,8 @@ function Reset-Test($resetQkr, $showDescription)
 	Copy-Item .\BruceFriends.qkr .\Bruce.qkr.json
 	Copy-Item .\FredFriends.qkr .\Fred.qkr.json
 
-	if ($resetQkr -eq $true) {
+	if ($resetQkr -eq $true)
+	{
 		"Resetting QKR files at $global:qkrLocalState"
 		Copy-Item .\Fred-fredac24-3f25-41e0-84f2-3f34f54d072e.qkr (Join-Path $global:qkrLocalState Fred-fredac24-3f25-41e0-84f2-3f34f54d072e.json)
 	}
@@ -38,6 +39,20 @@ function Reset-Test($resetQkr, $showDescription)
 	if ($null -eq $showDescription -or $showDescription) {
 		Get-Description $true
 	}
+}
+
+function Start-TestFor($user, $number)
+{
+    if ($null -eq $number)
+    {
+        "Calling Start-Chat in $test for $user"
+        Start-Chat (Join-Path $test ($user + "Input.txt")) (Join-Path $test ($user + "Output.txt")) $user
+    }
+    else
+    {
+        "Calling Start-Chat in $test for $user, input script number $number"
+        Start-Chat (Join-Path $test ($user + "Input$number.txt")) (Join-Path $test ($user + "Output.txt")) $user
+    }
 }
 
 function Run-Test
@@ -57,14 +72,14 @@ function Check-Test($checkQkr)
 	
 	if ($null -eq $checkQkr -or $checkQkr)
 	{
-		Compare-Files .\BruceControl.qkr .\Bruce.qkr.json 2
-		Compare-Files .\Fred-fredac24-3f25-41e0-84f2-3f34f54d072eControl.qkr (Join-Path $global:qkrLocalState Fred-fredac24-3f25-41e0-84f2-3f34f54d072e.json) 2
+		Compare-Files .\Bruce.control.qkr .\Bruce.qkr.json 2
+		Compare-Files .\Fred-fredac24-3f25-41e0-84f2-3f34f54d072e.control.qkr (Join-Path $global:qkrLocalState Fred-fredac24-3f25-41e0-84f2-3f34f54d072e.json) 2
 		Compare-Files .\BruceControl.txt .\BruceOutput.txt 1
 	}
 	else
 	{
-		Compare-Files .\BruceControl.qkr .\Bruce.qkr.json 2
-		Compare-Files .\FredControl.qkr .\Fred.qkr.json 2
+		Compare-Files .\Bruce.control.qkr .\Bruce.qkr.json 2
+		Compare-Files .\Fred.control.qkr .\Fred.qkr.json 2
 		Compare-Files .\BruceControl.txt .\BruceOutput.txt 1
 		Compare-Files .\FredControl.txt .\FredOutput.txt 1
 	}
@@ -82,15 +97,15 @@ function Update-ControlFiles($updateQkr)
 	if ($updateQkr -eq $true)
 	{
 		"Updating QKR control file for $test from $global:qkrLocalState"
-		Copy-Item (Join-Path $global:qkrLocalState Fred-fredac24-3f25-41e0-84f2-3f34f54d072e.json) .\Fred-fredac24-3f25-41e0-84f2-3f34f54d072eControl.qkr 
+		Copy-Item (Join-Path $global:qkrLocalState Fred-fredac24-3f25-41e0-84f2-3f34f54d072e.json) .\Fred-fredac24-3f25-41e0-84f2-3f34f54d072e.control.qkr 
 	}
 	else
 	{
 		"Updating control files for $test"
 		Copy-Item .\BruceOutput.txt .\BruceControl.txt
 		Copy-Item .\FredOutput.txt .\FredControl.txt
-		Copy-Item .\Bruce.qkr.json .\BruceControl.qkr
-		Copy-Item .\Fred.qkr.json .\FredControl.qkr
+		Copy-Item .\Bruce.qkr.json .\Bruce.control.qkr
+		Copy-Item .\Fred.qkr.json .\Fred.control.qkr
 	}
 	
 	Pop-Location
@@ -137,7 +152,8 @@ function Compare-Files($control, $file, $errorLevel, $merge)
 
 function Get-FilteredText($file, $merge)
 {
-	Get-Content $file | ForEach-Object {
+	Get-Content $file | ForEach-Object `
+	{
 		if ($_ -match "Modified: ") {
 			$_ -replace "Modified: .{19}", "Modified <Date>"
 		}

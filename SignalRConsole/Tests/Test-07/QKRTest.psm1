@@ -11,12 +11,13 @@ function Get-Description($qkr)
 	{
 	"`tTo test QKR, run run Reset-Test `$true then run Start-TestFor Bruce in one console
 	and Start-TestFor Fred in another. Log in as Mom on QKR, accept requests, verify 
-	friendships and pop to Home. Verify that Bruce and Fred have exited. Test
-	intermediate output with Check-QKRTest 1.
+	friendships and pop to Home. Verify that Bruce and Fred have exited. Test intermediate
+	output with Check-QKRTest 1.
 	
-	Next run Start-TestFor Fred in one console, log in as Bruce on QKR and add Mom. Run
-	Start-TestFor Mom in the other console. Pop to Home on QKR and verify that Fred and
-	Mom have exited. Run Check-QKRTest 2 to validate the test.`n"
+	Next run Start-TestFor Fred in one console, log in as Bruce on QKR and add Mom
+	(jeanmariealbert@hotmail.com). Run Start-TestFor Mom in the other console and verify
+	friendship on QKR. Pop to Home and exit, verify that Fred and Mom have exited. Run
+	Check-QKRTest 2 to validate the test.`n"
 	}
 }
 
@@ -28,7 +29,8 @@ function Reset-Test($resetQkr, $showDescription)
 	Copy-Item .\FredNoFriends.qkr .\Fred.qkr.json
 	Copy-Item .\MomNoFriends.qkr .\Mom.qkr.json
 
-	if ($resetQkr -eq $true) {
+	if ($resetQkr -eq $true)
+	{
 		"Resetting QKR files at $global:qkrLocalState"
 		Copy-Item .\Bruce-brucef68-3c37-4aef-b8a6-1649659bbbc4.qkr (Join-Path $global:qkrLocalState Bruce-brucef68-3c37-4aef-b8a6-1649659bbbc4.json)
 		Copy-Item .\Mom-mom0c866-8cb0-4a10-ad96-dfe5f9ebd98e.qkr (Join-Path $global:qkrLocalState Mom-mom0c866-8cb0-4a10-ad96-dfe5f9ebd98e.json)
@@ -45,6 +47,20 @@ function Reset-Test($resetQkr, $showDescription)
 	}
 }
 
+function Start-TestFor($user, $number)
+{
+    if ($null -eq $number)
+    {
+        "Calling Start-Chat in $test for $user"
+        Start-Chat (Join-Path $test ($user + "Input.txt")) (Join-Path $test ($user + "Output.txt")) $user
+    }
+    else
+    {
+        "Calling Start-Chat in $test for $user, input script number $number"
+        Start-Chat (Join-Path $test ($user + "Input$number.txt")) (Join-Path $test ($user + "Output.txt")) $user
+    }
+}
+
 function Run-Test
 {
 	$script = Join-Path $test "Test.txt"
@@ -59,12 +75,14 @@ function Check-Test
 	Push-Location $test
 	$script:warningCount = 0
 	$script:errorCount = 0
-	Compare-Files .\BruceControl.qkr .\Bruce.qkr.json 2
-	Compare-Files .\FredControl.qkr .\Fred.qkr.json 2
-	Compare-Files .\MomControl.qkr .\Mom.qkr.json 2
+
+	# set SyncWindow for Mom files since Bruce and Fred are added in random order
+	Compare-Files .\Bruce.control.qkr .\Bruce.qkr.json 2
+	Compare-Files .\Fred.control.qkr .\Fred.qkr.json 2
+	Compare-Files .\Mom.control.qkr .\Mom.qkr.json 2 7
 	Compare-Files .\BruceControl.txt .\BruceOutput.txt 1
 	Compare-Files .\FredControl.txt .\FredOutput.txt 1
-	Compare-Files .\MomControl.txt .\MomOutput.txt 1
+	Compare-Files .\MomControl.txt .\MomOutput.txt 1 7
 	
 	"Warning count: $script:warningCount"
 	"Error count: $script:errorCount"
@@ -84,20 +102,20 @@ function Check-QKRTest($stage)
 	$script:errorCount = 0
 	$tempWarningList = $global:warningList
 	$tempErrorList = $global:errorList
-	Compare-Files .\BruceControl.qkr .\Bruce.qkr.json 2
-	Compare-Files .\FredControl.qkr .\Fred.qkr.json 2
+	Compare-Files .\Bruce.control.qkr .\Bruce.qkr.json 2
+	Compare-Files .\Fred.control.qkr .\Fred.qkr.json 2
 
 	switch ($stage)
 	{
 		1 {
-			Compare-Files .\Mom-mom0c866-8cb0-4a10-ad96-dfe5f9ebd98eControl.qkr (Join-Path $global:qkrLocalState Mom-mom0c866-8cb0-4a10-ad96-dfe5f9ebd98e.json) 2 7
+			Compare-Files .\Mom-mom0c866-8cb0-4a10-ad96-dfe5f9ebd98e.control.qkr (Join-Path $global:qkrLocalState Mom-mom0c866-8cb0-4a10-ad96-dfe5f9ebd98e.json) 2 7
 			Compare-Files .\BruceControl.txt .\BruceOutput.txt 1
 			Compare-Files .\FredControl.txt .\FredOutput.txt 1
 			Copy-Item .\FredNoFriends.qkr .\Fred.qkr.json
 		}
 		2 {
-			Compare-Files .\Bruce-brucef68-3c37-4aef-b8a6-1649659bbbc4Control.qkr (Join-Path $global:qkrLocalState Bruce-brucef68-3c37-4aef-b8a6-1649659bbbc4.json) 2
-			Compare-Files .\Mom-mom0c866-8cb0-4a10-ad96-dfe5f9ebd98eControl.qkr (Join-Path $global:qkrLocalState Mom-mom0c866-8cb0-4a10-ad96-dfe5f9ebd98e.json) 2 7
+			Compare-Files .\Bruce-brucef68-3c37-4aef-b8a6-1649659bbbc4.control.qkr (Join-Path $global:qkrLocalState Bruce-brucef68-3c37-4aef-b8a6-1649659bbbc4.json) 2
+			Compare-Files .\Mom-mom0c866-8cb0-4a10-ad96-dfe5f9ebd98e.control.qkr (Join-Path $global:qkrLocalState Mom-mom0c866-8cb0-4a10-ad96-dfe5f9ebd98e.json) 2 7
 			Compare-Files .\BruceControl2.txt .\BruceOutput.txt 1
 			Compare-Files .\FredControl2.txt .\FredOutput.txt 1
 			Compare-Files .\MomControl.txt .\MomOutput.txt 1
@@ -116,12 +134,12 @@ function Update-ControlFiles($updateQkr)
 	Push-Location $test
 	if ($updateQkr -eq $true)
 	{
-		"Updating QKR control files for $test"
-		Copy-Item .\Bruce.qkr.json .\BruceControl.qkr
-		Copy-Item .\Fred.qkr.json .\FredControl.qkr
-		Copy-Item .\Mom.qkr.json .\MomControl.qkr
-		Copy-Item (Join-Path $global:qkrLocalState Bruce-brucef68-3c37-4aef-b8a6-1649659bbbc4.json) .\Bruce-brucef68-3c37-4aef-b8a6-1649659bbbc4Control.qkr 
-		Copy-Item (Join-Path $global:qkrLocalState Mom-mom0c866-8cb0-4a10-ad96-dfe5f9ebd98e.json) .\Mom-mom0c866-8cb0-4a10-ad96-dfe5f9ebd98eControl.qkr 
+		"Updating QKR control files for $test from $global:qkrLocalState"
+		Copy-Item .\Bruce.qkr.json .\Bruce.control.qkr
+		Copy-Item .\Fred.qkr.json .\Fred.control.qkr
+		Copy-Item .\Mom.qkr.json .\Mom.control.qkr
+		Copy-Item (Join-Path $global:qkrLocalState Bruce-brucef68-3c37-4aef-b8a6-1649659bbbc4.json) .\Bruce-brucef68-3c37-4aef-b8a6-1649659bbbc4.control.qkr 
+		Copy-Item (Join-Path $global:qkrLocalState Mom-mom0c866-8cb0-4a10-ad96-dfe5f9ebd98e.json) .\Mom-mom0c866-8cb0-4a10-ad96-dfe5f9ebd98e.control.qkr 
 		Copy-Item .\MomOutput.txt .\MomControl.txt
 		Copy-Item .\BruceOutput.txt .\BruceControl2.txt
 		Copy-Item .\FredOutput.txt .\FredControl2.txt
@@ -129,9 +147,9 @@ function Update-ControlFiles($updateQkr)
 	else
 	{
 		"Updating control files for $test"
-		Copy-Item .\Bruce.qkr.json .\BruceControl.qkr
-		Copy-Item .\Fred.qkr.json .\FredControl.qkr
-		Copy-Item .\Mom.qkr.json .\MomControl.qkr
+		Copy-Item .\Bruce.qkr.json .\Bruce.control.qkr
+		Copy-Item .\Fred.qkr.json .\Fred.control.qkr
+		Copy-Item .\Mom.qkr.json .\Mom.control.qkr
 		Copy-Item .\BruceOutput.txt .\BruceControl.txt
 		Copy-Item .\FredOutput.txt .\FredControl.txt
 		Copy-Item .\MomOutput.txt .\MomControl.txt
@@ -184,7 +202,8 @@ function Compare-Files($control, $file, $errorLevel, $syncWindow, $merge)
 
 function Get-FilteredText($file, $merge)
 {
-	Get-Content $file | ForEach-Object {
+	Get-Content $file | ForEach-Object `
+	{
 		if ($_ -match "Modified: ") {
 			$_ -replace "Modified: .{19}", "Modified <Date>"
 		}

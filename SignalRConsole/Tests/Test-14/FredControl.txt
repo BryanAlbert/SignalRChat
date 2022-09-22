@@ -6,8 +6,8 @@ Id: fredac24-3f25-41e0-84f2-3f34f54d072e, Device Id: confred2-7ace-4e26-9e5e-2ac
 Creation Date: 2022-06-06T19:03:42, Modified Date: 2022-09-01T00:32:32
 Pick a command: t to list tables, a to add a friend, l to list friends,
 u to unfriend a friend, c to chat, or x to exit
-(Sent Hello null command to Fred.)
 Listening> 
+(Sent Hello null command to Fred.)
 Bruce has unfriended you.
 L
 You have no friends.

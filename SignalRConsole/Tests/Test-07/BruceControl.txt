@@ -7,19 +7,19 @@ Creation Date: 2022-06-06T19:03:41, Modified Date: 2022-08-31T00:29:24
 Pick a command: t to list tables, a to add a friend, l to list friends,
 u to unfriend a friend, c to chat, or x to exit
 Listening> 
+(Sent Hello null command to Bruce.)
 A
 Busy...       
 What is your friend's handle? 
 Mom
 What is your friend's email? 
 jeanmariealbert@hotmail.com
-(Sent Hello null command to Bruce.)
 A friend request has been sent to Mom.
 Listening> 
 Your (pending) friend Mom is online.
 You and Mom are now friends!
 L
 Friends:
-Mom, Jean Albert, jeanmariealbert@hotmail.com, Maroon, Created: 2022-06-06T19:03:43 Modified: 2022-08-31T00:41:34 (online)
+Mom, Jean Albert, jeanmariealbert@hotmail.com, Maroon, Created: 2022-06-06T19:03:43 Modified: 2022-09-21T16:30:41 (online)
 X
 Finished.
