@@ -132,7 +132,7 @@ namespace SignalRConsole
 				Users.Add(user);
 			}
 
-			if (qkrMatch)
+			if (QkrAs == null || qkrMatch)
 				return true;
 
 			Console.WriteLine($"Error: Folder match for -kqr folder {QkrAs} not found.");
