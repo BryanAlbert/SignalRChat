@@ -1,6 +1,6 @@
 $global:test = "Test-18"
 
-function Get-Description($qkr)
+function Get-Description($verbose)
 {
 	"`n${test}: Blocked, Bruce adds Fred (blocked), unfriends, adds (blocked),
 	fred unfriends, adds
@@ -9,49 +9,104 @@ function Get-Description($qkr)
 	message, unfriends Fred, adds Fred and gets message, Fred unfriends, adds Bruce,
 	Bruce accepts lists, goes offline, Fred lists, goes offline.`n"
 
-	if ($null -eq $qkr -or $qkr)
+	if ($null -eq $verbose -or $verbose)
 	{
-	"`tTo test QKR, run Reset-Test `$true, connect as Fred on QKR and run Start-TestFor
+	"`tRun Reset-Test with one of the following arguments to reset and/or configure:
+	<none>    Reset everything
+	Console   Reset only Console json files
+	ResetQKR  Delete json files from QKR's LocalState folder
+	QKR       Configure for testing QKR
+	
+	To test QKR, run Reset-Test QKR, Connect Internet as Fred on QKR and run Start-TestFor
 	Bruce. When Bruce is waiting, unfriend Bruce in QKR, add Bruce (bruce@hotmail.com),
 	verify Status message, verify that Bruce has exited, then pop to Home.
 	
-	Next, run Start-TestFor Fred, connect as Bruce on QKR, add Fred (fred@gmail.com) and
-	note Status message. Unfriend Fred then Add Fred again, noting status message. Accept
-	friend request. Verify Status message, pop to Home and verify that Fred exits then 
-	close QKR. Run Check-Test `$true to validate the test.`n"
+	Next, run Start-TestFor Fred, Connect Internet as Bruce on QKR, add Fred (fred@gmail.com)
+	and note Status message. Unfriend Fred then Add Fred again, noting status message. Accept
+	friend request. Verify friendship, pop to Home and verify that Fred exits then close QKR.
+	Run Check-Test `$true to validate the test.`n"
 	}
 }
 
-function Reset-Test($resetQkr, $showDescription)
+function Reset-Test($reset, $showDescription)
 {
 	"Resetting $test"
 	Push-Location $test
-	Copy-Item .\BruceBlocked.qkr .\Bruce.qkr.json
-	Copy-Item .\FredBlocked.qkr .\Fred.qkr.json
-	
-	if ($resetQkr -eq $true)
+	$brucePath = Join-Path $global:qkrLocalState Bruce-brucef68-3c37-4aef-b8a6-1649659bbbc4.json
+	$fredPath = Join-Path $global:qkrLocalState Fred-fredac24-3f25-41e0-84f2-3f34f54d072e.json
+	switch ($reset)
 	{
-		"Resetting QKR files at $global:qkrLocalState"
-		Copy-Item .\Bruce-brucef68-3c37-4aef-b8a6-1649659bbbc4.qkr (Join-Path $global:qkrLocalState Bruce-brucef68-3c37-4aef-b8a6-1649659bbbc4.json)
-		Copy-Item .\Fred-fredac24-3f25-41e0-84f2-3f34f54d072e.qkr (Join-Path $global:qkrLocalState Fred-fredac24-3f25-41e0-84f2-3f34f54d072e.json)
-	}
-
-	Get-ChildItem *Output.txt | ForEach-Object {
-		Remove-Item $_
+		"Console"
+		{
+			"Resetting Console..."
+			Remove-Files .\BruceOutput.txt, .\FredOutput.txt
+			Copy-Item .\Bruce.qkr .\Bruce.qkr.json
+			Copy-Item .\Fred.qkr .\Fred.qkr.json
+		}
+		"ResetQKR"
+		{
+			"Resetting QKR"
+			Remove-Files $brucePath, $fredPath
+		}
+		"QKR"
+		{
+			"Configuring for QKR testing at: $global:qkrLocalState"
+			Remove-Files .\BruceOutput.txt, .\FredOutput.txt, $brucePath, $fredPath
+			Copy-Item .\Bruce.qkr .\Bruce.qkr.json
+			Copy-Item .\Fred.qkr .\Fred.qkr.json
+			Copy-Item .\Bruce-brucef68-3c37-4aef-b8a6-1649659bbbc4.qkr $brucePath
+			Copy-Item .\Fred-fredac24-3f25-41e0-84f2-3f34f54d072e.qkr $fredPath
+		}
+		Default
+		{
+			"Resetting all..."
+			Remove-Files .\BruceOutput.txt, .\FredOutput.txt, $brucePath, $fredPath
+			Copy-Item .\Bruce.qkr .\Bruce.qkr.json
+			Copy-Item .\Fred.qkr .\Fred.qkr.json 
+		}
 	}
 
 	Pop-Location
-
 	if ($null -eq $showDescription -or $showDescription) {
-		Get-Description $true
+		Get-Description ($reset -eq "ResetQKR" -or $reset -eq "QKR" -or $reset -eq "All" -or $null -eq $reset)
+	}
+}
+
+function Remove-Files($files)
+{
+	foreach ($file in $files) {
+		Remove-File $file
+	}
+}
+
+function Remove-File($file)
+{
+	if (Test-Path $file)
+	{
+		"Deleting $file"
+		Remove-Item $file
+	}
+}
+
+function Start-TestFor($user, $number)
+{
+    if ($null -eq $number)
+    {
+        "Calling Start-Chat in $test for $user"
+        Start-Chat (Join-Path $test ($user + "Input.txt")) (Join-Path $test ($user + "Output.txt")) $user
+    }
+    else
+    {
+        "Calling Start-Chat in $test for $user, input script number $number"
+        Start-Chat (Join-Path $test ($user + "Input$number.txt")) (Join-Path $test ($user + "Output.txt")) $user
 	}
 }
 
 function Run-Test
 {
 	$script = Join-Path $test "Test.txt"
+	Reset-Test "Console" $true
 	"Running script $script"
-	Reset-Test $false $true
 	dotnet.exe .\SignalRConsole.dll $script
 	Check-Test $false
 }

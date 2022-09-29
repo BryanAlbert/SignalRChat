@@ -1,39 +1,77 @@
 $global:test = "Test-11"
 
-function Get-Description($qkr)
+function Get-Description($verbose)
 {
 	"`n${test}: Bruce blocked by Fred, adds Fred
 
 	Bruce blocked by Fred, comes online, adds Fred, gets a message,
 	lists and goes offline.`n"
 
-	if ($null -eq $qkr -or $qkr)
+	if ($null -eq $verbose -or $verbose)
 	{
-	"`tTo test QKR, run Reset-Test `$true then connect as Bruce on QKR and add Fred
+	"`tRun Reset-Test with one of the following arguments to reset and/or configure:
+	<none>    Reset everything
+	Console   Reset only Console json files
+	ResetQKR  Delete json files from QKR's LocalState folder
+	QKR       Configure for testing QKR
+	
+	To test QKR, run Reset-Test QKR then Connect Internet as Bruce on QKR and add Fred
 	(fred@gmail.com), verify message and close QKR. Check results with Check-Test `$test.`n"
 	}
 }
 
-function Reset-Test($resetQkr, $showDescription)
+function Reset-Test($reset, $showDescription)
 {
 	"Resetting $test"
 	Push-Location $test
-	Copy-Item .\BruceFriends.qkr .\Bruce.qkr.json
-
-	if ($resetQkr -eq $true)
+	$brucePath = Join-Path $global:qkrLocalState Bruce-brucef68-3c37-4aef-b8a6-1649659bbbc4.json
+	switch ($reset)
 	{
-		"Resetting QKR files at $global:qkrLocalState"
-		Copy-Item .\Bruce-brucef68-3c37-4aef-b8a6-1649659bbbc4.qkr (Join-Path $global:qkrLocalState Bruce-brucef68-3c37-4aef-b8a6-1649659bbbc4.json)
-	}
-	
-	Get-ChildItem *Output.txt | ForEach-Object {
-		Remove-Item $_
+		"Console"
+		{
+			"Resetting Console..."
+			Remove-Files .\BruceOutput.txt
+			Copy-Item .\Bruce.qkr .\Bruce.qkr.json
+		}
+		"ResetQKR"
+		{
+			"Resetting QKR"
+			Remove-Files $brucePath
+		}
+		"QKR"
+		{
+			"Configuring for QKR testing at: $global:qkrLocalState"
+			Remove-Files .\BruceOutput.txt, $brucePath
+			Copy-Item .\Bruce.qkr .\Bruce.qkr.json
+			Copy-Item .\Bruce-brucef68-3c37-4aef-b8a6-1649659bbbc4.qkr $brucePath
+		}
+		Default
+		{
+			"Resetting all..."
+			Remove-Files .\BruceOutput.txt, $brucePath
+			Copy-Item .\Bruce.qkr .\Bruce.qkr.json
+		}
 	}
 
 	Pop-Location
-
 	if ($null -eq $showDescription -or $showDescription) {
-		Get-Description $true
+		Get-Description ($reset -eq "ResetQKR" -or $reset -eq "QKR" -or $reset -eq "All" -or $null -eq $reset)
+	}
+}
+
+function Remove-Files($files)
+{
+	foreach ($file in $files) {
+		Remove-File $file
+	}
+}
+
+function Remove-File($file)
+{
+	if (Test-Path $file)
+	{
+		"Deleting $file"
+		Remove-Item $file
 	}
 }
 
@@ -54,8 +92,8 @@ function Start-TestFor($user, $number)
 function Run-Test
 {
 	$script = Join-Path $test "Test.txt"
+	Reset-Test "Console" $true
 	"Running script $script"
-	Reset-Test $false $true
 	dotnet.exe .\SignalRConsole.dll $script
 	Check-Test $false
 }
@@ -65,7 +103,6 @@ function Check-Test($checkQkr)
 	Push-Location $test
 	$script:warningCount = 0
 	$script:errorCount = 0
-	Compare-Files .\Bruce.control.qkr .\Bruce.qkr.json 2
 	
 	if ($null -eq $checkQkr -or $checkQkr)
 	{

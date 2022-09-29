@@ -1,6 +1,6 @@
 $global:test = "Test-05"
 
-function Get-Description($qkr)
+function Get-Description($verbose)
 {
 	"`n${test}: Bruce adds Fred and goes offline before Fred accepts
 	
@@ -8,43 +8,84 @@ function Get-Description($qkr)
 	goes offline, Bruce comes online, Fred comes online, Bruce lists and
 	goes offline, Fred lists and goes offline.`n"
 
-	if ($null -eq $qkr -or $qkr)
+	if ($null -eq $verbose -or $verbose)
 	{
-	"`tTo test QKR, run Reset-Test `$true then run Start-TestFor Bruce 1.
-	Connect as Fred on QKR, after Bruce exits, accept friend request and
-	pop to Home. Run Start-TestFor Bruce 2, connect as Fred again, verify
+	"`tRun Reset-Test with one of the following arguments to reset and/or configure:
+	<none>    Reset everything
+	Console   Reset only Console json files
+	ResetQKR  Delete json files from QKR's LocalState folder
+	QKR       Configure for testing QKR
+
+	To test QKR, run Reset-Test QKR then run Start-TestFor Bruce 1. Connect
+	Internet as Fred on QKR, after Bruce exits, accept friend request and pop
+	to Home. Run Start-TestFor Bruce 2, Connect Internet as Fred again, verify
 	friendship with Bruce, then pop to Home and verify that Bruce exits.
 	
-	Next connect as Bruce on QKR, run Start-TestFor Fred 1, add Fred on
-	QKR (fred@gmail.com), pop to Home and verify that Fred exits. Run
-	Start-TestFor Fred 2, connect as Bruce again, verify friendship with
-	Fred, pop to Home and close QKR. Verify that Fred has exited, check
+	Next Connect Internet as Bruce on QKR, run Start-TestFor Fred 1, add Fred
+	on QKR (fred@gmail.com), pop to Home and verify that Fred exits. Run
+	Start-TestFor Fred 2, Connect Internet as Bruce again, verify friendship
+	with Fred, pop to Home and close QKR. Verify that Fred has exited, check
 	results with Check-Test `$true.`n"
 	}
 }
 
-function Reset-Test($resetQkr, $showDescription)
+function Reset-Test($reset, $showDescription)
 {
 	"Resetting $test"
 	Push-Location $test
-	Copy-Item .\BruceNoFriends.qkr .\Bruce.qkr.json
-	Copy-Item .\FredNoFriends.qkr .\Fred.qkr.json
-
-	if ($resetQkr -eq $true)
+	$brucePath = Join-Path $global:qkrLocalState Bruce-brucef68-3c37-4aef-b8a6-1649659bbbc4.json
+	$fredPath = Join-Path $global:qkrLocalState Fred-fredac24-3f25-41e0-84f2-3f34f54d072e.json
+	switch ($reset)
 	{
-		"Resetting QKR files at $global:qkrLocalState"
-		Copy-Item .\Bruce-brucef68-3c37-4aef-b8a6-1649659bbbc4.qkr (Join-Path $global:qkrLocalState Bruce-brucef68-3c37-4aef-b8a6-1649659bbbc4.json)
-		Copy-Item .\Fred-fredac24-3f25-41e0-84f2-3f34f54d072e.qkr (Join-Path $global:qkrLocalState Fred-fredac24-3f25-41e0-84f2-3f34f54d072e.json)
-	}
-
-	Get-ChildItem *Output.txt | ForEach-Object {
-		Remove-Item $_
+		"Console"
+		{
+			"Resetting Console..."
+			Remove-Files .\BruceOutput.txt, .\FredOutput.txt
+			Copy-Item .\Bruce.qkr .\Bruce.qkr.json
+			Copy-Item .\Fred.qkr .\Fred.qkr.json
+		}
+		"ResetQKR"
+		{
+			"Resetting QKR"
+			Remove-Files $brucePath, $fredPath
+		}
+		"QKR"
+		{
+			"Configuring for QKR testing at: $global:qkrLocalState"
+			Remove-Files .\BruceOutput.txt, .\FredOutput.txt, $brucePath, $fredPath
+			Copy-Item .\Bruce.qkr .\Bruce.qkr.json
+			Copy-Item .\Fred.qkr .\Fred.qkr.json
+			Copy-Item .\Bruce-brucef68-3c37-4aef-b8a6-1649659bbbc4.qkr $brucePath
+			Copy-Item .\Fred-fredac24-3f25-41e0-84f2-3f34f54d072e.qkr $fredPath
+		}
+		Default
+		{
+			"Resetting all..."
+			Remove-Files .\BruceOutput.txt, .\FredOutput.txt, $brucePath, $fredPath
+			Copy-Item .\Bruce.qkr .\Bruce.qkr.json
+			Copy-Item .\Fred.qkr .\Fred.qkr.json 
+		}
 	}
 
 	Pop-Location
-
 	if ($null -eq $showDescription -or $showDescription) {
-		Get-Description $true
+		Get-Description ($reset -eq "ResetQKR" -or $reset -eq "QKR" -or $reset -eq "All" -or $null -eq $reset)
+	}
+}
+
+function Remove-Files($files)
+{
+	foreach ($file in $files) {
+		Remove-File $file
+	}
+}
+
+function Remove-File($file)
+{
+	if (Test-Path $file)
+	{
+		"Deleting $file"
+		Remove-Item $file
 	}
 }
 
@@ -65,8 +106,8 @@ function Start-TestFor($user, $number)
 function Run-Test
 {
 	$script = Join-Path $test "Test.txt"
+	Reset-Test "Console" $true
 	"Running script $script"
-	Reset-Test $false $true
 	dotnet.exe .\SignalRConsole.dll $script
 	Check-Test $false
 }

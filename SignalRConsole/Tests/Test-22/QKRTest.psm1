@@ -1,26 +1,27 @@
 $global:test = "Test-22"
 
-function Get-Description($qkr)
+function Get-Description($verbose)
 {
 	"`n${test}: After initial merge, merge more data from New
 	
-	Old Mia online, New Mia comes online, merges, lists, exits, Old merges, lists, exits.
+	Old Mia online, New Mia comes online, merges, lists, exits, Old merges, lists, exits.`n"
 
-	Run Reset-Test with the following arguments to reset and configure:
-	<none> Reset everything
-	`$false Reset only Console json files
-	QKR    Delete json files from QKR's LocalState folder
-	Old    Configure QKR with Old json file
-	New    Configure QKR with New json file`n"
+	if ($null -eq $verbose -or $verbose)
+	{
+	"`tRun Reset-Test with one of the following arguments to reset and/or configure:
+	<none>    Reset everything
+	Console   Reset only Console json files
+	ResetQKR  Delete json files from QKR's LocalState folder
+	Old       Configure QKR with Old json file
+	New       Configure QKR with New json file
 
-	if ($null -eq $qkr -or $qkr) {
-	"`tTo test QKR, run Reset-Test New, run Start-TestFor Old then connect as Mia on QKR.
-	Verify that QKR gets friend Bruce, pop back to Home and verify that Mia is turquoise,
-	then close QKR. Check preliminary results with Check-Test New.
+	To test QKR, run Reset-Test New, run Start-TestFor Old then Connect Internet as Mia on
+	QKR. Verify that QKR gets friend Bruce, pop back to Home and verify that Mia is turquoise
+	and that the console exits, then close QKR. Check preliminary results with Check-Test New.
 	
-	Next, run Reset-Test Old, connect as Mia on QKR then run Start-TestFor New. Pop back
-	to Home and verify that Mia is turquoise, then close QKR. check results with
-	Check-Test Old.`n"
+	Next, run Reset-Test Old, Connect Internet as Mia on QKR then run Start-TestFor New. Pop
+	back to Home and verify that Mia is turquoise and that the console exits, then close QKR.
+	Check results with Check-Test Old.`n"
 	}
 }
 
@@ -33,31 +34,31 @@ function Reset-Test($reset, $showDescription)
 	
 	switch ($reset)
 	{
-		"QKR"
+		"Console"
+		{
+			"Resetting Console..."
+			Remove-Files .\Old\Output.txt, .\New\Output.txt
+			Copy-Item .\New\Mia.qkr .\New\Mia.qkr.json
+			Copy-Item .\Old\Mia.qkr .\Old\Mia.qkr.json 
+		}
+		"ResetQKR"
 		{
 			"Resetting QKR"
 			Remove-Files $oldPath, $newPath
 		}
 		"Old"
 		{
+			"Configuring for testing Old on QKR at $global:qkrLocalState"
 			Remove-Files $oldPath, $newPath, .\New\Output.txt
 			Copy-Item .\New\Mia.qkr .\New\Mia.qkr.json
-			"Resetting QKR to Old at $global:qkrLocalState"
 			Copy-Item .\Old\Mia-mia38308-9a9b-4a6b-9db9-9e9b6238283f.qkr $oldPath
 		}
 		"New"
 		{
+			"Configuring for testing New on QKR at $global:qkrLocalState"
 			Remove-Files $oldPath, $newPath, .\Old\Output.txt
 			Copy-Item .\Old\Mia.qkr .\Old\Mia.qkr.json
-			"Resetting QKR to New at $global:qkrLocalState"
 			Copy-Item .\New\Mia-mia38308-9a9b-4a6b-9db9-9e9b6238283f.qkr $newPath
-		}
-		$false
-		{
-			"Resetting Console..."
-			Remove-Files .\Old\Output.txt, .\New\Output.txt
-			Copy-Item .\New\Mia.qkr .\New\Mia.qkr.json
-			Copy-Item .\Old\Mia.qkr .\Old\Mia.qkr.json
 		}
 		Default
 		{
@@ -69,9 +70,8 @@ function Reset-Test($reset, $showDescription)
 	}
 	
 	Pop-Location
-
 	if ($null -eq $showDescription -or $showDescription) {
-		Get-Description $true
+		Get-Description ($reset -eq "ResetQKR" -or $reset -eq "Old" -or $reset -eq "New" -or $reset -eq "All" -or $null -eq $reset)
 	}
 }
 
@@ -101,10 +101,10 @@ function Start-TestFor($age)
 function Run-Test
 {
 	$script = Join-Path $test "Test.txt"
+	Reset-Test "Console" $true
 	"Running script $script"
-	Reset-Test $false $true
 	dotnet.exe .\SignalRConsole.dll $script
-	Check-Test
+	Check-Test $false
 }
 
 function Check-Test($stage)

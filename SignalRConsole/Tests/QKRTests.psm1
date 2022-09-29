@@ -8,10 +8,10 @@ function Get-Descriptions($number)
 {
     if ($null -eq $number)
     {
-        Get-ChildItem -Recurse QKRTest.psm1 |Get-Content $file | ForEach-Object `
+        Get-ChildItem . -Recurse QKRTest.psm1 | ForEach-Object `
 	    {
             Import-Module -DisableNameChecking -Force $_
-            Get-Description
+            Get-Description $false
         }
     }
     else
@@ -43,7 +43,7 @@ function Reset-Tests
     Get-ChildItem .\Test-* -Directory | ForEach-Object {
         $testCount++
         Import-Module -DisableNameChecking -Force (Join-Path $_ QKRTest.psm1)
-        Reset-Test $false $false
+        Reset-Test "All" $false
     }
 
     "Reset $testCount tests."

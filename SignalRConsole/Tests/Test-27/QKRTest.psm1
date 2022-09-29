@@ -1,30 +1,32 @@
 $global:test = "Test-27"
 
-function Get-Description($qkr)
+function Get-Description($verbose)
 {
 	"`n${test}: Mia online, Mia on second device with new data comes online, merges, Mia on
 	third device with new data comes online, merges
 
 	Mia with Test-26 results online on First, Mia on a Second device with new data and a 
 	friend comes online and merges with First, Mia on Third device with new data comes
-	online and merges with First and Second asynchronously.
+	online and merges with First and Second asynchronously.`n"
 
-	Run Reset-Test with the following arguments to reset and configure:
-	<none> Reset everything
-	`$false Reset only Console json files
-	QKR    Delete json files from QKR's LocalState folder
-	First  Configure QKR with First json file
-	Second Configure QKR with Second json file`n" 
+	if ($null -eq $verbose -or $verbose)
+	{
+	"`tRun Reset-Test with one of the following arguments to reset and/or configure:
+	<none>    Reset everything
+	Console   Reset only Console json files
+	ResetQKR  Delete json files from QKR's LocalState folder
+	First     Configure QKR with Old json file
+	Second    Configure QKR with New json file
 
-	if ($null -eq $qkr -or $qkr) {
-	"`tTo test QKR, run Reset-Test First and connect as Mia on QKR, noting that Mia is
-	friendless. Run Start-TestFor Second in one console and Start-TestFor Third in another.
-	Verify that QKR gains friend Bruce, pop back to Home and close QKR. Check preliminary
-	results with Check-Test First.
+	To test QKR, run Reset-Test First and Connect Internet as Mia on QKR, noting that Mia
+	is friendless. Run Start-TestFor Second in one console and Start-TestFor Third in
+	another. Verify that QKR gains friend Bruce, pop back to Home and close QKR, noting
+	that both consoles exit. Check preliminary results with Check-Test First.
 	
-	Next, run Reset-Test Second, run Start-TestFor First, launch QKR and note that Mia is
-	turquoise. Connect as Mia. Start-TestFor Third in a second console. Verify that QKR
-	gains friend Bruce, pop back to Home and verify that Mia is yellow, then close QKR.
+	Next, run Reset-Test Second, run Start-TestFor First in one console, launch QKR and
+	log in as Mia, noting that her color is turquoise. Connect Internet as Mia. Run
+	Start-TestFor Third in a second console. Verify that QKR gains friend Bruce, pop back
+	to Home and verify that Mia is yellow and that both consoles exit, then close QKR.
 	Check results with Check-Test Second.`n"
 	}
 }
@@ -39,34 +41,34 @@ function Reset-Test($reset, $showDescription)
 	
 	switch ($reset)
 	{
-		"QKR"
-		{
-			"Resetting QKR"
-			Remove-Files $firstPath, $secondPath
-		}
-		"First"
-		{
-			Remove-Files $firstPath, $secondPath, .\First\Output.txt, .\Second\Output.txt, .\Third\Output.txt
-			Copy-Item .\Second\Mia.qkr .\Second\Mia.qkr.json
-			Copy-Item .\Third\Mia.qkr .\Third\Mia.qkr.json
-			"Resetting QKR to First at $global:qkrLocalState"
-			Copy-Item .\First\Mia-mia38308-9a9b-4a6b-9db9-9e9b6238283f.qkr $firstPath
-		}
-		"Second"
-		{
-			Remove-Files $firstPath, $secondPath, .\First\Output.txt, .\Second\Output.txt, .\Third\Output.txt
-			Copy-Item .\First\Mia.qkr .\First\Mia.qkr.json
-			Copy-Item .\Third\Mia.qkr .\Third\Mia.qkr.json
-			"Resetting QKR to Second at $global:qkrLocalState"
-			Copy-Item .\Second\Mia-mia38308-9a9b-4a6b-9db9-9e9b6238283f.qkr $secondPath
-		}
-		$false
+		"Console"
 		{
 			"Resetting Console..."
 			Remove-Files .\First\Output.txt, .\Second\Output.txt, .\Third\Output.txt
 			Copy-Item .\First\Mia.qkr .\First\Mia.qkr.json
 			Copy-Item .\Second\Mia.qkr .\Second\Mia.qkr.json
 			Copy-Item .\Third\Mia.qkr .\Third\Mia.qkr.json
+		}
+		"ResetQKR"
+		{
+			"Resetting QKR"
+			Remove-Files $firstPath, $secondPath
+		}
+		"First"
+		{
+			"Configuring for testing First on QKR at $global:qkrLocalState"
+			Remove-Files $firstPath, $secondPath, .\First\Output.txt, .\Second\Output.txt, .\Third\Output.txt
+			Copy-Item .\Second\Mia.qkr .\Second\Mia.qkr.json
+			Copy-Item .\Third\Mia.qkr .\Third\Mia.qkr.json
+			Copy-Item .\First\Mia-mia38308-9a9b-4a6b-9db9-9e9b6238283f.qkr $firstPath
+		}
+		"Second"
+		{
+			"Configuring for testing Second on QKR at $global:qkrLocalState"
+			Remove-Files $firstPath, $secondPath, .\First\Output.txt, .\Second\Output.txt, .\Third\Output.txt
+			Copy-Item .\First\Mia.qkr .\First\Mia.qkr.json
+			Copy-Item .\Third\Mia.qkr .\Third\Mia.qkr.json
+			Copy-Item .\Second\Mia-mia38308-9a9b-4a6b-9db9-9e9b6238283f.qkr $secondPath
 		}
 		Default
 		{
@@ -79,9 +81,8 @@ function Reset-Test($reset, $showDescription)
 	}
 	
 	Pop-Location
-
 	if ($null -eq $showDescription -or $showDescription) {
-		Get-Description $true
+		Get-Description ($reset -eq "ResetQKR" -or $reset -eq "First" -or $reset -eq "Second" -or $reset -eq "All" -or $null -eq $reset)
 	}
 }
 
@@ -111,10 +112,10 @@ function Start-TestFor($age)
 function Run-Test
 {
 	$script = Join-Path $test "Test.txt"
+	Reset-Test "Console" $true
 	"Running script $script"
-	Reset-Test $false $true
 	dotnet.exe .\SignalRConsole.dll $script
-	Check-Test
+	Check-Test $false
 }
 
 function Check-Test($stage)

@@ -1,6 +1,6 @@
 $global:test = "Test-08"
 
-function Get-Description($qkr)
+function Get-Description($verbose)
 {
 	"`n${test}: Bruce adds Fred and Mom and goes offline, Fred comes on and adds Bruce
 	and Mom, Bruce comes online, Mom comes online
@@ -10,45 +10,90 @@ function Get-Description($qkr)
 	Fred lists and goes offline, Mom lists and goes offline. Uses BruceInput1.txt and
 	BruceInput2.txt.`n"
 
-	if ($null -eq $qkr -or $qkr)
+	if ($null -eq $verbose -or $verbose)
 	{
-	"`tTo test QKR, run Reset-Test `$true then run Start-TestFor Bruce 1 in one console and
-	wait for it to finish. Run Start-TestFor Fred in another console, connect as Mom on QKR
-	and accept the friend request, verify friendship then run Start-TestFor Bruce 2 in the
-	first console. Accept the friend request in QKR, verify friendship, verify that Bruce and 
-	Fred have exited, pop to Home and exit QKR. Test intermediate output with Check-QKRTest 1.
+	"`tRun Reset-Test with one of the following arguments to reset and/or configure:
+	<none>    Reset everything
+	Console   Reset only Console json files
+	ResetQKR  Delete json files from QKR's LocalState folder
+	QKR       Configure for testing QKR
 	
-	Next, connect as Bruce on QKR and add Mom (jeanmariealbert@hotmail.com) and Fred
+
+	To test QKR, run Reset-Test QKR then run Start-TestFor Bruce 1 in one console and wait
+	for it to finish. Run Start-TestFor Fred in another console, Connect Internet as Mom
+	on QKR and accept the friend request, verify friendship then run Start-TestFor Bruce 2 in
+	the first console. Accept the friend request in QKR, verify friendship, verify that Bruce
+	and Fred have exited, pop to Home and exit QKR. Test intermediate output with
+	Check-QKRTest 1.
+	
+	Next, Connect Internet as Bruce on QKR and add Mom (jeanmariealbert@hotmail.com) and Fred
 	(fred@gmail.com) then pop back to Home. Run Start-TestFor Fred in one console and
-	Start-TestFor Mom in the other, then connect as Bruce again in QKR. Accpet the friend
-	request, verify friendship, pop back to Home and close QKR. Verify that Mom and Fred
-	have exited and run Check-QKRTest 2 to validate the test.`n"
+	Start-TestFor Mom in the other, then Connect Internet as Bruce again in QKR. Accpet the
+	friend request, verify friendship, pop back to Home and close QKR. Verify that Mom and
+	Fred have exited and run Check-QKRTest 2 to validate the test.`n"
 	}
 }
 
-function Reset-Test($resetQkr, $showDescription)
+function Reset-Test($reset, $showDescription)
 {
 	"Resetting $test"
 	Push-Location $test
-	Copy-Item .\BruceNoFriends.qkr .\Bruce.qkr.json
-	Copy-Item .\FredNoFriends.qkr .\Fred.qkr.json
-	Copy-Item .\MomNoFriends.qkr .\Mom.qkr.json
-
-	if ($resetQkr -eq $true)
+	$brucePath = Join-Path $global:qkrLocalState Bruce-brucef68-3c37-4aef-b8a6-1649659bbbc4.json
+	$momPath = Join-Path $global:qkrLocalState Mom-mom0c866-8cb0-4a10-ad96-dfe5f9ebd98e.json
+	switch ($reset)
 	{
-		"Resetting QKR files at $global:qkrLocalState"
-		Copy-Item .\Bruce-brucef68-3c37-4aef-b8a6-1649659bbbc4.qkr (Join-Path $global:qkrLocalState Bruce-brucef68-3c37-4aef-b8a6-1649659bbbc4.json)
-		Copy-Item .\Mom-mom0c866-8cb0-4a10-ad96-dfe5f9ebd98e.qkr (Join-Path $global:qkrLocalState Mom-mom0c866-8cb0-4a10-ad96-dfe5f9ebd98e.json)
-	}
-	
-	Get-ChildItem *Output.txt | ForEach-Object {
-		Remove-Item $_
+		"Console"
+		{
+			"Resetting Console..."
+			Remove-Files .\BruceOutput.txt, .\FredOutput.txt, .\MomOutput.txt
+			Copy-Item .\Bruce.qkr .\Bruce.qkr.json
+			Copy-Item .\Fred.qkr .\Fred.qkr.json
+			Copy-Item .\Mom.qkr .\Mom.qkr.json
+		}
+		"ResetQKR"
+		{
+			"Resetting QKR"
+			Remove-Files $brucePath, $momPath
+		}
+		"QKR"
+		{
+			"Configuring for QKR testing at: $global:qkrLocalState"
+			Remove-Files .\BruceOutput.txt, .\FredOutput.txt, .\MomOutput.txt, $brucePath, $momPath
+			Copy-Item .\Bruce.qkr .\Bruce.qkr.json
+			Copy-Item .\Fred.qkr .\Fred.qkr.json
+			Copy-Item .\Mom.qkr .\Mom.qkr.json
+			Copy-Item .\Bruce-brucef68-3c37-4aef-b8a6-1649659bbbc4.qkr $brucePath
+			Copy-Item .\Mom-mom0c866-8cb0-4a10-ad96-dfe5f9ebd98e.qkr $momPath
+		}
+		Default
+		{
+			"Resetting all..."
+			Remove-Files .\BruceOutput.txt, .\FredOutput.txt, .\MomOutput.txt, $brucePath, $momPath
+			Copy-Item .\Bruce.qkr .\Bruce.qkr.json
+			Copy-Item .\Fred.qkr .\Fred.qkr.json
+			Copy-Item .\Mom.qkr .\Mom.qkr.json
+		}
 	}
 	
 	Pop-Location
-
 	if ($null -eq $showDescription -or $showDescription) {
-		Get-Description $true
+		Get-Description ($reset -eq "ResetQKR" -or $reset -eq "QKR" -or $reset -eq "All" -or $null -eq $reset)
+	}
+}
+
+function Remove-Files($files)
+{
+	foreach ($file in $files) {
+		Remove-File $file
+	}
+}
+
+function Remove-File($file)
+{
+	if (Test-Path $file)
+	{
+		"Deleting $file"
+		Remove-Item $file
 	}
 }
 
@@ -69,10 +114,10 @@ function Start-TestFor($user, $number)
 function Run-Test
 {
 	$script = Join-Path $test "Test.txt"
+	Reset-Test "Console" $true
 	"Running script $script"
-	Reset-Test $false $true
 	dotnet.exe .\SignalRConsole.dll $script
-	Check-Test
+	Check-Test $false
 }
 
 function Check-Test
@@ -114,7 +159,7 @@ function Check-QKRTest($stage)
 			Compare-Files .\Mom-mom0c866-8cb0-4a10-ad96-dfe5f9ebd98e.control.qkr (Join-Path $global:qkrLocalState Mom-mom0c866-8cb0-4a10-ad96-dfe5f9ebd98e.json) 2
 			Compare-Files .\BruceControl.txt .\BruceOutput.txt 1
 			Compare-Files .\FredControl.txt .\FredOutput.txt 1
-			Copy-Item .\FredNoFriends.qkr .\Fred.qkr.json
+			Copy-Item .\Fred.qkr .\Fred.qkr.json
 		}
 		2 {
 			Compare-Files .\Bruce-brucef68-3c37-4aef-b8a6-1649659bbbc4.control.qkr (Join-Path $global:qkrLocalState Bruce-brucef68-3c37-4aef-b8a6-1649659bbbc4.json) 2
