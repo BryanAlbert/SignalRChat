@@ -4,8 +4,8 @@ function Get-Description($verbose)
 {
 	"`n${test}: Bruce adds offline Fred, Fred accepts
 	
-	Bruce online, adds Fred, Fred comes online, accepts, lists, goes offline,
-	Bruce lists, goes offline.`n"
+	Bruce online, adds Fred, Fred comes online, accepts, lists, goes offline, Bruce
+	lists, goes offline.`n"
 
 	if ($null -eq $verbose -or $verbose)
 	{

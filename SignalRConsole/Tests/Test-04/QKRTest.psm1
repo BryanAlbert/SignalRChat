@@ -2,8 +2,7 @@ $global:test = "Test-04"
 
 function Get-Description($verbose)
 {
-	"`n${test}: Bruce adds Fred, goes offline, Fred comes online, Bruce comes online,
-	Fred accepts
+	"`n${test}: Bruce adds Fred, goes offline, Fred comes online, Bruce comes online, Fred accepts
 	
 	Bruce online, adds Fred, lists, goes offline, Fred comes online, Bruce comes online,
 	Fred accepts, Bruce lists, goes offline, Fred lists, goes offline. Uses BruceInput1.txt
