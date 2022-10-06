@@ -6,6 +6,7 @@ using System.Drawing;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -158,7 +159,9 @@ namespace SignalRConsole
 			Listening,
 			Connecting,
 			Chatting,
-			Broken
+			Broken,
+			OpponentAway,
+			BackgroundTablesOpponentAway
 		}
 
 
@@ -177,8 +180,26 @@ namespace SignalRConsole
 		private string ChatChannelName => MakeChatChannelName(m_user);
 		private string ActiveChatChannelName { get; set; }
 		private Friend ActiveChatFriend { get; set; }
-		private int NextLine { get; set; }
+		private bool HaveTables => m_user.Operators.Any(x => x.Tables.Any(y => y.Cards.Count > 0));
+		private int OutputLine { get; set; }
+		private int LogTop { get; set; }
+		private int LogBottom { get; set; }
+		private int LogWindowOffset { get; set; }
 		private int PromptLine { get; set; }
+		private bool Interrupt { get; set; }
+		public Dictionary<string, List<int>> TableList
+		{
+			get
+			{
+				if (m_tables == null)
+				{
+					m_tables = new Dictionary<string, List<int>>();
+					m_user.Operators.ForEach(o => TableList[o.Name] = o.Tables.Select(t => t.Base).ToList());
+				}
+
+				return m_tables;
+			}
+		}
 
 
 		private void OnRegister(string token)
@@ -191,7 +212,7 @@ namespace SignalRConsole
 			State = States.Changing;
 		}
 
-		private async Task OnJoinedChannelAsync(string channel, string user)
+		private async Task OnChannelJoinedAsync(string channel, string user)
 		{
 			if (user == Id)
 				return;
@@ -210,7 +231,6 @@ namespace SignalRConsole
 					await SendCommandAsync(CommandNames.Hello, Id, channel, user, m_user, true);
 					ActiveChatChannelName = channel;
 					ActiveChatFriend = m_user.Friends.FirstOrDefault(x => x.Id == user);
-					_ = await MessageLoopAsync();
 				}
 				else
 				{
@@ -263,27 +283,34 @@ namespace SignalRConsole
 				ConsoleWriteLogLine($"(Sent Hello {!friend?.Blocked} command to {user}.)", verbose: true);
 		}
 
-		private void OnSentMessage(string from, string message)
+		private void OnMessageReceived(string from, string message)
 		{
-			Point cursor = new Point(m_console.CursorLeft, m_console.CursorTop);
+			Point cursor = MoveLog();
 			if (from == Id)
 			{
-				m_console.WriteLine($"You said: {message}");
+				WriteLine($"You said: {message}");
+				Interrupt = false;
 			}
 			else if (cursor.X == 0)
 			{
-				m_console.WriteLine($"{ActiveChatFriend.Handle} said: {message}");
+				WriteLine($"{ActiveChatFriend.Handle} said: {message}");
 			}
 			else
 			{
-				m_console.SetCursorPosition(0, cursor.Y + 1);
-				m_console.WriteLine($"{from} said: {message}");
-				NextLine = m_console.CursorTop;
+				if (!Interrupt)
+				{
+					Interrupt = true;
+					OutputLine++;
+					_ = MoveLog();
+				}
+
+				m_console.SetCursorPosition(0, OutputLine);
+				WriteLine($"{ActiveChatFriend.Handle} said: {message}");
 				m_console.SetCursorPosition(cursor.X, cursor.Y);
 			}
 		}
 
-		private async Task OnSentCommandAsync(string from, string to, string json)
+		private async Task OnCommandReceivedAsync(string from, string to, string json)
 		{
 			if (to == Id || to == Handle || to == DeviceId)
 			{
@@ -302,6 +329,9 @@ namespace SignalRConsole
 						case CommandNames.Merge:
 							await MergeAccountsAsync(command, to);
 							break;
+						case CommandNames.TableList:
+							await ProcessTableListCommandAsync(from, command.Tables);
+							break;
 						case CommandNames.Unrecognized:
 						default:
 							Debug.WriteLine($"Error in OnSentCommandAsync, unrecognized command: {command.CommandName}");
@@ -313,10 +343,10 @@ namespace SignalRConsole
 					if (m_semaphoreSlim.CurrentCount == 0)
 						_ = m_semaphoreSlim.Release();
 				}
-			} 
+			}
 		}
 
-		private async Task OnLeftChannelAsync(string channel, string user)
+		private async Task OnChannelLeftAsync(string channel, string user)
 		{
 			string[] parts = ParseChannelName(channel);
 			Debug.WriteLine($"{user} has left the {string.Join('-', parts)} channel.");
@@ -343,10 +373,10 @@ namespace SignalRConsole
 			m_hubConnection = new HubConnectionBuilder().WithUrl(c_chatHubUrl).Build();
 
 			_ = m_hubConnection.On<string>(c_register, (t) => OnRegister(t));
-			_ = m_hubConnection.On(c_joinedChannel, (Action<string, string>) (async (c, u) => await OnJoinedChannelAsync(c, u)));
-			_ = m_hubConnection.On(c_sentMessage, (Action<string, string>) ((f, m) => OnSentMessage(f, m)));
-			_ = m_hubConnection.On(c_sentCommand, (Action<string, string, string>) (async (f, t, c) => await OnSentCommandAsync(f, t, c)));
-			_ = m_hubConnection.On(c_leftChannel, (Action<string, string>) (async (c, u) => await OnLeftChannelAsync(c, u)));
+			_ = m_hubConnection.On(c_joinedChannel, (Action<string, string>) (async (c, u) => await OnChannelJoinedAsync(c, u)));
+			_ = m_hubConnection.On(c_sentMessage, (Action<string, string>) ((f, m) => OnMessageReceived(f, m)));
+			_ = m_hubConnection.On(c_sentCommand, (Action<string, string, string>) (async (f, t, c) => await OnCommandReceivedAsync(f, t, c)));
+			_ = m_hubConnection.On(c_leftChannel, (Action<string, string>) (async (c, u) => await OnChannelLeftAsync(c, u)));
 
 			try
 			{
@@ -481,13 +511,9 @@ namespace SignalRConsole
 		{
 			EraseLog();
 			State = States.Busy;
-			Point cursor = Point.Empty;
 			while (true)
 			{
 				Point temp = ConsoleWriteLogRead("What is your friend's handle? ", out string handle);
-				if (cursor.IsEmpty)
-					cursor = temp;
-
 				if (string.IsNullOrEmpty(handle))
 					break;
 
@@ -523,7 +549,6 @@ namespace SignalRConsole
 			}
 
 			State = States.Listening;
-			m_console.SetCursorPosition(cursor.X, cursor.Y);
 		}
 
 		private void ListFriends()
@@ -624,10 +649,9 @@ namespace SignalRConsole
 
 		private async Task<bool> MessageLoopAsync()
 		{
-			EraseLog();
 			State = States.Chatting;
-			m_console.SetCursorPosition(0, NextLine);
-			m_console.WriteLine($"Type messages, type '{c_leaveChatCommand}' to leave the chat.");
+			m_console.WriteLine($"\nType messages, type '{c_leaveChatCommand}' to leave the chat.");
+			OutputLine = m_console.CursorTop;
 			bool success = true;
 			while (true)
 			{
@@ -642,7 +666,6 @@ namespace SignalRConsole
 					await Task.Delay(100);
 				}
 
-				NextLine = m_console.CursorTop;
 				string message = m_console.ReadLine();
 				if (m_waitForEnter)
 				{
@@ -654,7 +677,7 @@ namespace SignalRConsole
 				if (State != States.Chatting)
 					return true;
 
-				m_console.CursorTop = NextLine;
+				m_console.CursorTop = OutputLine;
 
 				try
 				{
@@ -751,9 +774,8 @@ namespace SignalRConsole
 			{
 				if (command.Flag == true)
 				{
-					// don't block on the message loop
-					_ = m_semaphoreSlim.Release();
-					_ = await MessageLoopAsync();
+					m_tablesRequested = true;
+					await SendCommandAsync(CommandNames.TableList, Id, from, from, TableList);
 				}
 				else
 				{
@@ -899,6 +921,84 @@ namespace SignalRConsole
 			_ = m_online.Remove(friend);
 			_ = m_user.Friends.Remove(friend);
 			SaveUser();
+		}
+
+		private async Task ProcessTableListCommandAsync(string from, Dictionary<string, List<int>> tables)
+		{
+			if (State == States.OpponentAway)
+				ConsoleWriteLogLine($"{Handle} has returned!");
+
+			if (State != States.BackgroundTablesOpponentAway)
+			{
+				IntersectTables(tables);
+				if (m_tablesRequested)
+				{
+					m_tablesRequested = false;
+				}
+				else
+				{
+					m_tablesRequested = true;
+					await SendCommandAsync(CommandNames.TableList, Id, from, from, TableList);
+				}
+
+				// don't block on the message loop
+				_ = m_semaphoreSlim.Release();
+				_ = await MessageLoopAsync();
+			}
+		}
+
+		private void IntersectTables(Dictionary<string, List<int>> tables)
+		{
+			LogWindowOffset = c_logWindowOffset;
+			EraseLog();
+
+			foreach (string line in FormatTableList($"{ActiveChatFriend.Handle} has", tables).Split("\n"))
+				ConsoleWriteLogLine(line);
+
+			if (HaveTables)
+			{
+				foreach (string line in FormatTableList("You have", TableList).Split("\n"))
+					ConsoleWriteLogLine(line);
+
+				int count = m_user.Operators.Count(x => tables.Any(y => x.Name == y.Key &&
+					x.Tables.Any(z => y.Value.Contains(z.Base))));
+				if (count == 0)
+				{
+					ConsoleWriteLogLine($"You and {ActiveChatFriend.Handle} have no sets of tables in common.");
+				}
+				else
+				{
+					ConsoleWriteLogLine($"You and {ActiveChatFriend.Handle} have {count} {(count == 1 ? "set" : "sets")}" +
+						$" of tables in common.");
+				}
+			}
+			else
+			{
+				ConsoleWriteLogLine("You have no tables.");
+			}
+		}
+
+		private string FormatTableList(string title, Dictionary<string, List<int>> tables)
+		{
+			StringBuilder result = new StringBuilder();
+			_ = result.AppendLine(string.Format("{0} these tables:", title));
+			foreach (string type in tables.Keys)
+			{
+				string list = string.Empty;
+				if (tables[type].Count > 0)
+				{
+					tables[type].ForEach(x => list += $"{x}, ");
+					list = list[..^2];
+				}
+				else
+				{
+					list = "(None)";
+				}
+
+				_ = result.AppendLine($"{type}: {list}");
+			}
+
+			return result.ToString();
 		}
 
 		private async Task SendMergeAsync(Friend friend)
@@ -1151,7 +1251,7 @@ namespace SignalRConsole
 			DateTime timeout = DateTime.Now + TimeSpan.FromSeconds(timeouts);
 			m_console.Write(message);
 			Point cursorPosition = new Point(m_console.CursorLeft, m_console.CursorTop);
-			NextLine = cursorPosition.Y;
+			LogBottom = cursorPosition.Y;
 			char bullet = '.';
 			for (int x = cursorPosition.X; State != States.Changing && DateTime.Now < timeout; x++)
 			{
@@ -1168,7 +1268,7 @@ namespace SignalRConsole
 				await Task.Delay(interval);
 			}
 
-			m_console.SetCursorPosition(0, NextLine + 1);
+			m_console.SetCursorPosition(0, LogBottom + 1);
 			return DateTime.Now < timeout;
 		}
 
@@ -1181,10 +1281,11 @@ namespace SignalRConsole
 
 		private void DisplayMenu()
 		{
+			PromptLine = m_console.CursorTop + 3;
+			LogWindowOffset = 0;
+			EraseLog();
 			m_console.WriteLine("\nPick a command: t to list tables, a to add a friend, l to list friends,");
 			m_console.WriteLine("u to unfriend a friend, c to chat, or x to exit");
-			PromptLine = m_console.CursorTop;
-			NextLine = PromptLine + 2;
 			State = States.Listening;
 		}
 
@@ -1198,20 +1299,47 @@ namespace SignalRConsole
 
 		private void EraseLog()
 		{
-			if (m_console.ScriptMode > 1)
-				return;
+			if (m_console.ScriptMode <= 1 && m_log.Count != 0)
+			{
+				Point cursor = new Point(m_console.CursorLeft, m_console.CursorTop);
+				Console.SetCursorPosition(0, LogTop);
+				ConsoleColor color = m_console.ForegroundColor;
+				Console.ForegroundColor = m_console.BackgroundColor;
+				foreach (string line in m_log)
+					Console.WriteLine(line);
 
+				m_log.Clear();
+				Console.ForegroundColor = color;
+				Console.SetCursorPosition(cursor.X, cursor.Y);
+			}
+
+			LogTop = LogBottom = PromptLine + 2 + LogWindowOffset;
+		}
+
+		private void WriteLine(string line)
+		{
+			m_console.WriteLine(line);
+			OutputLine++;
+		}
+
+		private Point MoveLog()
+		{
 			Point cursor = new Point(m_console.CursorLeft, m_console.CursorTop);
-			NextLine = PromptLine + 2;
-			Console.SetCursorPosition(0, NextLine);
+			if (OutputLine == LogBottom - LogWindowOffset)
+			{
+				LogTop++;
+				LogBottom++;
+				return cursor;
+			}
+
 			ConsoleColor color = m_console.ForegroundColor;
 			Console.ForegroundColor = m_console.BackgroundColor;
-			foreach (string line in m_log)
-				Console.WriteLine(line);
-
-			m_log.Clear();
+			m_console.SetCursorPosition(0, LogTop++);
+			Console.WriteLine(m_log[0]);
+			m_log.RemoveAt(0);
 			Console.ForegroundColor = color;
 			Console.SetCursorPosition(cursor.X, cursor.Y);
+			return cursor;
 		}
 
 		private void ConsoleWriteLogLine(string line, bool verbose = false)
@@ -1246,7 +1374,7 @@ namespace SignalRConsole
 		private Point MoveCursorToLog()
 		{
 			Point cursor = new Point(m_console.CursorLeft, m_console.CursorTop);
-			m_console.SetCursorPosition(0, NextLine++);
+			m_console.SetCursorPosition(0, LogBottom++);
 			return cursor;
 		}
 
@@ -1283,10 +1411,13 @@ namespace SignalRConsole
 		private readonly string c_chatHubUrl = "https://localhost:44398/chathub";
 #endif
 
+		private const int c_logWindowOffset = 2;
 		private Harness m_console;
 		private User m_user;
 		private States m_state;
 		private bool m_waitForEnter;
+		private bool m_tablesRequested;
+		private Dictionary<string, List<int>> m_tables;
 		private readonly List<User> m_users = new List<User>();
 		private readonly List<Friend> m_online = new List<Friend>();
 		private readonly List<string> m_log = new List<string>();

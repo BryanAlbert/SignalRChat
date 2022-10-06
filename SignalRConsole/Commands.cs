@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.SignalR.Client;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -28,8 +29,8 @@ namespace SignalRConsole
 				ConnectionCommand command = new ConnectionCommand()
 				{
 					Command = name.ToString(),
-					Channel = channel,
 					From = from,
+					Channel = channel,
 					To = to,
 					Racer = new Friend(user),
 					Flag = flag
@@ -51,8 +52,8 @@ namespace SignalRConsole
 				ConnectionCommand command = new ConnectionCommand()
 				{
 					Command = CommandNames.Merge.ToString(),
-					Channel = channel,
 					From = from,
+					Channel = channel,
 					To = to,
 					Merge = user,
 				};
@@ -68,9 +69,33 @@ namespace SignalRConsole
 				}
 			}
 
+			public static async Task SendCommandAsync(CommandNames name, string from, string channel, string to,
+				Dictionary<string, List<int>> tables)
+			{
+				ConnectionCommand command = new ConnectionCommand()
+				{
+					Command = name.ToString(),
+					From = from,
+					Channel = channel,
+					To = to,
+					Tables = tables
+				};
+
+				if (name != CommandNames.TableList)
+				{
+					Debug.WriteLine($"Error: SendCommand called with Dictionary<string, List<int>> is only valid" +
+						$" for the {CommandNames.TableList} command, called with: {name}");
+				}
+				else
+				{
+					await command.SendCommandAsync();
+				}
+			}
+
 
 			public string Command { get; set; }
 			public Friend Racer { get; set; }
+			public Dictionary<string, List<int>> Tables { get; set; }
 			public User Merge { get; set; }
 			public bool? Flag { get; set; }
 
@@ -109,7 +134,8 @@ namespace SignalRConsole
 				Unrecognized,
 				Hello,
 				Verify,
-				Merge
+				Merge,
+				TableList
 			}
 
 
