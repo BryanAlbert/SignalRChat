@@ -160,8 +160,7 @@ namespace SignalRConsole
 			Connecting,
 			Chatting,
 			Broken,
-			OpponentAway,
-			BackgroundTablesOpponentAway
+			FriendAway
 		}
 
 
@@ -227,7 +226,7 @@ namespace SignalRConsole
 			{
 				if (State == States.Listening)
 				{
-					// signal ready to chat
+					// signal ready to chat, he'll respond with the TableList command
 					await SendCommandAsync(CommandNames.Hello, Id, channel, user, m_user, true);
 					ActiveChatChannelName = channel;
 					ActiveChatFriend = m_user.Friends.FirstOrDefault(x => x.Id == user);
@@ -331,6 +330,9 @@ namespace SignalRConsole
 							break;
 						case CommandNames.TableList:
 							await ProcessTableListCommandAsync(from, command.Tables);
+							break;
+						case CommandNames.Away:
+							ProcessAwayCommand();
 							break;
 						case CommandNames.Unrecognized:
 						default:
@@ -674,7 +676,7 @@ namespace SignalRConsole
 					return true;
 				}
 
-				if (State != States.Chatting)
+				if (State != States.Chatting && State != States.FriendAway)
 					return true;
 
 				m_console.CursorTop = OutputLine;
@@ -751,20 +753,21 @@ namespace SignalRConsole
 			}
 
 			Tuple<Point, ConsoleKeyInfo> result = await ConsoleWriteLogReadAsync(prompt);
+			Point cursor = result.Item1;
 
 			while (true)
 			{
 				if (result.Item2.Key == ConsoleKey.Enter)
-					return new Tuple<Point, Friend>(result.Item1, null);
+					return new Tuple<Point, Friend>(cursor, null);
 
 				Friend friend = int.TryParse(result.Item2.KeyChar.ToString(), NumberStyles.HexNumber, CultureInfo.InvariantCulture,
 					out index) && index >= 0 && index < friends.Count ? friends[index] : null;
 
 				if (friend != null)
-					return new Tuple<Point, Friend>(result.Item1, friend);
+					return new Tuple<Point, Friend>(cursor, friend);
 
-				result = await ConsoleWriteLogReadAsync($"{result.Item2.KeyChar} not valid, enter a number between 1 and" +
-					$" {Math.Min(friends.Count, 9)}, please try again: ");
+				result = await ConsoleWriteLogReadAsync($"{result.Item2.KeyChar} not valid, enter a number between 0 and" +
+					$" {Math.Min(friends.Count, 9) - 1}, please try again: ");
 			}
 		}
 
@@ -774,7 +777,6 @@ namespace SignalRConsole
 			{
 				if (command.Flag == true)
 				{
-					m_tablesRequested = true;
 					await SendCommandAsync(CommandNames.TableList, Id, from, from, TableList);
 				}
 				else
@@ -925,33 +927,40 @@ namespace SignalRConsole
 
 		private async Task ProcessTableListCommandAsync(string from, Dictionary<string, List<int>> tables)
 		{
-			if (State == States.OpponentAway)
-				ConsoleWriteLogLine($"{Handle} has returned!");
-
-			if (State != States.BackgroundTablesOpponentAway)
+			bool connecting = State == States.Connecting || State == States.Listening;
+			if (connecting)
 			{
-				IntersectTables(tables);
-				if (m_tablesRequested)
-				{
-					m_tablesRequested = false;
-				}
-				else
-				{
-					m_tablesRequested = true;
-					await SendCommandAsync(CommandNames.TableList, Id, from, from, TableList);
-				}
+				LogWindowOffset = c_logWindowOffset;
+				EraseLog();
+			}
+			else if (State == States.FriendAway)
+			{
+				EraseLog();
+				LogTop = LogBottom = Console.CursorTop + LogWindowOffset;
+				ConsoleWriteLogLine($"{Handle} has returned!");
+				State = States.Chatting;
+			}
 
+			if (State == States.Listening)
+				await SendCommandAsync(CommandNames.TableList, Id, from, from, TableList);
+
+			IntersectTables(tables);
+			if (connecting)
+			{
 				// don't block on the message loop
 				_ = m_semaphoreSlim.Release();
 				_ = await MessageLoopAsync();
 			}
 		}
 
+		private void ProcessAwayCommand()
+		{
+			ConsoleWriteLogLine($"{ActiveChatFriend.Handle} is away...");
+			State = States.FriendAway;
+		}
+
 		private void IntersectTables(Dictionary<string, List<int>> tables)
 		{
-			LogWindowOffset = c_logWindowOffset;
-			EraseLog();
-
 			foreach (string line in FormatTableList($"{ActiveChatFriend.Handle} has", tables).Split("\n"))
 				ConsoleWriteLogLine(line);
 
@@ -1416,7 +1425,6 @@ namespace SignalRConsole
 		private User m_user;
 		private States m_state;
 		private bool m_waitForEnter;
-		private bool m_tablesRequested;
 		private Dictionary<string, List<int>> m_tables;
 		private readonly List<User> m_users = new List<User>();
 		private readonly List<Friend> m_online = new List<Friend>();

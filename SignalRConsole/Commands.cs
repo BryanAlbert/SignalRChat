@@ -24,6 +24,27 @@ namespace SignalRConsole
 				m_hubConnection = hubConnection;
 			}
 
+			public static async Task SendCommandAsyn(CommandNames name, string from, string channel, string to)
+			{
+				ConnectionCommand command = new ConnectionCommand()
+				{
+					Command = name.ToString(),
+					From = from,
+					Channel = channel,
+					To = to,
+				};
+
+				if (name != CommandNames.Away)
+				{
+					Debug.WriteLine($"Error: SendCommand called with string, string, string, User and bool? is only valid for the" +
+						$" {CommandNames.Away} command, called with: {name}");
+
+					return;
+				}
+
+				await command.SendCommandAsync();
+			}
+
 			public static async Task SendCommandAsync(CommandNames name, string from, string channel, string to, User user, bool? flag)
 			{
 				ConnectionCommand command = new ConnectionCommand()
@@ -40,11 +61,11 @@ namespace SignalRConsole
 				{
 					Debug.WriteLine($"Error: SendCommand called with string, string, string, User and bool? is only valid for the" +
 						$" {CommandNames.Hello} and {CommandNames.Verify} commands, called with: {name}");
+
+					return;
 				}
-				else
-				{
-					await command.SendCommandAsync();
-				}
+
+				await command.SendCommandAsync();
 			}
 
 			public static async Task SendCommandAsync(CommandNames name, string from, string channel, string to, User user)
@@ -62,11 +83,11 @@ namespace SignalRConsole
 				{
 					Debug.WriteLine($"Error: SendCommand called with string, string, string and User is only valid for the" +
 						$" {CommandNames.Merge} command, called with: {name}");
+
+					return;
 				}
-				else
-				{
-					await command.SendCommandAsync();
-				}
+
+				await command.SendCommandAsync();
 			}
 
 			public static async Task SendCommandAsync(CommandNames name, string from, string channel, string to,
@@ -83,13 +104,13 @@ namespace SignalRConsole
 
 				if (name != CommandNames.TableList)
 				{
-					Debug.WriteLine($"Error: SendCommand called with Dictionary<string, List<int>> is only valid" +
-						$" for the {CommandNames.TableList} command, called with: {name}");
+					Debug.WriteLine($"Error: SendCommand called with string, string, string and Dictionary<string, List<int>>" +
+						$" is only valid for the {CommandNames.TableList} command, called with: {name}");
+
+					return;
 				}
-				else
-				{
-					await command.SendCommandAsync();
-				}
+
+				await command.SendCommandAsync();
 			}
 
 
@@ -135,7 +156,8 @@ namespace SignalRConsole
 				Hello,
 				Verify,
 				Merge,
-				TableList
+				TableList,
+				Away
 			}
 
 
