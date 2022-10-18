@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using static SignalRConsole.Commands;
@@ -61,7 +62,6 @@ namespace SignalRConsole
 			await MonitorFriendsAsync();
 
 			DisplayMenu();
-
 			while (true)
 			{
 				ConsoleKeyInfo menu = await ReadKeyAvailableAsync(() => State == States.Listening);
@@ -160,7 +160,9 @@ namespace SignalRConsole
 			Connecting,
 			Chatting,
 			Broken,
-			FriendAway
+			FriendAway,
+			RaceInitializing,
+			Racing
 		}
 
 
@@ -183,10 +185,13 @@ namespace SignalRConsole
 		private int OutputLine { get; set; }
 		private int LogTop { get; set; }
 		private int LogBottom { get; set; }
-		private int LogWindowOffset { get; set; }
 		private int PromptLine { get; set; }
 		private bool Interrupt { get; set; }
-		public Dictionary<string, List<int>> TableList
+		private RaceData RaceData { get; set; }
+		private bool IsRacing => State == States.RaceInitializing || State == States.Racing ||
+			State == States.Chatting || State == States.FriendAway;
+
+		private Dictionary<string, List<int>> TableList
 		{
 			get
 			{
@@ -284,23 +289,27 @@ namespace SignalRConsole
 
 		private void OnMessageReceived(string from, string message)
 		{
-			Point cursor = MoveLog();
 			if (from == Id)
 			{
 				WriteLine($"You said: {message}");
 				Interrupt = false;
 			}
-			else if (cursor.X == 0)
+			else if (Console.CursorLeft == 0)
 			{
 				WriteLine($"{ActiveChatFriend.Handle} said: {message}");
 			}
 			else
 			{
-				if (!Interrupt)
+				Point cursor;
+				if (Interrupt)
+				{
+					cursor = new Point(m_console.CursorLeft, m_console.CursorTop);
+				}
+				else
 				{
 					Interrupt = true;
 					OutputLine++;
-					_ = MoveLog();
+					cursor = MoveLog();
 				}
 
 				m_console.SetCursorPosition(0, OutputLine);
@@ -314,11 +323,38 @@ namespace SignalRConsole
 			if (to == Id || to == Handle || to == DeviceId)
 			{
 				ConnectionCommand command = DeserializeCommand(json);
+				if (Echo != null || command.CommandName == CommandNames.Echo && command.Flag == true)
+					ConsoleWriteLogLine($"{ActiveChatFriend.Handle}: {json}");
+
 				await m_semaphoreSlim.WaitAsync();
 				try
 				{
 					switch (command.CommandName)
 					{
+						case CommandNames.Away:
+							ProcessAwayCommand();
+							break;
+						case CommandNames.TableList:
+							await ProcessTableListCommandAsync(from, command.Tables);
+							break;
+						case CommandNames.InitiateRace:
+							await ProcessInitiateRaceCommandAsync();
+							break;
+						case CommandNames.StartRace:
+							await ProcessStartRaceCommandAsync();
+							break;
+						case CommandNames.RaceCard:
+							await ProcessRaceCardCommandAsync(command.RaceData);
+							break;
+						case CommandNames.CardResult:
+							ProcessCardResultCommand(command.RaceData);
+							break;
+						case CommandNames.Reset:
+							ProcessResetCommand();
+							break;
+						case CommandNames.NavigateBack:
+							ProcessNavigateBackCommand();
+							break;
 						case CommandNames.Hello:
 							await HelloAsync(from, command);
 							break;
@@ -328,11 +364,8 @@ namespace SignalRConsole
 						case CommandNames.Merge:
 							await MergeAccountsAsync(command, to);
 							break;
-						case CommandNames.TableList:
-							await ProcessTableListCommandAsync(from, command.Tables);
-							break;
-						case CommandNames.Away:
-							ProcessAwayCommand();
+						case CommandNames.Echo:
+							Echo = command.Flag == true ? ((x) => ConsoleWriteLogLine($"{Handle}: {x}")) : (Action<string>) null;
 							break;
 						case CommandNames.Unrecognized:
 						default:
@@ -618,7 +651,6 @@ namespace SignalRConsole
 		private async Task ChatFriendAsync()
 		{
 			EraseLog();
-
 			if (m_user.Friends.Count == 0)
 			{
 				ConsoleWriteLogLine("You have no friends.");
@@ -652,7 +684,7 @@ namespace SignalRConsole
 		private async Task<bool> MessageLoopAsync()
 		{
 			State = States.Chatting;
-			m_console.WriteLine($"\nType messages, type '{c_leaveChatCommand}' to leave the chat.");
+			WriteLine($"\nType messages, type '{c_leaveChatCommand}' to leave the chat.");
 			OutputLine = m_console.CursorTop;
 			bool success = true;
 			while (true)
@@ -672,19 +704,24 @@ namespace SignalRConsole
 				if (m_waitForEnter)
 				{
 					m_waitForEnter = false;
-					DisplayMenu();
-					return true;
+					break;
 				}
 
 				if (State != States.Chatting && State != States.FriendAway)
 					return true;
 
 				m_console.CursorTop = OutputLine;
+				if (await CheckForCommandAsync(message))
+				{
+					WriteLine($"You sent the command: {message}");
+					continue;
+				}
 
 				try
 				{
 					if (message == c_leaveChatCommand)
 					{
+						WriteLine(string.Empty);
 						await LeaveChatChannelAsync(send: true);
 						break;
 					}
@@ -699,8 +736,41 @@ namespace SignalRConsole
 				}
 			}
 
-			DisplayMenu();
+			EraseLogAndDisplayMenu();
 			return success;
+		}
+
+		private async Task<bool> CheckForCommandAsync(string message)
+		{
+			if (!Regex.Match(message, c_connectionJsonCommand).Success)
+				return false;
+
+			ConnectionCommand command = await DeserializeAndSendCommandAsync(message, Id, ActiveChatChannelName,
+				ActiveChatFriend.Id);
+
+			if (command?.CommandName == CommandNames.Echo)
+			{
+				Action<string> echo = Echo;
+				Echo = command.Flag == true ? (x) => ConsoleWriteLogLine($"{Handle}: {x}") : (Action<string>) null;
+
+				// echo the Echo command
+				if (echo == null && Echo != null)
+					Echo.Invoke(command.Json);
+			}
+
+			return command != null;
+		}
+
+		private void EraseLogAndDisplayMenu()
+		{
+			if (Echo != null)
+			{
+				int line = m_console.CursorTop;
+				State = States.Listening;
+				m_console.CursorTop = line;
+			}
+
+			DisplayMenu();
 		}
 
 		private async Task LeaveChatChannelAsync(bool send)
@@ -795,7 +865,7 @@ namespace SignalRConsole
 				}
 				else
 				{
-					DisplayMenu();
+					EraseLogAndDisplayMenu();
 				}
 
 				await LeaveChatChannelAsync(send: false);
@@ -930,21 +1000,21 @@ namespace SignalRConsole
 			bool connecting = State == States.Connecting || State == States.Listening;
 			if (connecting)
 			{
-				LogWindowOffset = c_logWindowOffset;
 				EraseLog();
 			}
 			else if (State == States.FriendAway)
 			{
 				EraseLog();
-				LogTop = LogBottom = Console.CursorTop + LogWindowOffset;
-				ConsoleWriteLogLine($"{Handle} has returned!");
+				ConsoleWriteLogLine($"{ActiveChatFriend.Handle} has returned!");
 				State = States.Chatting;
 			}
 
-			if (State == States.Listening)
+			if (State == States.Listening || State == States.RaceInitializing)
 				await SendCommandAsync(CommandNames.TableList, Id, from, from, TableList);
 
-			IntersectTables(tables);
+			if (State != States.RaceInitializing)
+				IntersectTables(tables);
+
 			if (connecting)
 			{
 				// don't block on the message loop
@@ -955,8 +1025,105 @@ namespace SignalRConsole
 
 		private void ProcessAwayCommand()
 		{
+			EraseLog();
 			ConsoleWriteLogLine($"{ActiveChatFriend.Handle} is away...");
 			State = States.FriendAway;
+		}
+
+		private async Task ProcessInitiateRaceCommandAsync()
+		{
+			EraseLog();
+			ConsoleWriteLogLine($"{ActiveChatFriend.Handle} is preparing the race...");
+			State = States.RaceInitializing;
+			ProcessResetCommand();
+			await SendCommandAsync(CommandNames.InitiateRace, Id, ActiveChatFriend.Id, ActiveChatFriend.Id);
+		}
+
+		private async Task ProcessStartRaceCommandAsync()
+		{
+			ConsoleWriteLogLine($"{ActiveChatFriend.Handle} has started the race!");
+			await SendCommandAsync(CommandNames.StartRace, Id, ActiveChatFriend.Id, ActiveChatFriend.Id);
+		}
+
+		private void ProcessNavigateBackCommand()
+		{
+			// QKR doesn't handle this command at this level
+			State = States.Chatting;
+		}
+
+		private async Task ProcessRaceCardCommandAsync(RaceData raceData)
+		{
+			if (State != States.Racing)
+				State = States.Racing;
+
+			RaceData.QuizCount++;
+			RaceData.Try = 1;
+			RaceData.Busy = true;
+			RaceData.Base = raceData.Base;
+			RaceData.First = raceData.First;
+			RaceData.Operator = raceData.Operator;
+			RaceData.Second = raceData.Second;
+			Fact fact = new Fact(raceData.First, raceData.Second, Arithmetic.Operator[(FactOperator)raceData.Operator]);
+			DateTime startTime = DateTime.Now;
+			int guess = ReadAnswer("What is ", fact.Render);
+			if (guess == fact.Answer)
+			{
+				WriteLine("Correct!");
+				RaceData.Time = (int) (DateTime.Now - startTime).TotalMilliseconds;
+				RaceData.Score += 2;
+				RaceData.Correct++;
+
+				// leader expects (at least) two CardResults, first with Busy true, second with Busy false (after results have been shown)
+				await SendCommandAsync(CommandNames.CardResult, Id, ActiveChatFriend.Id, ActiveChatFriend.Id, RaceData);
+				RaceData.Busy = false;
+				await SendCommandAsync(CommandNames.CardResult, Id, ActiveChatFriend.Id, ActiveChatFriend.Id, RaceData);
+				return;
+			}
+
+			RaceData.Time = (int) (DateTime.Now - startTime).TotalMilliseconds;
+			RaceData.Try = 2;
+			await SendCommandAsync(CommandNames.CardResult, Id, ActiveChatFriend.Id, ActiveChatFriend.Id, RaceData);
+			RaceData.Busy = false;
+			guess = ReadAnswer($"Not quite... what is ", fact.Render);
+			RaceData.Time = (int) (DateTime.Now - startTime).TotalMilliseconds;
+			if (guess == fact.Answer)
+			{
+				WriteLine("You are right!");
+				RaceData.Score += 1;
+				RaceData.Correct++;
+				RaceData.Busy = false;
+				await SendCommandAsync(CommandNames.CardResult, Id, ActiveChatFriend.Id, ActiveChatFriend.Id, RaceData);
+				return;
+			}
+
+			WriteLine($"No! {fact.Render} = {fact.Answer}");
+			RaceData.Wrong++;
+			await SendCommandAsync(CommandNames.CardResult, Id, ActiveChatFriend.Id, ActiveChatFriend.Id, RaceData);
+		}
+
+		private void ProcessCardResultCommand(RaceData raceData)
+		{
+			ConsoleWriteLogLine($"{ActiveChatFriend.Handle} Try {raceData.Try} of 2," +
+				$" {string.Format("Time: {0:0.0}", raceData.Time / 1000.0)}, Correct: {raceData.Correct}," +
+				$" Wrong {raceData.Wrong}, Score: {raceData.Score}");
+		}
+
+		private void ProcessResetCommand()
+		{
+			RaceData = new RaceData();
+		}
+
+		private int ReadAnswer(string prompt, string question)
+		{
+			WriteLine($"{prompt}{question}? ", waitForInput: true);
+			while (true)
+			{
+				string input = Console.ReadLine();
+				if (int.TryParse(input, out int guess))
+					return guess;
+
+				WriteLine($"{input} is not a number... what is {question}? ", waitForInput: true);
+			}
 		}
 
 		private void IntersectTables(Dictionary<string, List<int>> tables)
@@ -1290,11 +1457,13 @@ namespace SignalRConsole
 
 		private void DisplayMenu()
 		{
-			PromptLine = m_console.CursorTop + 3;
-			LogWindowOffset = 0;
 			EraseLog();
-			m_console.WriteLine("\nPick a command: t to list tables, a to add a friend, l to list friends,");
-			m_console.WriteLine("u to unfriend a friend, c to chat, or x to exit");
+			OutputLine = m_console.CursorTop + 1;
+			LogTop = LogBottom = OutputLine + c_logWindowOffset;
+			WriteLine(String.Empty);
+			WriteLine("Pick a command: t to list tables, a to add a friend, l to list friends,");
+			WriteLine("u to unfriend a friend, c to chat, or x to exit");
+			PromptLine = m_console.CursorTop;
 			State = States.Listening;
 		}
 
@@ -1308,33 +1477,37 @@ namespace SignalRConsole
 
 		private void EraseLog()
 		{
-			if (m_console.ScriptMode <= 1 && m_log.Count != 0)
-			{
-				Point cursor = new Point(m_console.CursorLeft, m_console.CursorTop);
-				Console.SetCursorPosition(0, LogTop);
-				ConsoleColor color = m_console.ForegroundColor;
-				Console.ForegroundColor = m_console.BackgroundColor;
-				foreach (string line in m_log)
-					Console.WriteLine(line);
+			if (m_console.ScriptMode > 1 || m_log.Count == 0 || Echo != null && IsRacing)
+				return;
 
-				m_log.Clear();
-				Console.ForegroundColor = color;
-				Console.SetCursorPosition(cursor.X, cursor.Y);
-			}
+			Point cursor = new Point(m_console.CursorLeft, m_console.CursorTop);
+			Console.SetCursorPosition(0, LogTop);
+			ConsoleColor color = m_console.ForegroundColor;
+			Console.ForegroundColor = m_console.BackgroundColor;
+			foreach (string line in m_log)
+				Console.WriteLine(line);
 
-			LogTop = LogBottom = PromptLine + 2 + LogWindowOffset;
+			m_log.Clear();
+			Console.ForegroundColor = color;
+			Console.SetCursorPosition(cursor.X, cursor.Y);
+			LogTop = LogBottom = OutputLine + c_logWindowOffset + 1;
 		}
 
-		private void WriteLine(string line)
+		private void WriteLine(string line, bool waitForInput = false)
 		{
-			m_console.WriteLine(line);
+			_ = MoveLog();
+			if (waitForInput)
+				m_console.Write(line);
+			else
+				m_console.WriteLine(line);
+
 			OutputLine++;
 		}
 
 		private Point MoveLog()
 		{
 			Point cursor = new Point(m_console.CursorLeft, m_console.CursorTop);
-			if (OutputLine == LogBottom - LogWindowOffset)
+			if (OutputLine == LogBottom - c_logWindowOffset)
 			{
 				LogTop++;
 				LogBottom++;
@@ -1356,7 +1529,11 @@ namespace SignalRConsole
 			if (!verbose || m_console.ScriptMode > 0)
 			{
 				Point cursor = MoveCursorToLog();
+				int extraLines = m_console.CursorTop;
 				m_console.WriteLine(line);
+				if ((extraLines = m_console.CursorTop - extraLines) > 1)
+					LogBottom += extraLines - 1;
+
 				m_log.Add(line);
 				m_console.SetCursorPosition(cursor.X, cursor.Y);
 			}
@@ -1421,6 +1598,7 @@ namespace SignalRConsole
 #endif
 
 		private const int c_logWindowOffset = 2;
+		private const string c_connectionJsonCommand = "{ ?\"Command\":";
 		private Harness m_console;
 		private User m_user;
 		private States m_state;

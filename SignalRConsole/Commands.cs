@@ -19,25 +19,31 @@ namespace SignalRConsole
 			}
 
 
+			public static Action<string> Echo { get; set; }
+
+
 			public static void InitializeCommands(HubConnection hubConnection)
 			{
 				m_hubConnection = hubConnection;
 			}
 
-			public static async Task SendCommandAsyn(CommandNames name, string from, string channel, string to)
+			public static async Task SendCommandAsync(CommandNames name, string from, string channel, string to)
 			{
 				ConnectionCommand command = new ConnectionCommand()
 				{
 					Command = name.ToString(),
 					From = from,
 					Channel = channel,
-					To = to,
+					To = to
 				};
 
-				if (name != CommandNames.Away)
+				if (name != CommandNames.Away && name != CommandNames.InitiateRace &&
+					name != CommandNames.StartRace && name != CommandNames.Reset &&
+					name != CommandNames.NavigateBack)
 				{
-					Debug.WriteLine($"Error: SendCommand called with string, string, string, User and bool? is only valid for the" +
-						$" {CommandNames.Away} command, called with: {name}");
+					Debug.WriteLine($"Error: SendCommand called with string, string, and string is only valid for the" +
+						$" {CommandNames.Away}, {CommandNames.InitiateRace}, {CommandNames.StartRace}, and" +
+						$" {CommandNames.Reset} and {CommandNames.NavigateBack} commands, called with: {name}");
 
 					return;
 				}
@@ -45,7 +51,8 @@ namespace SignalRConsole
 				await command.SendCommandAsync();
 			}
 
-			public static async Task SendCommandAsync(CommandNames name, string from, string channel, string to, User user, bool? flag)
+			public static async Task SendCommandAsync(CommandNames name, string from, string channel, string to,
+				User user, bool? flag)
 			{
 				ConnectionCommand command = new ConnectionCommand()
 				{
@@ -68,7 +75,8 @@ namespace SignalRConsole
 				await command.SendCommandAsync();
 			}
 
-			public static async Task SendCommandAsync(CommandNames name, string from, string channel, string to, User user)
+			public static async Task SendCommandAsync(CommandNames name, string from, string channel, string to,
+				User user)
 			{
 				ConnectionCommand command = new ConnectionCommand()
 				{
@@ -76,7 +84,7 @@ namespace SignalRConsole
 					From = from,
 					Channel = channel,
 					To = to,
-					Merge = user,
+					Merge = user
 				};
 
 				if (name != CommandNames.Merge)
@@ -113,21 +121,55 @@ namespace SignalRConsole
 				await command.SendCommandAsync();
 			}
 
+			public static async Task SendCommandAsync(CommandNames name, string from, string channel, string to,
+				RaceData raceData)
+			{
+				ConnectionCommand command = new ConnectionCommand()
+				{
+					Command = name.ToString(),
+					From = from,
+					Channel = channel,
+					To = to,
+					RaceData = raceData
+				};
+
+				if (name != CommandNames.RaceCard && name != CommandNames.CardResult)
+				{
+					Debug.WriteLine($"Error: SendCommand called with string, string, string and RaceData is only valid for the" +
+						$" {CommandNames.RaceCard} and {CommandNames.CardResult} commands, called with: {name}");
+
+					return;
+				}
+
+				await command.SendCommandAsync();
+			}
+
 
 			public string Command { get; set; }
 			public Friend Racer { get; set; }
 			public Dictionary<string, List<int>> Tables { get; set; }
+			public RaceData RaceData { get; set; }
 			public User Merge { get; set; }
 			public bool? Flag { get; set; }
 
 			[JsonIgnore]
-			public string Channel { get; set; }
-			[JsonIgnore]
 			public CommandNames CommandName { get; set; }
 			[JsonIgnore]
-			public string From { get; private set; }
+			public string Channel { get; set; }
+			[JsonIgnore]
+			public string From { get; set; }
 			[JsonIgnore]
 			public string To { get; set; }
+			[JsonIgnore]
+			public string Json
+			{
+				get
+				{
+					m_json ??= JsonSerializer.Serialize(this);
+					return m_json;
+				}
+			}
+
 
 			public static ConnectionCommand DeserializeCommand(string json)
 			{
@@ -135,29 +177,52 @@ namespace SignalRConsole
 				try
 				{
 					command = JsonSerializer.Deserialize<ConnectionCommand>(json);
-					if (Enum.TryParse(command.Command, out CommandNames name))
-						command.CommandName = name;
-					else
+					if (!Enum.TryParse(command.Command, out CommandNames name))
+					{
 						Debug.WriteLine($"Error in ReceiveCommand, unrecognized Command: {command.Command}");
+						return null;
+					}
+
+					command.CommandName = name;
 				}
 				catch (Exception exception)
 				{
 					Debug.WriteLine($"Exception in ReceiveCommand deserializing {json}: {exception.Message}");
+					if (Echo != null)
+						Echo.Invoke($"Failed to deserialize {json}: {exception.Message}");
+
 					command = new ConnectionCommand();
 				}
 
 				return command;
 			}
 
+			public static async Task<ConnectionCommand> DeserializeAndSendCommandAsync(string json, string from = null,
+				string channel = null, string to = null)
+			{
+				ConnectionCommand command = DeserializeCommand(json);
+				command.From = from;
+				command.Channel = channel;
+				command.To = to;
+				await command.SendCommandAsync();
+				return command;
+			}
 
 			public enum CommandNames
 			{
-				Unrecognized,
+				Away,
+				TableList,
+				InitiateRace,
+				StartRace,
+				RaceCard,
+				CardResult,
+				Reset,
+				NavigateBack,
 				Hello,
 				Verify,
 				Merge,
-				TableList,
-				Away
+				Echo,
+				Unrecognized
 			}
 
 
@@ -165,15 +230,20 @@ namespace SignalRConsole
 			{
 				try
 				{
-					await m_hubConnection.SendAsync(ConsoleChat.c_sendCommand, From, Channel, To, JsonSerializer.Serialize(this));
+					if (Echo != null)
+						Echo.Invoke(Json);
+
+					await m_hubConnection.SendAsync(ConsoleChat.c_sendCommand, From, Channel, To, Json);
 				}
 				catch (Exception exception)
 				{
 					Console.WriteLine($"Error in SendCommandAsync, exception: {exception.Message}");
 				}
 			}
-		}
 
+
+			private string m_json;
+		}
 
 		private static HubConnection m_hubConnection;
 	}
