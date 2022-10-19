@@ -100,8 +100,8 @@ namespace SignalRConsole
 				catch (Exception exception)
 				{
 					State = States.Broken;
-					ConsoleWriteLogLine($"Unfortunately, something broke. {exception.Message}");
-					ConsoleWriteLogLine("\nFinished.");
+					WriteLogLine($"Unfortunately, something broke. {exception.Message}");
+					WriteLogLine("\nFinished.");
 					return -3;
 				}
 
@@ -210,7 +210,7 @@ namespace SignalRConsole
 		{
 			ConsoleColor color = m_console.ForegroundColor;
 			m_console.ForegroundColor = ConsoleColor.Yellow;
-			ConsoleWriteLogLine($"Registration token from server: {token}");
+			WriteLogLine($"Registration token from server: {token}");
 			m_console.ForegroundColor = color;
 			RegistrationToken = token;
 			State = States.Changing;
@@ -282,9 +282,9 @@ namespace SignalRConsole
 
 			// special messages for triggering while scripting
 			if (friend == null)
-				ConsoleWriteLogLine($"(Sent Hello null command to {user}.)", verbose: true);
+				WriteLogLine($"(Sent Hello null command to {user}.)", verbose: true);
 			else if (friend.Blocked == true)
-				ConsoleWriteLogLine($"(Sent Hello {!friend?.Blocked} command to {user}.)", verbose: true);
+				WriteLogLine($"(Sent Hello {!friend?.Blocked} command to {user}.)", verbose: true);
 		}
 
 		private void OnMessageReceived(string from, string message)
@@ -324,7 +324,7 @@ namespace SignalRConsole
 			{
 				ConnectionCommand command = DeserializeCommand(json);
 				if (Echo != null || command.CommandName == CommandNames.Echo && command.Flag == true)
-					ConsoleWriteLogLine($"{ActiveChatFriend.Handle}: {json}");
+					WriteLogLine($"{ActiveChatFriend.Handle}: {json}");
 
 				await m_semaphoreSlim.WaitAsync();
 				try
@@ -365,7 +365,7 @@ namespace SignalRConsole
 							await MergeAccountsAsync(command, to);
 							break;
 						case CommandNames.Echo:
-							Echo = command.Flag == true ? ((x) => ConsoleWriteLogLine($"{Handle}: {x}")) : (Action<string>) null;
+							Echo = command.Flag == true ? ((x) => WriteLogLine($"{Handle}: {x}")) : (Action<string>) null;
 							break;
 						case CommandNames.Unrecognized:
 						default:
@@ -390,7 +390,7 @@ namespace SignalRConsole
 				Friend friend = m_user.Friends.FirstOrDefault(u => u.Id == user);
 				if (friend != null && friend.Blocked != true)
 				{
-					ConsoleWriteLogLine($"Your {(friend.Blocked.HasValue ? "" : "(pending) ")}friend {friend.Handle} is offline.");
+					WriteLogLine($"Your {(friend.Blocked.HasValue ? "" : "(pending) ")}friend {friend.Handle} is offline.");
 					m_online.Remove(friend);
 					if (ActiveChatFriend == friend)
 					{
@@ -548,13 +548,13 @@ namespace SignalRConsole
 			State = States.Busy;
 			while (true)
 			{
-				Point temp = ConsoleWriteLogRead("What is your friend's handle? ", out string handle);
+				Point temp = WriteLogRead("What is your friend's handle? ", out string handle);
 				if (string.IsNullOrEmpty(handle))
 					break;
 
 				if (handle == Handle)
 				{
-					ConsoleWriteLogLine($"That's your handle!");
+					WriteLogLine($"That's your handle!");
 					continue;
 				}
 
@@ -562,23 +562,23 @@ namespace SignalRConsole
 				if (friend != null)
 				{
 					if (!friend.Blocked.HasValue)
-						ConsoleWriteLogLine($"You already asked {handle} to be your friend and we're waiting for a response.");
+						WriteLogLine($"You already asked {handle} to be your friend and we're waiting for a response.");
 					else if (friend.Blocked.Value)
-						ConsoleWriteLogLine($"You and {handle} are blocked. Both you and {handle} must unfriend before you can become friends.");
+						WriteLogLine($"You and {handle} are blocked. Both you and {handle} must unfriend before you can become friends.");
 					else
-						ConsoleWriteLogLine($"{handle} is already your friend!");
+						WriteLogLine($"{handle} is already your friend!");
 
 					break;
 				}
 
-				_ = ConsoleWriteLogRead("What is your friend's email? ", out string email);
+				_ = WriteLogRead("What is your friend's email? ", out string email);
 				if (string.IsNullOrEmpty(email))
 					break;
 
 				friend = new Friend(handle, email);
 				m_user.Friends.Add(friend);
 				SaveUser();
-				ConsoleWriteLogLine($"A friend request has been sent to {handle}.");
+				WriteLogLine($"A friend request has been sent to {handle}.");
 				await MonitorFriendAsync(friend);
 				break;
 			}
@@ -591,14 +591,14 @@ namespace SignalRConsole
 			EraseLog();
 			if (m_user.Friends.Count == 0)
 			{
-				ConsoleWriteLogLine("You have no friends.");
+				WriteLogLine("You have no friends.");
 				return;
 			}
 
-			ConsoleWriteLogLine("Friends:");
+			WriteLogLine("Friends:");
 			foreach (Friend friend in m_user.Friends)
 			{
-				ConsoleWriteLogLine($"{friend.Handle},{(friend.Name != null ? $" {friend.Name}," : "")}" +
+				WriteLogLine($"{friend.Handle},{(friend.Name != null ? $" {friend.Name}," : "")}" +
 					$"{(friend.Email != null ? $" {friend.Email}," : "")}" +
 					$"{(friend.Color != null ? $" {friend.Color}," : "")}" +
 					$"{(friend.Created != null ? $" Created: {friend.Created}" :"")}" +
@@ -613,14 +613,14 @@ namespace SignalRConsole
 			EraseLog();
 			if (m_user.Operators.Any(x => x.Tables.Count > 0))
 			{
-				ConsoleWriteLogLine("Tables json:");
-				ConsoleWriteLogLine(JsonSerializer.Serialize(m_user.Operators, m_serializerOptions));
-				ConsoleWriteLogLine("MergeIndex json:");
-				ConsoleWriteLogLine(JsonSerializer.Serialize(m_user.MergeIndex, m_serializerOptions));
+				WriteLogLine("Tables json:");
+				WriteLogLine(JsonSerializer.Serialize(m_user.Operators, m_serializerOptions));
+				WriteLogLine("MergeIndex json:");
+				WriteLogLine(JsonSerializer.Serialize(m_user.MergeIndex, m_serializerOptions));
 			}
 			else
 			{
-				ConsoleWriteLogLine($"{Handle} has no tables.");
+				WriteLogLine($"{Handle} has no tables.");
 			}
 		}
 
@@ -629,7 +629,7 @@ namespace SignalRConsole
 			EraseLog();
 			if (m_user.Friends.Count == 0)
 			{
-				ConsoleWriteLogLine("You have no friends.");
+				WriteLogLine("You have no friends.");
 				return;
 			}
 
@@ -641,7 +641,7 @@ namespace SignalRConsole
 			{
 				await SendCommandAsync(CommandNames.Hello, Id, result.Item2.Id, result.Item2.Id, m_user, false);
 				await UnfriendAsync(result.Item2);
-				ConsoleWriteLogLine($"{result.Item2.Handle} has been unfriended.");
+				WriteLogLine($"{result.Item2.Handle} has been unfriended.");
 			}
 
 			m_console.SetCursorPosition(result.Item1.X, result.Item1.Y);
@@ -653,13 +653,13 @@ namespace SignalRConsole
 			EraseLog();
 			if (m_user.Friends.Count == 0)
 			{
-				ConsoleWriteLogLine("You have no friends.");
+				WriteLogLine("You have no friends.");
 				return;
 			}
 
 			if (m_online.Count == 0)
 			{
-				ConsoleWriteLogLine("None of your friends is online.");
+				WriteLogLine("None of your friends is online.");
 				return;
 			}
 
@@ -736,6 +736,7 @@ namespace SignalRConsole
 				}
 			}
 
+			Echo = null;
 			EraseLogAndDisplayMenu();
 			return success;
 		}
@@ -751,7 +752,7 @@ namespace SignalRConsole
 			if (command?.CommandName == CommandNames.Echo)
 			{
 				Action<string> echo = Echo;
-				Echo = command.Flag == true ? (x) => ConsoleWriteLogLine($"{Handle}: {x}") : (Action<string>) null;
+				Echo = command.Flag == true ? (x) => WriteLogLine($"{Handle}: {x}") : (Action<string>) null;
 
 				// echo the Echo command
 				if (echo == null && Echo != null)
@@ -814,15 +815,15 @@ namespace SignalRConsole
 
 		private async Task<Tuple<Point, Friend>> ChooseFriendAsync(string prompt, List<Friend> friends)
 		{
-			ConsoleWriteLogLine("Friends:");
+			WriteLogLine("Friends:");
 			int index;
 			for (index = 0; index < friends.Count; index++)
 			{
 				Friend friend = friends[index];
-				ConsoleWriteLogLine($"{string.Format("{0:X}", index)}: {friend.Handle}");
+				WriteLogLine($"{string.Format("{0:X}", index)}: {friend.Handle}");
 			}
 
-			Tuple<Point, ConsoleKeyInfo> result = await ConsoleWriteLogReadAsync(prompt);
+			Tuple<Point, ConsoleKeyInfo> result = await WriteLogReadAsync(prompt);
 			Point cursor = result.Item1;
 
 			while (true)
@@ -836,7 +837,7 @@ namespace SignalRConsole
 				if (friend != null)
 					return new Tuple<Point, Friend>(cursor, friend);
 
-				result = await ConsoleWriteLogReadAsync($"{result.Item2.KeyChar} not valid, enter a number between 0 and" +
+				result = await WriteLogReadAsync($"{result.Item2.KeyChar} not valid, enter a number between 0 and" +
 					$" {Math.Min(friends.Count, 9) - 1}, please try again: ");
 			}
 		}
@@ -852,7 +853,7 @@ namespace SignalRConsole
 				else
 				{
 					await m_hubConnection.SendAsync(c_leaveChannel, ActiveChatChannelName, Id);
-					ConsoleWriteLogLine($"{command.Racer.Handle} can't chat at the moment.");
+					WriteLogLine($"{command.Racer.Handle} can't chat at the moment.");
 					State = States.Listening;
 				}
 			}
@@ -891,12 +892,12 @@ namespace SignalRConsole
 				{
 					if (!existing.Blocked.HasValue)
 					{
-						ConsoleWriteLogLine($"{existing.Handle} has blocked you. {existing.Handle} must unfriend you" +
+						WriteLogLine($"{existing.Handle} has blocked you. {existing.Handle} must unfriend you" +
 							$" before you can become friends.");
 					}
 					else if (existing.Blocked == false)
 					{
-						ConsoleWriteLogLine($"{existing.Handle} has unfriended you.");
+						WriteLogLine($"{existing.Handle} has unfriended you.");
 						await UnfriendAsync(existing);
 					}
 				}
@@ -913,7 +914,7 @@ namespace SignalRConsole
 						await SendCommandAsync(CommandNames.Hello, Id, pending.Id, pending.Id, m_user, false);
 
 						// special message for triggering while scripting
-						ConsoleWriteLogLine($"(Sent unfriend command to {pending.Handle}.)", verbose: true);
+						WriteLogLine($"(Sent unfriend command to {pending.Handle}.)", verbose: true);
 					}
 					else if (!existing.Blocked.HasValue)
 					{
@@ -932,7 +933,7 @@ namespace SignalRConsole
 
 			if (existing != null && !m_online.Contains(existing))
 			{
-				ConsoleWriteLogLine($"Your {(existing.Blocked.HasValue ? "" : "(pending) ")}friend {existing.Handle} is online.");
+				WriteLogLine($"Your {(existing.Blocked.HasValue ? "" : "(pending) ")}friend {existing.Handle} is online.");
 				m_online.Add(existing);
 				if (existing.Blocked == false)
 					await SendCommandAsync(CommandNames.Hello, Id, existing.Id, existing.Id, m_user, true);
@@ -955,7 +956,7 @@ namespace SignalRConsole
 
 				PreviousState = State;
 				State = States.Busy;
-				Tuple<Point, ConsoleKeyInfo> confirm = await ConsoleWriteLogReadAsync($"Accept friend request from" +
+				Tuple<Point, ConsoleKeyInfo> confirm = await WriteLogReadAsync($"Accept friend request from" +
 					$" {pending.Handle}, email address {pending.Email}? [y/n] ");
 				State = PreviousState;
 				pending.Blocked = confirm.Item2.Key != ConsoleKey.Y;
@@ -984,7 +985,7 @@ namespace SignalRConsole
 			}
 
 			if (existing != null)
-				ConsoleWriteLogLine($"You and {existing.Handle} are {(existing.Blocked.Value ? "not" : "now")} friends!");
+				WriteLogLine($"You and {existing.Handle} are {(existing.Blocked.Value ? "not" : "now")} friends!");
 		}
 
 		private async Task UnfriendAsync(Friend friend)
@@ -1005,7 +1006,7 @@ namespace SignalRConsole
 			else if (State == States.FriendAway)
 			{
 				EraseLog();
-				ConsoleWriteLogLine($"{ActiveChatFriend.Handle} has returned!");
+				WriteLogLine($"{ActiveChatFriend.Handle} has returned!");
 				State = States.Chatting;
 			}
 
@@ -1026,14 +1027,14 @@ namespace SignalRConsole
 		private void ProcessAwayCommand()
 		{
 			EraseLog();
-			ConsoleWriteLogLine($"{ActiveChatFriend.Handle} is away...");
+			WriteLogLine($"{ActiveChatFriend.Handle} is away...");
 			State = States.FriendAway;
 		}
 
 		private async Task ProcessInitiateRaceCommandAsync()
 		{
 			EraseLog();
-			ConsoleWriteLogLine($"{ActiveChatFriend.Handle} is preparing the race...");
+			WriteLogLine($"{ActiveChatFriend.Handle} is preparing the race...");
 			State = States.RaceInitializing;
 			ProcessResetCommand();
 			await SendCommandAsync(CommandNames.InitiateRace, Id, ActiveChatFriend.Id, ActiveChatFriend.Id);
@@ -1041,7 +1042,7 @@ namespace SignalRConsole
 
 		private async Task ProcessStartRaceCommandAsync()
 		{
-			ConsoleWriteLogLine($"{ActiveChatFriend.Handle} has started the race!");
+			WriteLogLine($"{ActiveChatFriend.Handle} has started the race!");
 			await SendCommandAsync(CommandNames.StartRace, Id, ActiveChatFriend.Id, ActiveChatFriend.Id);
 		}
 
@@ -1103,7 +1104,7 @@ namespace SignalRConsole
 
 		private void ProcessCardResultCommand(RaceData raceData)
 		{
-			ConsoleWriteLogLine($"{ActiveChatFriend.Handle} Try {raceData.Try} of 2," +
+			WriteLogLine($"{ActiveChatFriend.Handle} Try {raceData.Try} of 2," +
 				$" {string.Format("Time: {0:0.0}", raceData.Time / 1000.0)}, Correct: {raceData.Correct}," +
 				$" Wrong {raceData.Wrong}, Score: {raceData.Score}");
 		}
@@ -1129,28 +1130,27 @@ namespace SignalRConsole
 		private void IntersectTables(Dictionary<string, List<int>> tables)
 		{
 			foreach (string line in FormatTableList($"{ActiveChatFriend.Handle} has", tables).Split("\n"))
-				ConsoleWriteLogLine(line);
-
+				WriteLogLine(line);
 			if (HaveTables)
 			{
 				foreach (string line in FormatTableList("You have", TableList).Split("\n"))
-					ConsoleWriteLogLine(line);
+					WriteLogLine(line);
 
 				int count = m_user.Operators.Count(x => tables.Any(y => x.Name == y.Key &&
 					x.Tables.Any(z => y.Value.Contains(z.Base))));
 				if (count == 0)
 				{
-					ConsoleWriteLogLine($"You and {ActiveChatFriend.Handle} have no sets of tables in common.");
+					WriteLogLine($"You and {ActiveChatFriend.Handle} have no sets of tables in common.");
 				}
 				else
 				{
-					ConsoleWriteLogLine($"You and {ActiveChatFriend.Handle} have {count} {(count == 1 ? "set" : "sets")}" +
+					WriteLogLine($"You and {ActiveChatFriend.Handle} have {count} {(count == 1 ? "set" : "sets")}" +
 						$" of tables in common.");
 				}
 			}
 			else
 			{
-				ConsoleWriteLogLine("You have no tables.");
+				WriteLogLine("You have no tables.");
 			}
 		}
 
@@ -1182,14 +1182,14 @@ namespace SignalRConsole
 			if (!DateTime.TryParse(m_user.Created, out DateTime myCreated) ||
 				!DateTime.TryParse(friend.Created, out DateTime created))
 			{
-				ConsoleWriteLogLine($"Error in CheckSendMerge, could not parse DateTime from {m_user.Created}" +
+				WriteLogLine($"Error in CheckSendMerge, could not parse DateTime from {m_user.Created}" +
 					$" and/or {friend.Created}");
 				return;
 			}
 
 			if (myCreated != created && !m_merged.Contains(friend.DeviceId))
 			{
-				ConsoleWriteLogLine($"{friend.Handle} is online on device {friend.DeviceId}, sending merge data...");
+				WriteLogLine($"{friend.Handle} is online on device {friend.DeviceId}, sending merge data...");
 				m_merged.Add(friend.DeviceId);
 				await SendCommandAsync(CommandNames.Merge, Id, friend.Id, friend.DeviceId, m_user);
 			}
@@ -1201,7 +1201,7 @@ namespace SignalRConsole
 			if (!DateTime.TryParse(m_user.Created, out DateTime myCreated) ||
 				!DateTime.TryParse(user.Created, out DateTime created))
 			{
-				ConsoleWriteLogLine($"Error in MergeAccountsAsync parsing Created date '{m_user.Created}' or '{user.Created}'.");
+				WriteLogLine($"Error in MergeAccountsAsync parsing Created date '{m_user.Created}' or '{user.Created}'.");
 				return;
 			}
 
@@ -1211,7 +1211,7 @@ namespace SignalRConsole
 			if (!DateTime.TryParse(m_user.Modified, out DateTime myModified) ||
 				!DateTime.TryParse(user.Modified, out DateTime modified))
 			{
-				ConsoleWriteLogLine($"Error in MergeAccountsAsync parsing Modified date '{m_user.Modified}' or '{user.Modified}'.");
+				WriteLogLine($"Error in MergeAccountsAsync parsing Modified date '{m_user.Modified}' or '{user.Modified}'.");
 				return;
 			}
 
@@ -1236,11 +1236,11 @@ namespace SignalRConsole
 				m_user.Color = user.Color;
 			}
 
-			ConsoleWriteLogLine($"Merging data from {Handle}{(updateId ? $", Id {user.Id}," : "")} on device {user.DeviceId}...");
+			WriteLogLine($"Merging data from {Handle}{(updateId ? $", Id {user.Id}," : "")} on device {user.DeviceId}...");
 			m_merged.Add(user.DeviceId);
 			update = MergeFriends(update, user);
 			update = MergeTables(update, user);
-			ConsoleWriteLogLine($"Merged data from {Handle} on device {user.DeviceId}.");
+			WriteLogLine($"Merged data from {Handle} on device {user.DeviceId}.");
 			if (update || updateId)
 				SaveUser();
 		}
@@ -1490,7 +1490,7 @@ namespace SignalRConsole
 			m_log.Clear();
 			Console.ForegroundColor = color;
 			Console.SetCursorPosition(cursor.X, cursor.Y);
-			LogTop = LogBottom = OutputLine + c_logWindowOffset + 1;
+			LogTop = LogBottom = OutputLine + c_logWindowOffset;
 		}
 
 		private void WriteLine(string line, bool waitForInput = false)
@@ -1524,7 +1524,7 @@ namespace SignalRConsole
 			return cursor;
 		}
 
-		private void ConsoleWriteLogLine(string line, bool verbose = false)
+		private void WriteLogLine(string line, bool verbose = false)
 		{
 			if (!verbose || m_console.ScriptMode > 0)
 			{
@@ -1539,7 +1539,7 @@ namespace SignalRConsole
 			}
 		}
 
-		private Point ConsoleWriteLogRead(string line, out string value)
+		private Point WriteLogRead(string line, out string value)
 		{
 			Point cursor = MoveCursorToLog();
 			m_console.Write(line);
@@ -1548,7 +1548,7 @@ namespace SignalRConsole
 			return cursor;
 		}
 
-		private async Task<Tuple<Point, ConsoleKeyInfo>> ConsoleWriteLogReadAsync(string line)
+		private async Task<Tuple<Point, ConsoleKeyInfo>> WriteLogReadAsync(string line)
 		{
 			Point cursor = MoveCursorToLog();
 			m_console.Write(line);
