@@ -188,8 +188,7 @@ namespace SignalRConsole
 		private int PromptLine { get; set; }
 		private bool Interrupt { get; set; }
 		private RaceData RaceData { get; set; }
-		private bool IsRacing => State == States.RaceInitializing || State == States.Racing ||
-			State == States.Chatting || State == States.FriendAway;
+		private bool IsStateRacing => State == States.RaceInitializing || State == States.Racing;
 
 		private Dictionary<string, List<int>> TableList
 		{
@@ -291,6 +290,7 @@ namespace SignalRConsole
 		{
 			if (from == Id)
 			{
+				m_console.CursorTop = OutputLine;
 				WriteLine($"You said: {message}");
 				Interrupt = false;
 			}
@@ -308,8 +308,8 @@ namespace SignalRConsole
 				else
 				{
 					Interrupt = true;
-					OutputLine++;
 					cursor = MoveLog();
+					OutputLine++;
 				}
 
 				m_console.SetCursorPosition(0, OutputLine);
@@ -324,7 +324,7 @@ namespace SignalRConsole
 			{
 				ConnectionCommand command = DeserializeCommand(json);
 				if (Echo != null || command.CommandName == CommandNames.Echo && command.Flag == true)
-					WriteLogLine($"{ActiveChatFriend.Handle}: {json}");
+					WriteLogLine($"{ActiveChatFriend?.Handle ?? from}: {json}");
 
 				await m_semaphoreSlim.WaitAsync();
 				try
@@ -353,7 +353,7 @@ namespace SignalRConsole
 							ProcessResetCommand();
 							break;
 						case CommandNames.NavigateBack:
-							ProcessNavigateBackCommand();
+							await ProcessNavigateBackCommandAsync();
 							break;
 						case CommandNames.Hello:
 							await HelloAsync(from, command);
@@ -683,15 +683,17 @@ namespace SignalRConsole
 
 		private async Task<bool> MessageLoopAsync()
 		{
+			// don't block incoming commands while in the message loop
+			_ = m_semaphoreSlim.Release();
 			State = States.Chatting;
-			WriteLine($"\nType messages, type '{c_leaveChatCommand}' to leave the chat.");
-			OutputLine = m_console.CursorTop;
+			m_console.SetCursorPosition(0, OutputLine);
+			WriteLine($"Type messages, type '{c_leaveChatCommand}' to leave the chat.");
 			bool success = true;
 			while (true)
 			{
 				while (true)
 				{
-					if (State == States.Listening)
+					if (State == States.Listening || IsStateRacing)
 						return true;
 
 					if (m_console.KeyAvailable)
@@ -710,7 +712,6 @@ namespace SignalRConsole
 				if (State != States.Chatting && State != States.FriendAway)
 					return true;
 
-				m_console.CursorTop = OutputLine;
 				if (await CheckForCommandAsync(message))
 				{
 					WriteLine($"You sent the command: {message}");
@@ -840,6 +841,12 @@ namespace SignalRConsole
 				result = await WriteLogReadAsync($"{result.Item2.KeyChar} not valid, enter a number between 0 and" +
 					$" {Math.Min(friends.Count, 9) - 1}, please try again: ");
 			}
+		}
+
+		private async Task ProcessNavigateBackCommandAsync()
+		{
+			if (State == States.RaceInitializing)
+				await MessageLoopAsync();
 		}
 
 		private async Task HelloAsync(string from, ConnectionCommand command)
@@ -1014,14 +1021,18 @@ namespace SignalRConsole
 				await SendCommandAsync(CommandNames.TableList, Id, from, from, TableList);
 
 			if (State != States.RaceInitializing)
+			{
+				if (connecting)
+				{
+					WriteLogLine(string.Empty);
+					WriteLogLine(string.Empty);
+				}
+
 				IntersectTables(tables);
+			}
 
 			if (connecting)
-			{
-				// don't block on the message loop
-				_ = m_semaphoreSlim.Release();
 				_ = await MessageLoopAsync();
-			}
 		}
 
 		private void ProcessAwayCommand()
@@ -1043,17 +1054,16 @@ namespace SignalRConsole
 		private async Task ProcessStartRaceCommandAsync()
 		{
 			WriteLogLine($"{ActiveChatFriend.Handle} has started the race!");
+			WriteLine(string.Empty);
+			WriteLine("Racing:");
 			await SendCommandAsync(CommandNames.StartRace, Id, ActiveChatFriend.Id, ActiveChatFriend.Id);
-		}
-
-		private void ProcessNavigateBackCommand()
-		{
-			// QKR doesn't handle this command at this level
-			State = States.Chatting;
 		}
 
 		private async Task ProcessRaceCardCommandAsync(RaceData raceData)
 		{
+			// don't block incoming commands while reading data
+			_ = m_semaphoreSlim.Release();
+
 			if (State != States.Racing)
 				State = States.Racing;
 
@@ -1067,6 +1077,7 @@ namespace SignalRConsole
 			Fact fact = new Fact(raceData.First, raceData.Second, Arithmetic.Operator[(FactOperator)raceData.Operator]);
 			DateTime startTime = DateTime.Now;
 			int guess = ReadAnswer("What is ", fact.Render);
+
 			if (guess == fact.Answer)
 			{
 				WriteLine("Correct!");
@@ -1131,6 +1142,7 @@ namespace SignalRConsole
 		{
 			foreach (string line in FormatTableList($"{ActiveChatFriend.Handle} has", tables).Split("\n"))
 				WriteLogLine(line);
+
 			if (HaveTables)
 			{
 				foreach (string line in FormatTableList("You have", TableList).Split("\n"))
@@ -1458,13 +1470,16 @@ namespace SignalRConsole
 		private void DisplayMenu()
 		{
 			EraseLog();
-			OutputLine = m_console.CursorTop + 1;
+			OutputLine = m_console.CursorTop;
 			LogTop = LogBottom = OutputLine + c_logWindowOffset;
-			WriteLine(String.Empty);
+			WriteLine(string.Empty);
 			WriteLine("Pick a command: t to list tables, a to add a friend, l to list friends,");
 			WriteLine("u to unfriend a friend, c to chat, or x to exit");
 			PromptLine = m_console.CursorTop;
 			State = States.Listening;
+			OutputLine++;
+			LogTop++;
+			LogBottom++;
 		}
 
 		private async Task<ConsoleKeyInfo> ReadKeyAvailableAsync(Func<bool> enable)
@@ -1477,8 +1492,11 @@ namespace SignalRConsole
 
 		private void EraseLog()
 		{
-			if (m_console.ScriptMode > 1 || m_log.Count == 0 || Echo != null && IsRacing)
+			if (m_console.ScriptMode > 1 || m_log.Count == 0 || Echo != null &&
+				(IsStateRacing || State == States.Chatting))
+			{
 				return;
+			}
 
 			Point cursor = new Point(m_console.CursorLeft, m_console.CursorTop);
 			Console.SetCursorPosition(0, LogTop);
