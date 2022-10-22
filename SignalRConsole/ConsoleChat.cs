@@ -845,8 +845,13 @@ namespace SignalRConsole
 
 		private async Task ProcessNavigateBackCommandAsync()
 		{
-			if (State == States.RaceInitializing)
+			if (State == States.RaceInitializing || State == States.Racing)
+			{
+				WriteLine(string.Empty);
 				await MessageLoopAsync();
+				if (State == States.Racing)
+					State = States.RaceInitializing;
+			}
 		}
 
 		private async Task HelloAsync(string from, ConnectionCommand command)
@@ -1076,7 +1081,9 @@ namespace SignalRConsole
 			RaceData.Second = raceData.Second;
 			Fact fact = new Fact(raceData.First, raceData.Second, Arithmetic.Operator[(FactOperator)raceData.Operator]);
 			DateTime startTime = DateTime.Now;
-			int guess = ReadAnswer("What is ", fact.Render);
+			int guess = await ReadAnswerAsync("What is ", fact.Render, fact.Answer);
+			if (guess == -1)
+				return;
 
 			if (guess == fact.Answer)
 			{
@@ -1096,7 +1103,9 @@ namespace SignalRConsole
 			RaceData.Try = 2;
 			await SendCommandAsync(CommandNames.CardResult, Id, ActiveChatFriend.Id, ActiveChatFriend.Id, RaceData);
 			RaceData.Busy = false;
-			guess = ReadAnswer($"Not quite... what is ", fact.Render);
+			if ((guess = await ReadAnswerAsync($"Not quite... what is ", fact.Render, fact.Answer)) == -1)
+				return;
+
 			RaceData.Time = (int) (DateTime.Now - startTime).TotalMilliseconds;
 			if (guess == fact.Answer)
 			{
@@ -1125,16 +1134,38 @@ namespace SignalRConsole
 			RaceData = new RaceData();
 		}
 
-		private int ReadAnswer(string prompt, string question)
+		private async Task<int> ReadAnswerAsync(string prompt, string question, int answer)
 		{
 			WriteLine($"{prompt}{question}? ", waitForInput: true);
+			string guess = string.Empty;
+			string answerString = answer.ToString();
 			while (true)
 			{
-				string input = Console.ReadLine();
-				if (int.TryParse(input, out int guess))
-					return guess;
+				while(true)
+				{
+					if (State != States.Racing)
+					{
+						m_console.WriteLine($" {ActiveChatFriend.Handle} has ended the race.");
+						return -1;
+					}
 
-				WriteLine($"{input} is not a number... what is {question}? ", waitForInput: true);
+					if (m_console.KeyAvailable)
+						break;
+
+					await Task.Delay(100);
+				}
+
+				ConsoleKeyInfo keyInfo = Console.ReadKey(true);
+				if (int.TryParse(keyInfo.KeyChar.ToString(), out int digit))
+				{
+					Console.Write(digit);
+					guess += keyInfo.KeyChar;
+					if (guess != answerString[0..guess.Length] || guess.Length == answerString.Length)
+					{
+						Console.SetCursorPosition(0, OutputLine);
+						return int.Parse(guess);
+					}
+				}
 			}
 		}
 
