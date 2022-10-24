@@ -6,6 +6,7 @@ namespace SignalRConsole
 	{
 		public RaceData()
 		{
+			Try = 1;
 			Busy = true;
 		}
 

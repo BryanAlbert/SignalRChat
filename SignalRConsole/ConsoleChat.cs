@@ -182,13 +182,32 @@ namespace SignalRConsole
 		private string ActiveChatChannelName { get; set; }
 		private Friend ActiveChatFriend { get; set; }
 		private bool HaveTables => m_user.Operators.Any(x => x.Tables.Any(y => y.Cards.Count > 0));
+		private bool IsStateRacing => State == States.RaceInitializing || State == States.Racing;
+		private int PromptLine { get; set; }
+		private int ScoreboardLine { get; set; }
 		private int OutputLine { get; set; }
 		private int LogTop { get; set; }
 		private int LogBottom { get; set; }
-		private int PromptLine { get; set; }
 		private bool Interrupt { get; set; }
-		private RaceData RaceData { get; set; }
-		private bool IsStateRacing => State == States.RaceInitializing || State == States.Racing;
+		private RaceData MyRaceData
+		{
+			get => m_myRaceData;
+			set
+			{
+				m_myRaceData = value;
+				UpdateScoreboard();
+			}
+		}
+
+		private RaceData OpponentRaceData
+		{
+			get => m_opponentRaceData;
+			set
+			{
+				m_opponentRaceData = value;
+				UpdateScoreboard();
+			}
+		}
 
 		private Dictionary<string, List<int>> TableList
 		{
@@ -684,7 +703,9 @@ namespace SignalRConsole
 		private async Task<bool> MessageLoopAsync()
 		{
 			// don't block incoming commands while in the message loop
-			_ = m_semaphoreSlim.Release();
+			if (m_semaphoreSlim.CurrentCount == 0)
+				_ = m_semaphoreSlim.Release();
+
 			State = States.Chatting;
 			m_console.SetCursorPosition(0, OutputLine);
 			WriteLine($"Type messages, type '{c_leaveChatCommand}' to leave the chat.");
@@ -1010,6 +1031,13 @@ namespace SignalRConsole
 
 		private async Task ProcessTableListCommandAsync(string from, Dictionary<string, List<int>> tables)
 		{
+			if (State == States.Racing)
+			{
+				EraseLog();
+				_ = await MessageLoopAsync();
+				return;
+			}
+
 			bool connecting = State == States.Connecting || State == States.Listening;
 			if (connecting)
 			{
@@ -1049,103 +1077,122 @@ namespace SignalRConsole
 
 		private async Task ProcessInitiateRaceCommandAsync()
 		{
-			EraseLog();
-			WriteLogLine($"{ActiveChatFriend.Handle} is preparing the race...");
-			State = States.RaceInitializing;
-			ProcessResetCommand();
+			if (State == States.Chatting)
+			{
+				EraseLog();
+				WriteLine(string.Empty);
+				WriteLine("Racing, type answers or type quit or reset:");
+				ScoreboardLine = OutputLine;
+				MyRaceData = new RaceData();
+				OpponentRaceData = new RaceData();
+				OutputLine += 3;
+				LogTop += 3;
+				LogBottom += 3;
+				Console.SetCursorPosition(0, OutputLine);
+				State = States.RaceInitializing;
+				WriteLogLine($"{ActiveChatFriend.Handle} is preparing the race...");
+			}
+
 			await SendCommandAsync(CommandNames.InitiateRace, Id, ActiveChatFriend.Id, ActiveChatFriend.Id);
 		}
 
 		private async Task ProcessStartRaceCommandAsync()
 		{
 			WriteLogLine($"{ActiveChatFriend.Handle} has started the race!");
-			WriteLine(string.Empty);
-			WriteLine("Racing:");
 			await SendCommandAsync(CommandNames.StartRace, Id, ActiveChatFriend.Id, ActiveChatFriend.Id);
 		}
 
 		private async Task ProcessRaceCardCommandAsync(RaceData raceData)
 		{
 			// don't block incoming commands while reading data
-			_ = m_semaphoreSlim.Release();
+			if (m_semaphoreSlim.CurrentCount == 0)
+				_ = m_semaphoreSlim.Release();
 
 			if (State != States.Racing)
 				State = States.Racing;
 
-			RaceData.QuizCount++;
-			RaceData.Try = 1;
-			RaceData.Busy = true;
-			RaceData.Base = raceData.Base;
-			RaceData.First = raceData.First;
-			RaceData.Operator = raceData.Operator;
-			RaceData.Second = raceData.Second;
+			MyRaceData.QuizCount++;
+			MyRaceData.Try = 1;
+			MyRaceData.Busy = true;
+			MyRaceData.Base = raceData.Base;
+			MyRaceData.First = raceData.First;
+			MyRaceData.Operator = raceData.Operator;
+			MyRaceData.Second = raceData.Second;
 			Fact fact = new Fact(raceData.First, raceData.Second, Arithmetic.Operator[(FactOperator)raceData.Operator]);
 			DateTime startTime = DateTime.Now;
 			int guess = await ReadAnswerAsync("What is ", fact.Render, fact.Answer);
 			if (guess == -1)
+			{
+				await SendCommandAsync(CommandNames.NavigateBack, Id, ActiveChatFriend.Id, ActiveChatFriend.Id);
+				await SendCommandAsync(CommandNames.NavigateBack, Id, ActiveChatFriend.Id, ActiveChatFriend.Id);
 				return;
+			}
+
+			if (guess == -2)
+			{
+				await SendCommandAsync(CommandNames.Reset, Id, ActiveChatFriend.Id, ActiveChatFriend.Id);
+				return;
+			}
 
 			if (guess == fact.Answer)
 			{
 				WriteLine("Correct!");
-				RaceData.Time = (int) (DateTime.Now - startTime).TotalMilliseconds;
-				RaceData.Score += 2;
-				RaceData.Correct++;
+				MyRaceData.Time = (int) (DateTime.Now - startTime).TotalMilliseconds;
+				MyRaceData.Score += 2;
+				MyRaceData.Correct++;
 
 				// leader expects (at least) two CardResults, first with Busy true, second with Busy false (after results have been shown)
-				await SendCommandAsync(CommandNames.CardResult, Id, ActiveChatFriend.Id, ActiveChatFriend.Id, RaceData);
-				RaceData.Busy = false;
-				await SendCommandAsync(CommandNames.CardResult, Id, ActiveChatFriend.Id, ActiveChatFriend.Id, RaceData);
+				await SendCommandAsync(CommandNames.CardResult, Id, ActiveChatFriend.Id, ActiveChatFriend.Id, MyRaceData);
+				MyRaceData.Busy = false;
+				await SendCommandAsync(CommandNames.CardResult, Id, ActiveChatFriend.Id, ActiveChatFriend.Id, MyRaceData);
 				return;
 			}
 
-			RaceData.Time = (int) (DateTime.Now - startTime).TotalMilliseconds;
-			RaceData.Try = 2;
-			await SendCommandAsync(CommandNames.CardResult, Id, ActiveChatFriend.Id, ActiveChatFriend.Id, RaceData);
-			RaceData.Busy = false;
+			MyRaceData.Time = (int) (DateTime.Now - startTime).TotalMilliseconds;
+			MyRaceData.Try = 2;
+			await SendCommandAsync(CommandNames.CardResult, Id, ActiveChatFriend.Id, ActiveChatFriend.Id, MyRaceData);
+			MyRaceData.Busy = false;
 			if ((guess = await ReadAnswerAsync($"Not quite... what is ", fact.Render, fact.Answer)) == -1)
 				return;
 
-			RaceData.Time = (int) (DateTime.Now - startTime).TotalMilliseconds;
+			MyRaceData.Time = (int) (DateTime.Now - startTime).TotalMilliseconds;
 			if (guess == fact.Answer)
 			{
 				WriteLine("You are right!");
-				RaceData.Score += 1;
-				RaceData.Correct++;
-				RaceData.Busy = false;
-				await SendCommandAsync(CommandNames.CardResult, Id, ActiveChatFriend.Id, ActiveChatFriend.Id, RaceData);
+				MyRaceData.Score += 1;
+				MyRaceData.Correct++;
+				MyRaceData.Busy = false;
+				await SendCommandAsync(CommandNames.CardResult, Id, ActiveChatFriend.Id, ActiveChatFriend.Id, MyRaceData);
 				return;
 			}
 
 			WriteLine($"No! {fact.Render} = {fact.Answer}");
-			RaceData.Wrong++;
-			await SendCommandAsync(CommandNames.CardResult, Id, ActiveChatFriend.Id, ActiveChatFriend.Id, RaceData);
+			MyRaceData.Wrong++;
+			await SendCommandAsync(CommandNames.CardResult, Id, ActiveChatFriend.Id, ActiveChatFriend.Id, MyRaceData);
 		}
 
 		private void ProcessCardResultCommand(RaceData raceData)
 		{
-			WriteLogLine($"{ActiveChatFriend.Handle} Try {raceData.Try} of 2," +
-				$" {string.Format("Time: {0:0.0}", raceData.Time / 1000.0)}, Correct: {raceData.Correct}," +
-				$" Wrong {raceData.Wrong}, Score: {raceData.Score}");
+			OpponentRaceData = raceData;
 		}
 
 		private void ProcessResetCommand()
 		{
-			RaceData = new RaceData();
+			MyRaceData = new RaceData();
 		}
 
-		private async Task<int> ReadAnswerAsync(string prompt, string question, int answer)
+		private async Task<int> ReadAnswerAsync(string prompt, string question, int rawAnswer)
 		{
 			WriteLine($"{prompt}{question}? ", waitForInput: true);
 			string guess = string.Empty;
-			string answerString = answer.ToString();
+			string answer = rawAnswer.ToString();
 			while (true)
 			{
 				while(true)
 				{
 					if (State != States.Racing)
 					{
-						m_console.WriteLine($" {ActiveChatFriend.Handle} has ended the race.");
+						m_console.WriteLine($"{ActiveChatFriend.Handle} has ended the race.");
 						return -1;
 					}
 
@@ -1156,17 +1203,52 @@ namespace SignalRConsole
 				}
 
 				ConsoleKeyInfo keyInfo = Console.ReadKey(true);
-				if (int.TryParse(keyInfo.KeyChar.ToString(), out int digit))
+				if (CommandMatch(ref guess, keyInfo, "quit", out bool complete))
+				{
+					if (complete)
+						return -1;
+				}
+				else if (CommandMatch(ref guess, keyInfo, "reset", out complete))
+				{
+					if (complete)
+						return -2;
+				}
+				else if (int.TryParse(keyInfo.KeyChar.ToString(), out int digit))
 				{
 					Console.Write(digit);
 					guess += keyInfo.KeyChar;
-					if (guess != answerString[0..guess.Length] || guess.Length == answerString.Length)
+					if (guess != answer[0..guess.Length] || guess.Length == answer.Length)
 					{
 						Console.SetCursorPosition(0, OutputLine);
 						return int.Parse(guess);
 					}
 				}
 			}
+		}
+
+		bool CommandMatch(ref string guess, ConsoleKeyInfo key, string command, out bool complete)
+		{
+			complete = false;
+			if (key.Key == ConsoleKey.Backspace)
+			{
+				if (guess.Length > 0)
+				{
+					guess = guess[..^1];
+					Console.CursorLeft--;
+					Console.Write(" ");
+					Console.CursorLeft--;
+				}
+
+				return true;
+			}
+
+			if (guess.Length >= command.Length || guess + key.KeyChar != command[..(guess.Length + 1)])
+				return false;
+			
+			Console.Write(key.KeyChar);
+			guess += key.KeyChar;
+			complete = guess == command;
+			return true;
 		}
 
 		private void IntersectTables(Dictionary<string, List<int>> tables)
@@ -1513,6 +1595,24 @@ namespace SignalRConsole
 			LogBottom++;
 		}
 
+		private void UpdateScoreboard()
+		{
+			Point cursor = new Point(Console.CursorLeft, Console.CursorTop);
+			Console.SetCursorPosition(0, ScoreboardLine);
+			int tab = Math.Max(Handle.Length, ActiveChatFriend.Handle.Length);
+			Console.WriteLine($"{Handle}{new string(' ', tab - Handle.Length)}" +
+				$" Try {MyRaceData.Try} of 2," +
+				$" {string.Format("Time: {0:0.0}", MyRaceData.Time / 1000.0)}," +
+				$" Correct: {MyRaceData.Correct}," +
+				$" Wrong {MyRaceData.Wrong}, Score: {MyRaceData.Score}");
+			Console.WriteLine($"{ActiveChatFriend.Handle}{new string(' ', tab - ActiveChatFriend.Handle.Length)}" +
+				$" Try {OpponentRaceData?.Try} of 2," +
+				$" {string.Format("Time: {0:0.0}", OpponentRaceData?.Time / 1000.0)}," +
+				$" Correct: {OpponentRaceData?.Correct}," +
+				$" Wrong {OpponentRaceData?.Wrong}, Score: {OpponentRaceData?.Score}");
+			Console.SetCursorPosition(cursor.X, cursor.Y);
+		}
+
 		private async Task<ConsoleKeyInfo> ReadKeyAvailableAsync(Func<bool> enable)
 		{
 			while (!enable() || !m_console.KeyAvailable)
@@ -1653,6 +1753,8 @@ namespace SignalRConsole
 		private States m_state;
 		private bool m_waitForEnter;
 		private Dictionary<string, List<int>> m_tables;
+		private RaceData m_opponentRaceData;
+		private RaceData m_myRaceData;
 		private readonly List<User> m_users = new List<User>();
 		private readonly List<Friend> m_online = new List<Friend>();
 		private readonly List<string> m_log = new List<string>();
