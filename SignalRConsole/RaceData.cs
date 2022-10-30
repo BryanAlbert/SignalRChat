@@ -12,8 +12,8 @@ namespace SignalRConsole
 
 		public RaceData(Tuple<int, Card> card) : this()
 		{
+			Operator = (int) card.Item2.Fact.Operator.FactOperator;
 			Base = card.Item1;
-			Operator = (int)card.Item2.Fact.Operator.FactOperator;
 			First = card.Item2.Fact.First;
 			Second = card.Item2.Fact.Second;
 		}
@@ -30,9 +30,21 @@ namespace SignalRConsole
 			Busy = true;
 		}
 
+		public void SetCard(RaceData source)
+		{
+			Operator = source.Operator;
+			Base = source.Base;
+			First = source.First;
+			Second = source.Second;
+			Try = source.Try;
+			Time = source.Time;
+			Busy = source.Busy;
+			QuizCount = source.QuizCount;
+		}
 
-		public int Base { get; set; }
+
 		public int Operator { get; set; }
+		public int Base { get; set; }
 		public int First { get; set; }
 		public int Second { get; set; }
 		public int Try { get; set; } = 1;

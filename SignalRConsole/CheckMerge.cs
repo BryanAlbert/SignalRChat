@@ -40,7 +40,7 @@ namespace SignalRConsole
 						Dictionary<string, Tuple<int?, int?, int?, int?>> quizzed = new Dictionary<string, Tuple<int?, int?, int?, int?>>();
 						Dictionary<string, Tuple<int?, int?, int?, int?>> correct = new Dictionary<string, Tuple<int?, int?, int?, int?>>();
 						Dictionary<string, Tuple<int?, int?, int?, int?>> time = new Dictionary<string, Tuple<int?, int?, int?, int?>>();
-						_ = GetData(Users[0], kind, card, (x) => x.Quizzed, "MergeQuizzed",(x, y) => x.MergeQuizzed[y], quizzed, table.Base);
+						_ = GetData(Users[0], kind, card, (x) => x.Quizzed, "MergeQuizzed", (x, y) => x.MergeQuizzed[y], quizzed, table.Base);
 						_ = GetData(Users[0], kind, card, (x) => x.Correct, "MergeCorrect", (x, y) => x.MergeCorrect[y], correct, table.Base);
 						_ = GetData(Users[0], kind, card, (x) => x.TotalTime, "MergeTme", (x, y) => x.MergeTime[y], time, table.Base);
 

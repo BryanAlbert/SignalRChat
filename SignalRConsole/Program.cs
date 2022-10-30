@@ -49,7 +49,7 @@ namespace SignalRConsole
 								case c_startWait:
 									commandLine = line[(c_startWait.Length + 1)..];
 									Console.WriteLine($"\nProgram: Launching and waiting with command line: {commandLine}");
-									await new ConsoleChat().RunAsync(new Harness(commandLine.Split(" "), workingDirectory));
+									_ = await new ConsoleChat().RunAsync(new Harness(commandLine.Split(" "), workingDirectory));
 									break;
 								case c_startWaitFor:
 								case c_startWaitForRegex:
@@ -136,7 +136,7 @@ namespace SignalRConsole
 				"\nOld\\Mia.qkr.json, New\\Mia.qkr, and New\\Mia.qkr.json for consistency. Test-26 Mia will" +
 				"\nanalyze Mia.qkr and Mia.qkr.json in Test-26's First, Second, and Third folders. If QKR" +
 				"\nwas tested, use -qkr As QkrFolder to specify which user was run on QKR, e.g. Old, New," +
-				"\nFirst, etc. and the folder QKR stores its json files in."); 
+				"\nFirst, etc. and the folder QKR stores its json files in.");
 			Console.WriteLine("\nUsage: [-verbose][Folder][Handle][TestHarness][ScriptFile][Folder InputFileName" +
 				"\nOutputFileName Tag]");
 			Console.WriteLine("\n-verbose        show output used for scripting triggers");
@@ -146,7 +146,7 @@ namespace SignalRConsole
 			Console.WriteLine("Handle          Load user with Handle Handle: Mia");
 			Console.WriteLine("TestHarness     Load the test-harness file by the path TestHarness, setting the" +
 				"\n                working directory to the file's parent folder: .\\Test-01\\Test.txt");
-			Console.WriteLine("ScriptFile      Load the script file specified by the path ScriptFile, setting the"  +
+			Console.WriteLine("ScriptFile      Load the script file specified by the path ScriptFile, setting the" +
 				"\n                working directory to the file's parent folder: MiaInput.txt (when" +
 				"\n                specified in a test harnes file, the working folder is that file's" +
 				"\n                parent directory)");

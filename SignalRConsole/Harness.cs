@@ -1,4 +1,4 @@
-﻿using System; 
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text.RegularExpressions;
@@ -16,7 +16,7 @@ namespace SignalRConsole
 					Environment.CurrentDirectory.StartsWith(Environment.CurrentDirectory) ?
 						workingDirectory[(Environment.CurrentDirectory.Length + 1)..] :
 						workingDirectory;
-				
+
 				if (m_args.Count > 0 && Directory.Exists(Path.Combine(WorkingDirectory, m_args[0])))
 					WorkingDirectory = Path.Combine(WorkingDirectory, NextArg());
 
@@ -46,7 +46,7 @@ namespace SignalRConsole
 				{
 					m_outputStreamFilename = NextArg();
 					if (workingDirectory != null)
-						m_outputStreamFilename = Path.Combine(WorkingDirectory, m_outputStreamFilename); 
+						m_outputStreamFilename = Path.Combine(WorkingDirectory, m_outputStreamFilename);
 
 					Console.WriteLine($"Harness: output is written to {m_outputStreamFilename}");
 					m_outputStream = new StreamWriter(m_outputStreamFilename, true) { AutoFlush = true };
@@ -94,7 +94,7 @@ namespace SignalRConsole
 					CueNextInputLine();
 					m_menuBlocked = false;
 				}
-				
+
 				if (NextInputLine.StartsWith(c_waitForCommand))
 				{
 					if (OutputMatches(NextInputLine[c_waitForCommand.Length..], false))
@@ -215,7 +215,7 @@ namespace SignalRConsole
 				{
 					if (useRegEx ? Regex.Match(output, line).Success : output.Trim() == line)
 					{
-						m_output.Remove(line);
+						_ = m_output.Remove(line);
 						return true;
 					}
 				}
