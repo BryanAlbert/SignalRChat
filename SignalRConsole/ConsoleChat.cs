@@ -31,6 +31,7 @@ namespace SignalRConsole
 		}
 
 
+		public bool ShowCountdown { get; set; }
 		public States PreviousState { get => m_states.Pop(); set => m_states.Push(value); }
 
 		public States State
@@ -40,19 +41,24 @@ namespace SignalRConsole
 			{
 				if (value != States.Initializing)
 				{
-					Point cursor = new Point(m_console.CursorLeft, m_console.CursorTop);
-					m_console.SetCursorPosition(0, PromptLine);
-					int padding = m_state == States.Initializing ? 0 : (m_state.ToString().Length) - value.ToString().Length + 2;
-					if (value == States.Listening)
+					lock (m_lock)
 					{
-						m_console.Write(padding > 0 ? $"{value}> {(padding > 0 ? new string(' ', padding) : "")}" : $"{value}> ");
-						while (padding-- > 0)
-							m_console.CursorLeft--;
-					}
-					else
-					{
-						m_console.Write($"{value}...{(padding > 0 ? new string(' ', padding) : "")}");
-						m_console.SetCursorPosition(cursor.X, cursor.Y);
+						Point cursor = new Point(m_console.CursorLeft, m_console.CursorTop);
+						m_console.SetCursorPosition(0, PromptLine);
+						int padding = m_state == States.Initializing ? 0 : (m_stateLabels[m_state].Length) -
+							m_stateLabels[value].Length + 2;
+						if (value == States.Listening)
+						{
+							m_console.Write(padding > 0 ? $"{m_stateLabels[value]}>" +
+								$" {(padding > 0 ? new string(' ', padding) : "")}" : $"{value}> ");
+							while (padding-- > 0)
+								m_console.CursorLeft--;
+						}
+						else
+						{
+							m_console.Write($"{m_stateLabels[value]}...{(padding > 0 ? new string(' ', padding) : "")}");
+							m_console.SetCursorPosition(cursor.X, cursor.Y);
+						}
 					}
 				}
 
@@ -163,6 +169,22 @@ namespace SignalRConsole
 		public const string c_fileExtension = ".qkr.json";
 		public const string c_leaveChatCommand = "goodbye.";
 		public const string c_raceCommand = "race!";
+		public readonly Dictionary<States, string> m_stateLabels = new Dictionary<States, string>
+		{
+			{ States.Initializing, "Initializing" },
+			{ States.Changing, "Changing" },
+			{ States.Registering, "Registering" },
+			{ States.Busy, "Busy" },
+			{ States.Listening, "Listening" },
+			{ States.Connecting, "Connecting" },
+			{ States.Chatting, "Chatting" },
+			{ States.Broken, "Broken" },
+			{ States.FriendAway, "Friend Away" },
+			{ States.RaceInitializing, "Race Initializing" },
+			{ States.Racing, "Racing" },
+			{ States.RacingWaiting, "Racing" },
+			{ States.Resetting, "Resetting" }
+		};
 
 		public enum States
 		{
@@ -794,7 +816,7 @@ namespace SignalRConsole
 							else
 							{
 								Console.CursorTop = OutputLine;
-								WriteLine($"You and {ActiveChatFriend.Handle} must have common tables to race.");
+								WriteLine($"You and {ActiveChatFriend.Handle} must have tables in common in order to race.");
 								continue;
 							}
 						}
@@ -822,7 +844,6 @@ namespace SignalRConsole
 
 		private async Task RaceLoopAsync()
 		{
-			State = States.Racing;
 			RaceData raceData = new RaceData();
 			Dictionary<string, List<int>> list = new Dictionary<string, List<int>>();
 			int cardCount = 0;
@@ -906,7 +927,7 @@ namespace SignalRConsole
 			else if (MyRaceData.Score < OpponentRaceData.Score)
 				WriteLine($"Sorry, you lost: {MyRaceData.Score} to {OpponentRaceData.Score}.");
 			else
-				WriteLine($"It's a tie {MyRaceData.Score} to {OpponentRaceData.Score}!");
+				WriteLine($"It's a tie: {MyRaceData.Score} to {OpponentRaceData.Score}!");
 
 			WriteLine();
 			await MessageLoopAsync();
@@ -1229,6 +1250,7 @@ namespace SignalRConsole
 				ScoreboardLine = OutputLine;
 				MyRaceData = new RaceData();
 				OpponentRaceData = new RaceData();
+				ShowCountdown = true;
 				OutputLine += 3;
 				LogTop += 3;
 				LogBottom += 3;
@@ -1250,17 +1272,12 @@ namespace SignalRConsole
 			if (m_commandSemaphore.CurrentCount == 0)
 				_ = m_commandSemaphore.Release();
 
-			if (IsRaceLeader)
-			{
-				await RaceLoopAsync();
-			}
-			else
-			{
-				State = States.Racing;
-				WriteLine("Racing, type answers or type quit or reset:");
-				WriteLogLine($"{ActiveChatFriend.Handle} has started the race!");
+			State = States.Racing;
+			if (!IsRaceLeader)
 				await SendCommandAsync(CommandNames.StartRace, Id, ActiveChatFriend.Id, ActiveChatFriend.Id);
-			}
+
+			if (IsRaceLeader)
+				await RaceLoopAsync();
 		}
 
 		private async Task<bool> ProcessRaceCardCommandAsync(RaceData raceData)
@@ -1283,9 +1300,12 @@ namespace SignalRConsole
 			if (IsRaceLeader)
 				await SendCommandAsync(CommandNames.RaceCard, Id, ActiveChatFriend.Id, ActiveChatFriend.Id, OpponentRaceData);
 
+			if (ShowCountdown)
+				await CountdownAsync();
+
 			Fact fact = new Fact(raceData.First, raceData.Second, Arithmetic.Operator[(FactOperator) raceData.Operator]);
 			DateTime startTime = DateTime.Now;
-			int guess = await ReadAnswerAsync($"{MyRaceData.QuizCount}/{c_roundsPerQuiz} What is ", fact.Render, fact.Answer, "Correct!");
+			int guess = await ReadAnswerAsync($"{MyRaceData.QuizCount} of {c_roundsPerQuiz}: What is ", fact.Render, fact.Answer, "Correct!");
 			if (guess < 0)
 				return false;
 
@@ -1345,19 +1365,12 @@ namespace SignalRConsole
 
 		private async Task ProcessResetCommandAsync()
 		{
-			Console.SetCursorPosition(0, OutputLine);
 			ResetRace($"{ActiveChatFriend.Handle} is resetting the race...");
 			if (State == States.RacingWaiting)
 			{
-				try
-				{
-					State = States.Resetting;
-					await m_loopSemaphore.WaitAsync();
-				}
-				finally
-				{
-					_ = (m_loopSemaphore?.Release());
-				}
+				State = States.Resetting;
+				await m_loopSemaphore.WaitAsync();
+				_ = m_loopSemaphore?.Release();
 			}
 
 			if (IsRaceLeader)
@@ -1376,13 +1389,29 @@ namespace SignalRConsole
 					WriteLine("Ending the race...");
 				else
 					WriteLine($"{ActiveChatFriend.Handle} is ending the race...");
+
 				await MessageLoopAsync();
 			}
 		}
 
+		private async Task CountdownAsync()
+		{
+			WriteLine("Racing in   ", printEndline: false);
+			for (int countdown = 3; countdown > 0; countdown--)
+			{
+				Console.CursorLeft -= 2;
+				Console.Write($"{countdown}!");
+				await Task.Delay(1000);
+			}
+
+			m_console.CursorLeft = 0;
+			Console.WriteLine("Racing, type answers or type quit or reset:");
+			ShowCountdown = false;
+		}
+
 		private async Task<int> ReadAnswerAsync(string prompt, string question, int rawAnswer, string answerMessage)
 		{
-			WriteLine($"{prompt}{question}? ", waitForEnter: true);
+			WriteLine($"{prompt}{question}? ", printEndline: false);
 			string guess = string.Empty;
 			string answer = rawAnswer.ToString();
 			while (true)
@@ -1438,7 +1467,6 @@ namespace SignalRConsole
 						if (complete)
 						{
 							await SendCommandAsync(CommandNames.Reset, Id, ActiveChatFriend.Id, ActiveChatFriend.Id);
-							Console.SetCursorPosition(0, OutputLine);
 							ResetRace("Resetting the race...");
 							return -2;
 						}
@@ -1568,8 +1596,10 @@ namespace SignalRConsole
 
 		private void ResetRace(string message)
 		{
+			Console.SetCursorPosition(0, OutputLine);
 			WriteLine();
 			WriteLine(message);
+			ShowCountdown = true;
 			MyRaceData = new RaceData();
 			OpponentRaceData = new RaceData();
 		}
@@ -1918,15 +1948,14 @@ namespace SignalRConsole
 			LogTop = LogBottom = OutputLine + c_logWindowOffset;
 		}
 
-		private void WriteLine(string line = null, bool waitForEnter = false)
+		private void WriteLine(string line = null, bool printEndline = true)
 		{
 			_ = MoveLog();
-			if (waitForEnter)
-				m_console.Write(line ?? string.Empty);
-			else
-				m_console.WriteLine(line ?? string.Empty);
-
 			OutputLine++;
+			if (printEndline)
+				m_console.WriteLine(line ?? string.Empty);
+			else
+				m_console.Write(line ?? string.Empty);
 		}
 
 		private Point MoveLog()
@@ -2039,6 +2068,7 @@ namespace SignalRConsole
 		private readonly Stack<States> m_states = new Stack<States>();
 		private readonly List<string> m_merged = new List<string>();
 		private readonly Random m_random = new Random();
+		private readonly object m_lock = new object();
 		private readonly JsonSerializerOptions m_serializerOptions = new JsonSerializerOptions()
 		{
 			WriteIndented = true
