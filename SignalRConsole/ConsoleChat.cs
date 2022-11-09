@@ -118,7 +118,7 @@ namespace SignalRConsole
 				}
 				catch (InvalidOperationException)
 				{
-					m_console.WriteLine("Disconnected from the server, reconnecting...");
+					WriteLine("Disconnected from the server, reconnecting...");
 					_ = await StartServerAsync();
 					DisplayMenu();
 					continue;
@@ -127,7 +127,7 @@ namespace SignalRConsole
 				{
 					State = States.Broken;
 					WriteLogLine($"Unfortunately, something broke. {exception.Message}");
-					WriteLogLine("\nFinished.");
+					WriteLogLine("Finished.");
 					return -3;
 				}
 
@@ -136,8 +136,8 @@ namespace SignalRConsole
 
 			try
 			{
+				WriteLine();
 				EraseLog();
-				_ = MoveCursorToLog();
 				foreach (Friend friend in m_user.Friends.Where(x => x.Blocked != true))
 					await m_hubConnection.SendAsync(c_leaveChannel, friend.Id ?? MakeHandleChannelName(friend), Id);
 
@@ -150,11 +150,11 @@ namespace SignalRConsole
 			}
 			catch (Exception exception)
 			{
-				m_console.WriteLine($"Exception shutting down: {exception.Message}");
+				WriteLine($"Exception shutting down: {exception.Message}");
 			}
 			finally
 			{
-				m_console.WriteLine("\nFinished.");
+				WriteLine("Finished.");
 				m_console.Close();
 			}
 
@@ -238,6 +238,26 @@ namespace SignalRConsole
 		private DateTime ExpireTime { get; set; }
 		private int TimeLeft { get; set; }
 		private string AnswerPrompt { get; set; }
+		private int MyRaceScore
+		{
+			get => m_myRaceScore;
+			set
+			{
+				m_myRaceScore = value;
+				UpdateScoreboard();
+			}
+		}
+
+		private int OpponentRaceScore
+		{
+			get => m_opponentRaceScore;
+			set
+			{
+				m_opponentRaceScore = value;
+				UpdateScoreboard();
+			}
+		}
+
 		private RaceData MyRaceData
 		{
 			get => m_myRaceData;
@@ -379,10 +399,11 @@ namespace SignalRConsole
 				else
 				{
 					Interrupt = true;
-					cursor = MoveLog();
+					cursor = TrimLog();
 					OutputLine++;
 				}
 
+				Console.CursorTop = CheckScrollWindow(OutputLine).Y;
 				m_console.SetCursorPosition(0, OutputLine);
 				WriteLine($"{ActiveChatFriend.Handle} said: {message}");
 				m_console.SetCursorPosition(cursor.X, cursor.Y);
@@ -839,7 +860,7 @@ namespace SignalRConsole
 				}
 				catch (Exception exception)
 				{
-					m_console.WriteLine($"Error sending message, exception: {exception.Message}");
+					WriteLine($"Error sending message, exception: {exception.Message}");
 					break;
 				}
 			}
@@ -889,8 +910,9 @@ namespace SignalRConsole
 				raceData.Base = cardBase;
 				raceData.First = card.Fact.First;
 				raceData.Second = card.Fact.Second;
-				raceData.Try = 1;
 				raceData.Time = 0;
+				raceData.Try = 1;
+				raceData.Score = 0;
 				raceData.Busy = true;
 				int result;
 				if ((result = await ProcessRaceCardCommandAsync(raceData)) < -1)
@@ -920,15 +942,38 @@ namespace SignalRConsole
 					return 0;
 
 				State = States.Racing;
+				ComputeRaceScore();
 				await Task.Delay(c_resultDisplayTime);
 			}
 
 			await SendCommandAsync(CommandNames.RaceCard, Id, ActiveChatFriend.Id, ActiveChatFriend.Id, raceData: null);
-			await ReportScoreAsync();
+			ReportScore();
 			return 0;
 		}
 
-		private async Task ReportScoreAsync()
+		private void ComputeRaceScore()
+		{
+			MyRaceScore += ComputeRaceScore(MyRaceData, OpponentRaceData);
+			OpponentRaceScore += ComputeRaceScore(OpponentRaceData, MyRaceData);
+		}
+
+		private int ComputeRaceScore(RaceData raceData1, RaceData raceData2)
+		{
+			switch (raceData1.Score)
+			{
+				case 2:
+					return raceData2.Score == 2 ? raceData1.Time < raceData2.Time ? 2 : 1 : 2;
+				case 1:
+					return raceData2.Score == 1 ? raceData1.Time < raceData2.Time ? 1 : 0 : 1;
+				case 0:
+					return 0;
+				default:
+					Debug.WriteLine($"Error in ComputeScore, unexpected score {raceData1.Score} (expected 0, 1, or 2)");
+					return 0;
+			}
+		}
+
+		private void ReportScore()
 		{
 			WriteLine();
 			if (MyRaceData.Score > OpponentRaceData.Score)
@@ -939,7 +984,6 @@ namespace SignalRConsole
 				WriteLine($"It's a tie: {MyRaceData.Score} to {OpponentRaceData.Score}!");
 
 			WriteLine();
-			await MessageLoopAsync();
 		}
 
 		private async Task<bool> CheckForCommandAsync(string message)
@@ -1227,10 +1271,7 @@ namespace SignalRConsole
 			if (State != States.RaceInitializing)
 			{
 				if (connecting)
-				{
 					WriteLogLine(string.Empty);
-					WriteLogLine(string.Empty);
-				}
 
 				_ = IntersectTables();
 			}
@@ -1309,11 +1350,11 @@ namespace SignalRConsole
 
 			if (raceData == null)
 			{
-				await ReportScoreAsync();
+				ReportScore();
+				await MessageLoopAsync();
 				return 0;
 			}
 
-			raceData.Score = MyRaceData.Score;
 			raceData.Correct = MyRaceData.Correct;
 			raceData.Wrong = MyRaceData.Wrong;
 			OpponentRaceData.SetCard(raceData);
@@ -1339,21 +1380,21 @@ namespace SignalRConsole
 				if (guess == fact.Answer)
 				{
 					raceData.Time = (int) (DateTime.Now - startTime).TotalMilliseconds;
+					raceData.Score = 2;
+					raceData.Correct++;
+					MyRaceData = raceData;
+					await SendRaceResultAsync();
 
 					// leader expects (at least) two CardResults, first with Busy true, second with Busy false (after results have been shown locally)
-					await SendCommandAsync(CommandNames.CardResult, Id, ActiveChatFriend.Id, ActiveChatFriend.Id, MyRaceData);
-					raceData.Score += 2;
-					raceData.Correct++;
 					raceData.Busy = false;
-					MyRaceData = raceData;
-					await SendCommandAsync(CommandNames.CardResult, Id, ActiveChatFriend.Id, ActiveChatFriend.Id, MyRaceData);
+					await SendRaceResultAsync();
 					return 0;
 				}
 
 				raceData.Time = (int) (DateTime.Now - startTime).TotalMilliseconds;
 				raceData.Try = 2;
 				MyRaceData = raceData;
-				await SendCommandAsync(CommandNames.CardResult, Id, ActiveChatFriend.Id, ActiveChatFriend.Id, MyRaceData);
+				await SendRaceResultAsync();
 				if ((guess = await ReadAnswerAsync($"Not quite... {TimeLeft}: what is ", fact.Render, fact.Answer, "You are right!", raceData)) < 0)
 					return guess;
 
@@ -1361,10 +1402,10 @@ namespace SignalRConsole
 				raceData.Busy = false;
 				if (guess == fact.Answer)
 				{
-					raceData.Score += 1;
+					raceData.Score = 1;
 					raceData.Correct++;
 					MyRaceData = raceData;
-					await SendCommandAsync(CommandNames.CardResult, Id, ActiveChatFriend.Id, ActiveChatFriend.Id, MyRaceData);
+					await SendRaceResultAsync();
 					return 0;
 				}
 
@@ -1373,9 +1414,10 @@ namespace SignalRConsole
 					// since scoreboard updates come on another thread, wait (and block) as necessary
 					await m_consoleSemaphore.WaitAsync();
 					WriteLine($"No! {fact.Render} = {fact.Answer}");
+					raceData.Score = 0;
 					raceData.Wrong++;
 					MyRaceData = raceData;
-					await SendCommandAsync(CommandNames.CardResult, Id, ActiveChatFriend.Id, ActiveChatFriend.Id, MyRaceData);
+					await SendRaceResultAsync();
 					return 0;
 				}
 				finally
@@ -1388,6 +1430,8 @@ namespace SignalRConsole
 		private void ProcessCardResultCommand(RaceData raceData)
 		{
 			OpponentRaceData = raceData;
+			if (!IsRaceLeader && !MyRaceData.Busy && !OpponentRaceData.Busy)
+				ComputeRaceScore();
 		}
 
 		private async Task ProcessResetCommandAsync()
@@ -1475,11 +1519,11 @@ namespace SignalRConsole
 							raceData.Wrong++;
 							raceData.Time = (int) c_countdownFrom.TotalMilliseconds;
 							MyRaceData = raceData;
-							await SendCommandAsync(CommandNames.CardResult, Id, ActiveChatFriend.Id, ActiveChatFriend.Id, MyRaceData);
+							await SendRaceResultAsync();
 							if (raceData.Busy)
 							{
 								raceData.Busy = false;
-								await SendCommandAsync(CommandNames.CardResult, Id, ActiveChatFriend.Id, ActiveChatFriend.Id, raceData);
+								await SendRaceResultAsync();
 							}
 
 							return -1;
@@ -1546,6 +1590,13 @@ namespace SignalRConsole
 						_ = m_consoleSemaphore.Release();
 				}
 			}
+		}
+
+		private async Task SendRaceResultAsync()
+		{
+			await SendCommandAsync(CommandNames.CardResult, Id, ActiveChatFriend.Id, ActiveChatFriend.Id, MyRaceData);
+			if (!IsRaceLeader && !MyRaceData.Busy && !OpponentRaceData.Busy)
+				ComputeRaceScore();
 		}
 
 		private void UpdateQuestion(object state)
@@ -1675,6 +1726,7 @@ namespace SignalRConsole
 			WriteLine();
 			WriteLine(message);
 			ShowCountdown = true;
+			MyRaceScore = OpponentRaceScore = 0;
 			MyRaceData = new RaceData();
 			OpponentRaceData = new RaceData();
 		}
@@ -1979,13 +2031,15 @@ namespace SignalRConsole
 					$" {string.Format($"Time: {{0,{timeDigits}:0.0}}", myTime)}," +
 					$" Correct {MyRaceData.Correct}," +
 					$" Wrong {MyRaceData.Wrong}: {string.Format($"{{0,{avgDigits}}}%,", myAverage)}" +
-					$" Score: {MyRaceData.Score}     ");
+					$" Card Score: {MyRaceData.Score}" +
+					$" Total Score: {MyRaceScore}     ");
 				Console.WriteLine($"{ActiveChatFriend.Handle}{new string(' ', padding - ActiveChatFriend.Handle.Length)}" +
 					$" Try {OpponentRaceData.Try} of 2," +
 					$" {string.Format($"Time: {{0,{timeDigits}:0.0}}", opponentTime)}," +
 					$" Correct {OpponentRaceData.Correct}," +
 					$" Wrong {OpponentRaceData.Wrong}: {string.Format($"{{0,{avgDigits}}}%,", opponentAverage)}" +
-					$" Score: {OpponentRaceData.Score}     ");
+					$" Card Score: {OpponentRaceData.Score}" +
+					$" Total Score: {OpponentRaceScore}     ");
 				Console.SetCursorPosition(cursor.X, cursor.Y);
 			}
 			finally
@@ -2013,27 +2067,45 @@ namespace SignalRConsole
 			Point cursor = new Point(m_console.CursorLeft, m_console.CursorTop);
 			Console.SetCursorPosition(0, LogTop);
 			ConsoleColor color = m_console.ForegroundColor;
-			Console.ForegroundColor = m_console.BackgroundColor;
-			foreach (string line in m_log)
-				Console.WriteLine(line);
-
-			m_log.Clear();
-			Console.ForegroundColor = color;
-			Console.SetCursorPosition(cursor.X, cursor.Y);
-			LogTop = LogBottom = OutputLine + c_logWindowOffset;
+			try
+			{
+				Console.ForegroundColor = m_console.BackgroundColor;
+				foreach (string line in m_log)
+					Console.WriteLine(line);
+			}
+			finally
+			{
+				m_log.Clear();
+				Console.ForegroundColor = color;
+				Console.SetCursorPosition(cursor.X, cursor.Y);
+				LogTop = LogBottom = OutputLine + c_logWindowOffset;
+			}
 		}
 
 		private void WriteLine(string line = null, bool printEndline = true)
 		{
-			_ = MoveLog();
-			OutputLine++;
+			_ = TrimLog();
+			Console.CursorTop = CheckScrollWindow(OutputLine++).Y;
 			if (printEndline)
+			{
+				int extraLines = m_console.CursorTop;
 				m_console.WriteLine(line ?? string.Empty);
+				if ((extraLines = m_console.CursorTop - extraLines - 1) > 0)
+				{
+					for (; extraLines > 0; extraLines--)
+					{
+						TrimLog();
+						OutputLine++;
+					}
+				}
+			}
 			else
+			{
 				m_console.Write(line ?? string.Empty);
+			}
 		}
 
-		private Point MoveLog()
+		private Point TrimLog()
 		{
 			Point cursor = new Point(m_console.CursorLeft, m_console.CursorTop);
 			if (OutputLine == LogBottom - c_logWindowOffset)
@@ -2044,12 +2116,19 @@ namespace SignalRConsole
 			}
 
 			ConsoleColor color = m_console.ForegroundColor;
-			Console.ForegroundColor = m_console.BackgroundColor;
-			m_console.SetCursorPosition(0, LogTop++);
-			Console.WriteLine(m_log[0]);
-			m_log.RemoveAt(0);
-			Console.ForegroundColor = color;
-			Console.SetCursorPosition(cursor.X, cursor.Y);
+			try
+			{
+				Console.ForegroundColor = m_console.BackgroundColor;
+				m_console.SetCursorPosition(0, LogTop++);
+				Console.WriteLine(m_log[0]);
+				m_log.RemoveAt(0);
+			}
+			finally
+			{
+				Console.ForegroundColor = color;
+				Console.SetCursorPosition(cursor.X, cursor.Y);
+			}
+
 			return cursor;
 		}
 
@@ -2088,8 +2167,25 @@ namespace SignalRConsole
 
 		private Point MoveCursorToLog()
 		{
-			Point cursor = new Point(m_console.CursorLeft, m_console.CursorTop);
+			Point cursor = CheckScrollWindow(LogBottom);
 			m_console.SetCursorPosition(0, LogBottom++);
+			return cursor;
+		}
+
+		private Point CheckScrollWindow(int testLine, int count = 1)
+		{
+			Point cursor = new Point(m_console.CursorLeft, m_console.CursorTop);
+			for (int line = 0; line <= testLine - Console.WindowHeight + 1; line++)
+			{
+				// scroll the window up so our cursor movement doesn't go out of bounds
+				// TODO: seems we should be able to move the window in the buffer but I couldn't get it to work, so this
+				Console.WriteLine();
+				OutputLine -= count;
+				LogTop -= count;
+				LogBottom -= count;
+				cursor.Y--;
+			}
+
 			return cursor;
 		}
 
@@ -2129,7 +2225,7 @@ namespace SignalRConsole
 		private const int c_logWindowOffset = 2;
 		private const string c_connectionJsonCommand = "{ ?\"Command\":";
 		private readonly TimeSpan c_resultDisplayTime = TimeSpan.FromSeconds(2.0);
-		private readonly TimeSpan c_countdownFrom = TimeSpan.FromSeconds(10.0);
+		private readonly TimeSpan c_countdownFrom = TimeSpan.FromSeconds(30.0);
 		private const int c_roundsPerQuiz = 10;
 		private Harness m_console;
 		private User m_user;
@@ -2138,6 +2234,8 @@ namespace SignalRConsole
 		private Dictionary<string, List<int>> m_myTables;
 		private RaceData m_opponentRaceData;
 		private RaceData m_myRaceData;
+		private int m_myRaceScore;
+		private int m_opponentRaceScore;
 		private readonly List<User> m_users = new List<User>();
 		private readonly List<Friend> m_online = new List<Friend>();
 		private readonly List<string> m_log = new List<string>();
