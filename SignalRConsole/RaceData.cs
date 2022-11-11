@@ -37,6 +37,7 @@ namespace SignalRConsole
 			First = source.First;
 			Second = source.Second;
 			Try = source.Try;
+			Score = source.Score;
 			Time = source.Time;
 			Busy = source.Busy;
 			QuizCount = source.QuizCount;

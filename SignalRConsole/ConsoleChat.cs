@@ -403,7 +403,7 @@ namespace SignalRConsole
 					OutputLine++;
 				}
 
-				Console.CursorTop = CheckScrollWindow(OutputLine).Y;
+				cursor.Y -= Console.CursorTop - CheckScrollWindow(OutputLine).Y;
 				m_console.SetCursorPosition(0, OutputLine);
 				WriteLine($"{ActiveChatFriend.Handle} said: {message}");
 				m_console.SetCursorPosition(cursor.X, cursor.Y);
@@ -976,12 +976,12 @@ namespace SignalRConsole
 		private void ReportScore()
 		{
 			WriteLine();
-			if (MyRaceData.Score > OpponentRaceData.Score)
-				WriteLine($"Congratulations, you won: {MyRaceData.Score} to {OpponentRaceData.Score}!");
-			else if (MyRaceData.Score < OpponentRaceData.Score)
-				WriteLine($"Sorry, you lost: {MyRaceData.Score} to {OpponentRaceData.Score}.");
+			if (MyRaceScore > OpponentRaceScore)
+				WriteLine($"Congratulations, you won: {MyRaceScore} to {OpponentRaceScore}!");
+			else if (MyRaceData.Score < OpponentRaceScore)
+				WriteLine($"Sorry, you lost: {MyRaceScore} to {OpponentRaceScore}.");
 			else
-				WriteLine($"It's a tie: {MyRaceData.Score} to {OpponentRaceData.Score}!");
+				WriteLine($"It's a tie: {MyRaceScore} to {OpponentRaceScore}!");
 
 			WriteLine();
 		}
@@ -2172,18 +2172,23 @@ namespace SignalRConsole
 			return cursor;
 		}
 
-		private Point CheckScrollWindow(int testLine, int count = 1)
+		private Point CheckScrollWindow(int line)
 		{
+			// scroll the window up so our cursor movement doesn't go out of bounds
+			// TODO: seems we should be able to move the window in the buffer but I couldn't get it to work, so this
 			Point cursor = new Point(m_console.CursorLeft, m_console.CursorTop);
-			for (int line = 0; line <= testLine - Console.WindowHeight + 1; line++)
+			if (line >= Console.WindowHeight - 1)
 			{
-				// scroll the window up so our cursor movement doesn't go out of bounds
-				// TODO: seems we should be able to move the window in the buffer but I couldn't get it to work, so this
-				Console.WriteLine();
-				OutputLine -= count;
-				LogTop -= count;
-				LogBottom -= count;
-				cursor.Y--;
+				Console.CursorTop = Console.WindowHeight - 1;
+				while (line-- >= Console.WindowHeight - 1)
+				{
+					Console.WriteLine();
+					PromptLine--;
+					OutputLine--;
+					LogTop--;
+					LogBottom--;
+					cursor.Y--;
+				}
 			}
 
 			return cursor;
