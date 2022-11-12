@@ -132,24 +132,26 @@ namespace SignalRConsole
 		{
 			Console.WriteLine("\nUsage: -checkmerge [-qkr As QkrFolder] Folder Handle");
 			Console.WriteLine("After running a merge test, validates json files in Folder with the base name Mia." +
-				"\nFor example, Test-25 Mia will analyze json files from the Test-25 folder Old\\Mia.qkr," +
-				"\nOld\\Mia.qkr.json, New\\Mia.qkr, and New\\Mia.qkr.json for consistency. Test-26 Mia will" +
-				"\nanalyze Mia.qkr and Mia.qkr.json in Test-26's First, Second, and Third folders. If QKR" +
-				"\nwas tested, use -qkr As QkrFolder to specify which user was run on QKR, e.g. Old, New," +
-				"\nFirst, etc. and the folder QKR stores its json files in.");
-			Console.WriteLine("\nUsage: [-verbose][Folder][Handle][TestHarness][ScriptFile][Folder InputFileName" +
-				"\nOutputFileName Tag]");
+				"\n   For example, Test-25 Mia will analyze json files from the Test-25 folder Old\\Mia.qkr," +
+				"\n   Old\\Mia.qkr.json, New\\Mia.qkr, and New\\Mia.qkr.json for consistency. Test-26 Mia will" +
+				"\n   analyze Mia.qkr and Mia.qkr.json in Test-26's First, Second, and Third folders. If QKR" +
+				"\n   was tested, use -qkr As QkrFolder to specify which user was run on QKR, e.g. Old, New," +
+				"\n   First, etc. and the folder QKR stores its json files in.");
+			Console.WriteLine("Usage: [-verbose] [Folder] [Handle]");
+			Console.WriteLine("Usage: [-verbose] TestHarness");
+			Console.WriteLine("Usage: ScriptFile");
+			Console.WriteLine("Usage: [Folder] InputFileName OutputFileName [Tag]");
 			Console.WriteLine("\n-verbose        show output used for scripting triggers");
 			Console.WriteLine("As              Folder QKR was tested from: Old, New, First, etc.");
 			Console.WriteLine("Folder          Run from the directory Folder: .\\Test-01\\");
 			Console.WriteLine("QkrFolder       The directory containing QKR json files: C:\\User\\...\\LocalState");
 			Console.WriteLine("Handle          Load user with Handle Handle: Mia");
-			Console.WriteLine("TestHarness     Load the test-harness file by the path TestHarness, setting the" +
-				"\n                working directory to the file's parent folder: .\\Test-01\\Test.txt");
+			Console.WriteLine("TestHarness     Load the test-harness file by the path TestHarness, setting the working" +
+				"\n                directory to the file's parent folder: .\\Test-01\\Test.txt");
 			Console.WriteLine("ScriptFile      Load the script file specified by the path ScriptFile, setting the" +
-				"\n                working directory to the file's parent folder: MiaInput.txt (when" +
-				"\n                specified in a test harnes file, the working folder is that file's" +
-				"\n                parent directory)");
+				"\n                working directory to the file's parent folder: .\\Test-01\\BruceInput.txt" +
+				"\n                (when specified in a test harness file, the working folder is that" +
+				"\n                file's parent directory)");
 			Console.WriteLine("InputFileName   Run the commands in the script file InputFileName, relative to Folder");
 			Console.WriteLine("OutputFileName  Write output to OutputFileName, relative to Folder");
 			Console.WriteLine("Tag             Prepend console output with Tag, typically a Handle or sub-directory");

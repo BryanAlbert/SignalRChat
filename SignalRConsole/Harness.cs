@@ -28,7 +28,8 @@ namespace SignalRConsole
 				WorkingDirectory = NextArg();
 				Console.WriteLine($"Harness: working directory is: {WorkingDirectory}");
 			}
-			else if (m_args.Count > 0 && (File.Exists(m_args[0]) || WorkingDirectory == null ? File.Exists(m_args[0]) :
+
+			if (m_args.Count > 0 && (File.Exists(m_args[0]) || WorkingDirectory == null ? File.Exists(m_args[0]) :
 				File.Exists(Path.Combine(WorkingDirectory, m_args[0]))))
 			{
 				// command line can contain the script file name, the logging file name, and the tag for console output
@@ -45,7 +46,7 @@ namespace SignalRConsole
 				if (m_args.Count > 0)
 				{
 					m_outputStreamFilename = NextArg();
-					if (workingDirectory != null)
+					if (WorkingDirectory!= null)
 						m_outputStreamFilename = Path.Combine(WorkingDirectory, m_outputStreamFilename);
 
 					Console.WriteLine($"Harness: output is written to {m_outputStreamFilename}");
@@ -59,6 +60,7 @@ namespace SignalRConsole
 				}
 			}
 
+			// 0 for nothing, 1 for printing script mode data, 2 for reading input from the m_inputStreamFilename file
 			ScriptMode = m_inputStreamFilename == null ? (verbose ? 1 : 0) : 2;
 		}
 
@@ -165,8 +167,8 @@ namespace SignalRConsole
 
 		public void WriteLine(string value)
 		{
-			if (ScriptMode > 1)
-				value = value.Trim('\n');
+			if (ScriptMode > 1 && value.Length == 0)
+				return;
 
 			Console.WriteLine(Tag != null ? $"{Tag}: {value}" : value);
 			LogWriteLine(value);
