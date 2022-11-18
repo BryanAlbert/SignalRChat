@@ -131,7 +131,7 @@ namespace SignalRConsole
 		private static void Usage()
 		{
 			Console.WriteLine("\nUsage: -checkmerge [-qkr As QkrFolder] Folder Handle");
-			Console.WriteLine("After running a merge test, validates json files in Folder with the base name Mia." +
+			Console.WriteLine("   After running a merge test, validates json files in Folder with the base name Mia." +
 				"\n   For example, Test-25 Mia will analyze json files from the Test-25 folder Old\\Mia.qkr," +
 				"\n   Old\\Mia.qkr.json, New\\Mia.qkr, and New\\Mia.qkr.json for consistency. Test-26 Mia will" +
 				"\n   analyze Mia.qkr and Mia.qkr.json in Test-26's First, Second, and Third folders. If QKR" +

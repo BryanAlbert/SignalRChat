@@ -2,7 +2,8 @@ Initializing server and connecting to URL: https://localhost:5001/chathub
 What is your handle (nickname)? 
 Mia
 Name: Mia Albert, Email: mia@albertnet.us, Favorite color: Turquoise,
-Id: mia38308-9a9b-4a6b-9db9-9e9b6238283f, Device Id: conmia08-9a9b-4a6b-9db9-9e9b6238283f,
+Id: mia38308-9a9b-4a6b-9db9-9e9b6238283f,
+Device Id: conmia08-9a9b-4a6b-9db9-9e9b6238283f,
 Creation Date: 2022-06-27T23:00:00, Modified Date: 2022-09-02T04:21:28
 Pick a command: t to list tables, a to add a friend, l to list friends,
 u to unfriend a friend, c to chat, or x to exit
@@ -14,7 +15,8 @@ Merging data from Mia on device connew65-1468-4409-a21a-f5b4f000ee4f...
 Merged data from Mia on device connew65-1468-4409-a21a-f5b4f000ee4f.
 L
 Friends:
-Bruce, Bruce Albert, bruce@hotmail.com, Red, Created: 2022-07-06T03:05:12 Modified: 2022-07-06T03:05:12
+Bruce, Bruce Albert, bruce@hotmail.com, Favorite Color: Red,
+   Created: 2022-07-06T03:05:12 Modified: 2022-07-06T03:05:12
 T
 Tables json:
 [

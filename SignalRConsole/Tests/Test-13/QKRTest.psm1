@@ -82,20 +82,6 @@ function Remove-File($file)
 	}
 }
 
-function Start-TestFor($user, $number)
-{
-    if ($null -eq $number)
-    {
-        "Calling Start-Chat in $test for $user"
-        Start-Chat (Join-Path $test ($user + "Input.txt")) (Join-Path $test ($user + "Output.txt")) $user
-    }
-    else
-    {
-        "Calling Start-Chat in $test for $user, input script number $number"
-        Start-Chat (Join-Path $test ($user + "Input$number.txt")) (Join-Path $test ($user + "Output.txt")) $user
-    }
-}
-
 function Run-Test
 {
 	$script = Join-Path $test "Test.txt"

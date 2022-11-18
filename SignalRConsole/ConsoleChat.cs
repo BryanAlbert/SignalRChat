@@ -145,7 +145,7 @@ namespace SignalRConsole
 				}
 				finally
 				{
-					m_consoleSemaphore.Release();
+					_ = m_consoleSemaphore.Release();
 				}
 
 				foreach (Friend friend in m_user.Friends.Where(x => x.Blocked != true))
@@ -160,11 +160,11 @@ namespace SignalRConsole
 			}
 			catch (Exception exception)
 			{
-				Console.WriteLine($"Exception shutting down: {exception.Message}");
+				m_console.WriteLine($"Exception shutting down: {exception.Message}");
 			}
 			finally
 			{
-				Console.WriteLine("Finished.");
+				m_console.WriteLine("Finished.");
 				m_console.Close();
 			}
 
@@ -393,7 +393,6 @@ namespace SignalRConsole
 			if (m_console.ScriptMode > 0)
 			{
 				// special output for triggering while scripting
-				await m_consoleSemaphore.WaitAsync();
 				if (friend == null)
 					WaitWriteLogLine($"(Sent Hello null command to {user}.)");
 				else if (friend.Blocked == true)
@@ -721,7 +720,7 @@ namespace SignalRConsole
 			}
 			finally
 			{
-				m_consoleSemaphore.Release();
+				_ = m_consoleSemaphore.Release();
 			}
 
 			State = States.Listening;
@@ -754,7 +753,7 @@ namespace SignalRConsole
 			}
 			finally
 			{
-				m_consoleSemaphore.Release();
+				_ = m_consoleSemaphore.Release();
 			}
 		}
 
@@ -778,7 +777,7 @@ namespace SignalRConsole
 			}
 			finally
 			{
-				m_consoleSemaphore.Release();
+				_ = m_consoleSemaphore.Release();
 			}
 		}
 
@@ -923,6 +922,9 @@ namespace SignalRConsole
 
 					if (message.ToLower() == c_raceCommand)
 					{
+						if (m_console.ScriptMode > 1)
+							throw new Exception("Racing not supported in scripting mode.");
+
 						if (IsRaceLeader)
 						{
 							if (HaveTables)
@@ -1312,7 +1314,7 @@ namespace SignalRConsole
 
 				PreviousState = State;
 				State = States.Busy;
-				Tuple<Point, ConsoleKeyInfo> confirm = await WaitWriteLogReadKeyAsync($"Accept friend request from" +
+				Tuple<Point, ConsoleKeyInfo> confirm = await WriteLogReadKeyAsync($"Accept friend request from" +
 					$" {pending.Handle}, email address {pending.Email}? [y/n] ");
 
 				State = PreviousState;
@@ -1419,7 +1421,7 @@ namespace SignalRConsole
 			}
 			finally
 			{
-				m_consoleSemaphore.Release();
+				_ = m_consoleSemaphore.Release();
 			}
 
 			State = States.FriendAway;
@@ -1441,11 +1443,12 @@ namespace SignalRConsole
 					OutputLine += 3;
 					LogTop += 3;
 					LogBottom += 3;
+					_ = CheckScrollWindow(OutputLine);
 					Console.SetCursorPosition(0, OutputLine);
 				}
 				finally
 				{
-					m_consoleSemaphore.Release();
+					_ = m_consoleSemaphore.Release();
 				}
 
 				State = States.RaceInitializing;
@@ -1607,7 +1610,7 @@ namespace SignalRConsole
 				}
 				finally
 				{
-					m_consoleSemaphore.Release();
+					_ = m_consoleSemaphore.Release();
 				}
 
 				await MessageLoopAsync();
@@ -1629,7 +1632,7 @@ namespace SignalRConsole
 				}
 				finally
 				{
-					m_consoleSemaphore.Release();
+					_ = m_consoleSemaphore.Release();
 				}
 
 				await Task.Delay(1000);
@@ -1645,7 +1648,7 @@ namespace SignalRConsole
 			}
 			finally
 			{
-				m_consoleSemaphore.Release();
+				_ = m_consoleSemaphore.Release();
 			}
 		}
 
@@ -1902,7 +1905,7 @@ namespace SignalRConsole
 			}
 			finally
 			{
-				m_consoleSemaphore.Release();
+				_ = m_consoleSemaphore.Release();
 			}
 
 			ShowCountdown = true;
@@ -2189,7 +2192,7 @@ namespace SignalRConsole
 			}
 			finally
 			{
-				m_consoleSemaphore.Release();
+				_ = m_consoleSemaphore.Release();
 			}
 
 			State = States.Listening;
@@ -2259,32 +2262,6 @@ namespace SignalRConsole
 			return padding > 0 ? new string(' ', padding) : string.Empty;
 		}
 
-		private void EraseLog()
-		{
-			if (m_console.ScriptMode > 1 || m_log.Count == 0 || Echo != null &&
-				(IsStateRacing || State == States.Chatting))
-			{
-				return;
-			}
-
-			Point cursor = new Point(m_console.CursorLeft, m_console.CursorTop);
-			Console.SetCursorPosition(0, LogTop);
-			ConsoleColor color = m_console.ForegroundColor;
-			try
-			{
-				Console.ForegroundColor = m_console.BackgroundColor;
-				foreach (string line in m_log)
-					Console.WriteLine(line);
-			}
-			finally
-			{
-				m_log.Clear();
-				Console.ForegroundColor = color;
-				Console.SetCursorPosition(cursor.X, cursor.Y);
-				LogTop = LogBottom = OutputLine + c_logWindowOffset;
-			}
-		}
-
 		private void WaitWriteLine(string line = null, bool printEndline = true)
 		{
 			try
@@ -2325,7 +2302,7 @@ namespace SignalRConsole
 				{
 					for (; extraLines > 0; extraLines--)
 					{
-						TrimLog();
+						_ = TrimLog();
 						OutputLine++;
 					}
 				}
@@ -2338,9 +2315,38 @@ namespace SignalRConsole
 			}
 		}
 
+		private void EraseLog()
+		{
+			if (m_console.ScriptMode > 1 || m_log.Count == 0 || Echo != null &&
+				(IsStateRacing || State == States.Chatting))
+			{
+				return;
+			}
+
+			Point cursor = new Point(m_console.CursorLeft, m_console.CursorTop);
+			Console.SetCursorPosition(0, LogTop);
+			ConsoleColor color = m_console.ForegroundColor;
+			try
+			{
+				Console.ForegroundColor = m_console.BackgroundColor;
+				foreach (string line in m_log)
+					Console.WriteLine(line);
+			}
+			finally
+			{
+				m_log.Clear();
+				Console.ForegroundColor = color;
+				Console.SetCursorPosition(cursor.X, cursor.Y);
+				LogTop = LogBottom = OutputLine + c_logWindowOffset;
+			}
+		}
+
 		private Point TrimLog()
 		{
 			Point cursor = new Point(m_console.CursorLeft, m_console.CursorTop);
+			if (m_console.ScriptMode > 1)
+				return cursor;
+
 			if (OutputLine == LogBottom - c_logWindowOffset)
 			{
 				LogTop++;
@@ -2394,6 +2400,12 @@ namespace SignalRConsole
 
 		private void WriteLogLine(string line)
 		{
+			if (m_console.ScriptMode > 1)
+			{
+				m_console.WriteLine(line);
+				return;
+			}
+
 			Point cursor = MoveCursorToLog();
 			int extraLines = m_console.CursorTop;
 			m_console.WriteLine(line);
@@ -2406,31 +2418,29 @@ namespace SignalRConsole
 
 		private void WriteLogRead(string line, out string value)
 		{
+			if (m_console.ScriptMode > 1)
+			{
+				m_console.WriteLine(line);
+				value = m_console.ReadLine();
+				return;
+			}
+
 			_ = MoveCursorToLog();
 			m_console.Write(line);
 			value = m_console.ReadLine();
 			m_log.Add(line + value);
 		}
 
-		private async Task<Tuple<Point, ConsoleKeyInfo>> WaitWriteLogReadKeyAsync(string line)
-		{
-			try
-			{
-				await m_consoleSemaphore.WaitAsync();
-				return await WriteLogReadKeyAsync(line);
-			}
-			finally
-			{
-				_ = m_consoleSemaphore.Release();
-			}
-		}
-
 		private async Task<Tuple<Point, ConsoleKeyInfo>> WriteLogReadKeyAsync(string line)
 		{
-			Point cursor = MoveCursorToLog();
+			Point cursor = m_console.ScriptMode < 2 ? MoveCursorToLog() :
+				new Point(m_console.CursorLeft, m_console.CursorTop);
+
 			m_console.Write(line);
 			ConsoleKeyInfo confirm = await ReadKeyAvailableAsync(() => State != States.Listening);
-			m_log.Add(line + confirm.KeyChar);
+			if (m_console.ScriptMode < 2)
+				m_log.Add(line + confirm.KeyChar);
+
 			return new Tuple<Point, ConsoleKeyInfo>(cursor, confirm);
 		}
 
@@ -2446,7 +2456,7 @@ namespace SignalRConsole
 			// scroll the window up so our cursor movement doesn't go out of bounds
 			// TODO: seems we should be able to move the window in the buffer but I couldn't get it to work, so this
 			Point cursor = new Point(m_console.CursorLeft, m_console.CursorTop);
-			if (line >= Console.WindowHeight - 1)
+			if (m_console.ScriptMode < 2 && line >= Console.WindowHeight - 1)
 			{
 				Console.CursorTop = Console.WindowHeight - 1;
 				while (line-- >= Console.WindowHeight - 1)

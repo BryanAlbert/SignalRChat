@@ -2,7 +2,8 @@ Initializing server and connecting to URL: https://localhost:5001/chathub
 What is your handle (nickname)? 
 Mom
 Name: Jean Albert, Email: jeanmariealbert@hotmail.com, Favorite color: Maroon,
-Id: mom0c866-8cb0-4a10-ad96-dfe5f9ebd98e, Device Id: conmomd2-7ace-4e26-9e5e-2ac2afc2ead2,
+Id: mom0c866-8cb0-4a10-ad96-dfe5f9ebd98e,
+Device Id: conmomd2-7ace-4e26-9e5e-2ac2afc2ead2,
 Creation Date: 2022-06-06T19:03:43, Modified Date: 2022-08-31T18:06:52
 Pick a command: t to list tables, a to add a friend, l to list friends,
 u to unfriend a friend, c to chat, or x to exit
@@ -24,7 +25,9 @@ Your friend Bruce is offline.
 Your friend Fred is offline.
 L
 Friends:
-Fred, Fred Sanson, fred@gmail.com, Green, Created: 2022-06-06T19:03:42 Modified: 2022-08-31T18:51:52
-Bruce, Bruce Albert, bruce@hotmail.com, Red, Created: 2022-06-06T19:03:41 Modified: 2022-08-31T18:52:06
+Fred, Fred Sanson, fred@gmail.com, Favorite Color: Green,
+   Created: 2022-06-06T19:03:42 Modified: 2022-11-18T22:21:22
+Bruce, Bruce Albert, bruce@hotmail.com, Favorite Color: Red,
+   Created: 2022-06-06T19:03:41 Modified: 2022-11-18T22:21:22
 X
 Finished.
