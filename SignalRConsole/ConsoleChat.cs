@@ -41,7 +41,7 @@ namespace SignalRConsole
 			get => m_state;
 			set
 			{
-				if (value != States.Initializing)
+				if (value != States.Initializing && PromptLine >= 0)
 				{
 					try
 					{
@@ -1431,26 +1431,7 @@ namespace SignalRConsole
 		{
 			if (State == States.Chatting)
 			{
-				try
-				{
-					m_consoleSemaphore.Wait();
-					EraseLog();
-					WriteLine();
-					ScoreboardLine = OutputLine;
-					MyRaceData = new RaceData();
-					OpponentRaceData = new RaceData();
-					ShowCountdown = true;
-					OutputLine += 3;
-					LogTop += 3;
-					LogBottom += 3;
-					_ = CheckScrollWindow(OutputLine);
-					Console.SetCursorPosition(0, OutputLine);
-				}
-				finally
-				{
-					_ = m_consoleSemaphore.Release();
-				}
-
+				InitializeScoreboard();
 				State = States.RaceInitializing;
 			}
 
@@ -1614,6 +1595,30 @@ namespace SignalRConsole
 				}
 
 				await MessageLoopAsync();
+			}
+		}
+
+		private void InitializeScoreboard()
+		{
+			try
+			{
+				m_consoleSemaphore.Wait();
+				EraseLog();
+				WriteLine();
+				ScoreboardLine = OutputLine;
+				MyRaceScore = OpponentRaceScore = 0;
+				MyRaceData = new RaceData();
+				OpponentRaceData = new RaceData();
+				ShowCountdown = true;
+				OutputLine += 3;
+				LogTop += 3;
+				LogBottom += 3;
+				_ = CheckScrollWindow(OutputLine);
+				Console.SetCursorPosition(0, OutputLine);
+			}
+			finally
+			{
+				_ = m_consoleSemaphore.Release();
 			}
 		}
 
@@ -1909,9 +1914,7 @@ namespace SignalRConsole
 			}
 
 			ShowCountdown = true;
-			MyRaceScore = OpponentRaceScore = 0;
-			MyRaceData = new RaceData();
-			OpponentRaceData = new RaceData();
+			InitializeScoreboard();
 		}
 
 		private async Task ProcessMergeCommandAsync(ConnectionCommand merge, string to)
