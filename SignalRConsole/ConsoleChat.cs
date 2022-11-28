@@ -186,6 +186,7 @@ namespace SignalRConsole
 		public const string c_fileExtension = ".qkr.json";
 		public const string c_leaveChatCommand = "goodbye.";
 		public const string c_raceCommand = "race!";
+		public const string c_checkTablesCommand = "check tables.";
 		public readonly Dictionary<States, string> m_stateLabels = new Dictionary<States, string>
 		{
 			{ States.Initializing, "Initializing" },
@@ -868,12 +869,14 @@ namespace SignalRConsole
 				if (IsRaceLeader)
 				{
 					WriteLine($"You're the Race Leader!");
-					WriteLine($"Type messages, type '{c_leaveChatCommand}' to leave the" +
-						$" chat{(HaveTables ? $" or '{c_raceCommand}' to race." : ".")}");
+					WriteLine($"Type messages, type '{c_checkTablesCommand}' to view tables," +
+						$" {(HaveTables ? $"'{c_raceCommand}' to race, " : "")}" +
+						$" or '{c_leaveChatCommand}' to leave the chat.");
 				}
 				else
 				{
-					WriteLine($"Type messages, type '{c_leaveChatCommand}' to leave the chat.");
+					WriteLine($"Type messages, type '{c_checkTablesCommand}' to view tables, or" +
+						$" '{c_leaveChatCommand}' to leave the chat.");
 				}
 			}
 			finally
@@ -913,39 +916,25 @@ namespace SignalRConsole
 						continue;
 					}
 
+					if (message.ToLower() == c_checkTablesCommand)
+					{
+						await CheckTables();
+						continue;
+					}
+
+					if (message.ToLower() == c_raceCommand)
+					{
+						if (await CheckRaceCommandAsync())
+							return;
+
+						continue;
+					}
+
 					if (message.ToLower() == c_leaveChatCommand)
 					{
 						WriteLine();
 						await LeaveChatChannelAsync(sendHello: true);
 						break;
-					}
-
-					if (message.ToLower() == c_raceCommand)
-					{
-						if (m_console.ScriptMode > 1)
-							throw new Exception("Racing not supported in scripting mode.");
-
-						if (IsRaceLeader)
-						{
-							if (HaveTables)
-							{
-								WriteLine();
-								await SendCommandAsync(CommandNames.InitiateRace, Id, ActiveChatFriend.Id, ActiveChatFriend.Id);
-								return;
-							}
-							else
-							{
-								Console.CursorTop = OutputLine;
-								WriteLine($"You and {ActiveChatFriend.Handle} must have tables in common in order to race.");
-								continue;
-							}
-						}
-						else
-						{
-							Console.CursorTop = OutputLine;
-							WriteLine("Only the race leader can start a race.");
-							continue;
-						}
 					}
 
 					await m_hubConnection.SendAsync(c_sendMessage, Id, ActiveChatChannelName, message);
@@ -964,6 +953,45 @@ namespace SignalRConsole
 			Echo = null;
 			EraseLogAndDisplayMenu();
 			return;
+		}
+
+		private async Task<bool> CheckRaceCommandAsync()
+		{
+			if (m_console.ScriptMode > 1)
+				throw new Exception("Racing not supported in scripting mode.");
+
+			if (IsRaceLeader)
+			{
+				if (HaveTables)
+				{
+					WriteLine();
+					await SendCommandAsync(CommandNames.InitiateRace, Id, ActiveChatFriend.Id, ActiveChatFriend.Id);
+					return true;
+				}
+				else
+				{
+					Console.CursorTop = OutputLine;
+					WriteLine($"You and {ActiveChatFriend.Handle} must have tables in common in order to race.");
+				}
+			}
+			else
+			{
+				Console.CursorTop = OutputLine;
+				WriteLine("Only the race leader can start a race.");
+			}
+
+			return false;
+		}
+
+		private async Task CheckTables()
+		{
+			await SendCommandAsync(CommandNames.Away, Id, ActiveChatFriend.Id, ActiveChatFriend.Id);
+			_ = IntersectTables();
+			_ = (await WriteLogReadKeyAsync("You are away, hit a key to return... "));
+			await SendCommandAsync(CommandNames.TableList, Id, ActiveChatFriend.Id, ActiveChatFriend.Id, MyTableList);
+			Console.SetCursorPosition(0, OutputLine);
+			Console.Write(new string (' ', c_checkTablesCommand.Length));
+			m_console.CursorLeft = 0;
 		}
 
 		private async Task<int> RaceLoopAsync()
@@ -1358,6 +1386,7 @@ namespace SignalRConsole
 		private async Task ProcessTableListCommandAsync(string from, Dictionary<string, List<int>> tables)
 		{
 			OpponentTableList = tables;
+			States newState = States.Initializing;
 			bool connecting;
 			do
 			{
@@ -1382,7 +1411,7 @@ namespace SignalRConsole
 						// opponent popped from Tables page
 						EraseLog();
 						WriteLogLine($"{ActiveChatFriend.Handle} has returned!");
-						State = States.Chatting;
+						newState = States.Chatting;
 					}
 
 					if (State == States.Listening || State == States.RaceInitializing && !IsRaceLeader)
@@ -1407,6 +1436,9 @@ namespace SignalRConsole
 			}
 			while (false);
 
+			if (newState != States.Initializing)
+				State = newState;
+
 			if (connecting)
 				await MessageLoopAsync();
 		}
@@ -1417,7 +1449,7 @@ namespace SignalRConsole
 			{
 				m_consoleSemaphore.Wait();
 				EraseLog();
-				WaitWriteLogLine($"{ActiveChatFriend.Handle} is away...");
+				WriteLogLine($"{ActiveChatFriend.Handle} is away...");
 			}
 			finally
 			{
@@ -2440,11 +2472,11 @@ namespace SignalRConsole
 				new Point(m_console.CursorLeft, m_console.CursorTop);
 
 			m_console.Write(line);
-			ConsoleKeyInfo confirm = await ReadKeyAvailableAsync(() => State != States.Listening);
+			ConsoleKeyInfo answer = await ReadKeyAvailableAsync(() => State != States.Listening);
 			if (m_console.ScriptMode < 2)
-				m_log.Add(line + confirm.KeyChar);
+				m_log.Add(line + answer.KeyChar);
 
-			return new Tuple<Point, ConsoleKeyInfo>(cursor, confirm);
+			return new Tuple<Point, ConsoleKeyInfo>(cursor, answer);
 		}
 
 		private Point MoveCursorToLog()
