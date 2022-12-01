@@ -186,7 +186,7 @@ namespace SignalRConsole
 		public const string c_fileExtension = ".qkr.json";
 		public const string c_leaveChatCommand = "goodbye.";
 		public const string c_raceCommand = "race!";
-		public const string c_checkTablesCommand = "check tables.";
+		public const string c_goAwayCommand = "go away.";
 		public readonly Dictionary<States, string> m_stateLabels = new Dictionary<States, string>
 		{
 			{ States.Initializing, "Initializing" },
@@ -197,7 +197,9 @@ namespace SignalRConsole
 			{ States.Connecting, "Connecting" },
 			{ States.Chatting, "Chatting" },
 			{ States.Broken, "Broken" },
+			{ States.Away, "Away" },
 			{ States.FriendAway, "Friend Away" },
+			{ States.BothAway, "Both Away" },
 			{ States.RaceInitializing, "Race Initializing" },
 			{ States.Racing, "Racing" },
 			{ States.RacingWaiting, "Racing" },
@@ -214,7 +216,9 @@ namespace SignalRConsole
 			Connecting,
 			Chatting,
 			Broken,
+			Away,
 			FriendAway,
+			BothAway,
 			RaceInitializing,
 			Racing,
 			RacingWaiting,
@@ -869,13 +873,13 @@ namespace SignalRConsole
 				if (IsRaceLeader)
 				{
 					WriteLine($"You're the Race Leader!");
-					WriteLine($"Type messages, type '{c_checkTablesCommand}' to view tables," +
+					WriteLine($"Type messages, type '{c_goAwayCommand}' to go away," +
 						$" {(HaveTables ? $"'{c_raceCommand}' to race, " : "")}" +
 						$" or '{c_leaveChatCommand}' to leave the chat.");
 				}
 				else
 				{
-					WriteLine($"Type messages, type '{c_checkTablesCommand}' to view tables, or" +
+					WriteLine($"Type messages, type '{c_goAwayCommand}' to go away, or" +
 						$" '{c_leaveChatCommand}' to leave the chat.");
 				}
 			}
@@ -916,9 +920,9 @@ namespace SignalRConsole
 						continue;
 					}
 
-					if (message.ToLower() == c_checkTablesCommand)
+					if (message.ToLower() == c_goAwayCommand)
 					{
-						await CheckTables();
+						await GoAwayAsync();
 						continue;
 					}
 
@@ -983,14 +987,18 @@ namespace SignalRConsole
 			return false;
 		}
 
-		private async Task CheckTables()
+		private async Task GoAwayAsync()
 		{
+			m_console.CursorTop = OutputLine;
+			WriteLine($"(You went away)");
+			await SetStateAsync(State == States.FriendAway ? States.BothAway : States.Away);
+			EraseLog();
 			await SendCommandAsync(CommandNames.Away, Id, ActiveChatFriend.Id, ActiveChatFriend.Id);
-			_ = IntersectTables();
-			_ = (await WriteLogReadKeyAsync("You are away, hit a key to return... "));
+			_ = await WriteLogReadKeyAsync("You are away, hit a key to return... ");
 			await SendCommandAsync(CommandNames.TableList, Id, ActiveChatFriend.Id, ActiveChatFriend.Id, MyTableList);
+			await SetStateAsync(State == States.BothAway ? States.FriendAway : States.Chatting);
 			Console.SetCursorPosition(0, OutputLine);
-			Console.Write(new string (' ', c_checkTablesCommand.Length));
+			Console.Write(new string(' ', c_goAwayCommand.Length));
 			m_console.CursorLeft = 0;
 		}
 
@@ -1129,6 +1137,13 @@ namespace SignalRConsole
 			}
 
 			return command != null;
+		}
+
+		private async Task SetStateAsync(States state)
+		{
+			_ = m_consoleSemaphore.Release();
+			State = state;
+			await m_consoleSemaphore.WaitAsync();
 		}
 
 		private void EraseLogAndDisplayMenu()
@@ -1406,11 +1421,17 @@ namespace SignalRConsole
 					{
 						EraseLog();
 					}
-					else if (State == States.FriendAway)
+					else if (State == States.FriendAway || State == States.BothAway)
 					{
 						// opponent popped from Tables page
-						EraseLog();
 						WriteLogLine($"{ActiveChatFriend.Handle} has returned!");
+						if (State == States.BothAway)
+						{
+							newState = States.Away;
+							break;
+						}
+
+						await SendCommandAsync(CommandNames.TableList, Id, from, from, MyTableList);
 						newState = States.Chatting;
 					}
 
@@ -1445,18 +1466,19 @@ namespace SignalRConsole
 
 		private void ProcessAwayCommand()
 		{
+			State = State == States.Away ? States.BothAway : States.FriendAway;
 			try
 			{
 				m_consoleSemaphore.Wait();
-				EraseLog();
+				if (State != States.BothAway)
+					EraseLog();
+
 				WriteLogLine($"{ActiveChatFriend.Handle} is away...");
 			}
 			finally
 			{
 				_ = m_consoleSemaphore.Release();
 			}
-
-			State = States.FriendAway;
 		}
 
 		private async Task ProcessInitiateRaceCommandAsync()
@@ -1486,7 +1508,7 @@ namespace SignalRConsole
 			if (IsRaceLeader)
 			{
 				int result = await RaceLoopAsync();
-				if (result ==0)
+				if (result == 0)
 				{
 					Console.SetCursorPosition(0, OutputLine);
 					await MessageLoopAsync();
@@ -2257,7 +2279,7 @@ namespace SignalRConsole
 				Console.SetCursorPosition(0, ScoreboardLine);
 				Console.WriteLine($"Racer{Padding(nameDigits - 5)}  Try      Time{Padding(timeDigits - 2)}" +
 					$" Right, Wrong  Card Total     ");
-				
+
 				Console.WriteLine($"{Handle}{Padding(nameDigits - Handle.Length)} " +
 					$" {MyRaceData.Try} of 2, " +
 					$" {string.Format($"{{0,{timeDigits}:0.0}}s ", myTime)}" +
@@ -2266,7 +2288,7 @@ namespace SignalRConsole
 					$" {string.Format($"{{0,{avgDigits}}}% ", myAverage)}" +
 					$" {Padding(3 - avgDigits)}{Padding(2 - correctDigits)}{Padding(2 - wrongDigits)}" +
 					$"{MyRaceData.Score}    {MyRaceScore}    ");
-				
+
 				Console.WriteLine($"{ActiveChatFriend.Handle}{Padding(nameDigits - ActiveChatFriend.Handle.Length)} " +
 					$" {OpponentRaceData.Try} of 2, " +
 					$" {string.Format($"{{0,{timeDigits}:0.0}}s ", opponentTime)}" +
@@ -2275,7 +2297,7 @@ namespace SignalRConsole
 					$" {string.Format($"{{0,{avgDigits}}}% ", opponentAverage)}" +
 					$" {Padding(3 - avgDigits)}{Padding(2 - correctDigits)}{Padding(2 - wrongDigits)}" +
 					$"{OpponentRaceData.Score}    {OpponentRaceScore}    ");
-				
+
 				Console.SetCursorPosition(cursor.X, cursor.Y);
 			}
 			finally
@@ -2472,10 +2494,12 @@ namespace SignalRConsole
 				new Point(m_console.CursorLeft, m_console.CursorTop);
 
 			m_console.Write(line);
-			ConsoleKeyInfo answer = await ReadKeyAvailableAsync(() => State != States.Listening);
 			if (m_console.ScriptMode < 2)
-				m_log.Add(line + answer.KeyChar);
+				m_log.Add(line);
 
+			m_consoleSemaphore.Release();
+			ConsoleKeyInfo answer = await ReadKeyAvailableAsync(() => State != States.Listening);
+			await m_consoleSemaphore.WaitAsync();
 			return new Tuple<Point, ConsoleKeyInfo>(cursor, answer);
 		}
 

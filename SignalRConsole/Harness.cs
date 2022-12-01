@@ -46,7 +46,7 @@ namespace SignalRConsole
 				if (m_args.Count > 0)
 				{
 					m_outputStreamFilename = NextArg();
-					if (WorkingDirectory!= null)
+					if (WorkingDirectory != null)
 						m_outputStreamFilename = Path.Combine(WorkingDirectory, m_outputStreamFilename);
 
 					Console.WriteLine($"Harness: output is written to {m_outputStreamFilename}");
