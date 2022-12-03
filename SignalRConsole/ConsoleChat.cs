@@ -995,8 +995,8 @@ namespace SignalRConsole
 			EraseLog();
 			await SendCommandAsync(CommandNames.Away, Id, ActiveChatFriend.Id, ActiveChatFriend.Id);
 			_ = await WriteLogReadKeyAsync("You are away, hit a key to return... ");
-			await SendCommandAsync(CommandNames.TableList, Id, ActiveChatFriend.Id, ActiveChatFriend.Id, MyTableList);
 			await SetStateAsync(State == States.BothAway ? States.FriendAway : States.Chatting);
+			await SendCommandAsync(CommandNames.TableList, Id, ActiveChatFriend.Id, ActiveChatFriend.Id, MyTableList);
 			Console.SetCursorPosition(0, OutputLine);
 			Console.Write(new string(' ', c_goAwayCommand.Length));
 			m_console.CursorLeft = 0;
@@ -1402,7 +1402,7 @@ namespace SignalRConsole
 		{
 			OpponentTableList = tables;
 			States newState = States.Initializing;
-			bool connecting;
+			bool runMessageLoop;
 			do
 			{
 				try
@@ -1412,12 +1412,12 @@ namespace SignalRConsole
 					{
 						// opponent popped from Quiz page
 						EraseLog();
-						connecting = true;
+						runMessageLoop = true;
 						break;
 					}
 
-					connecting = State == States.Connecting || State == States.Listening;
-					if (connecting)
+					runMessageLoop = State == States.Connecting || State == States.Listening;
+					if (runMessageLoop)
 					{
 						EraseLog();
 					}
@@ -1440,7 +1440,7 @@ namespace SignalRConsole
 
 					if (State != States.RaceInitializing)
 					{
-						if (connecting)
+						if (runMessageLoop)
 							WriteLogLine(string.Empty);
 
 						_ = IntersectTables();
@@ -1460,7 +1460,7 @@ namespace SignalRConsole
 			if (newState != States.Initializing)
 				State = newState;
 
-			if (connecting)
+			if (runMessageLoop)
 				await MessageLoopAsync();
 		}
 
@@ -2497,7 +2497,7 @@ namespace SignalRConsole
 			if (m_console.ScriptMode < 2)
 				m_log.Add(line);
 
-			m_consoleSemaphore.Release();
+			_ = m_consoleSemaphore.Release();
 			ConsoleKeyInfo answer = await ReadKeyAvailableAsync(() => State != States.Listening);
 			await m_consoleSemaphore.WaitAsync();
 			return new Tuple<Point, ConsoleKeyInfo>(cursor, answer);

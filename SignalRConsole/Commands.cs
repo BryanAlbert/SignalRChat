@@ -188,8 +188,7 @@ namespace SignalRConsole
 				catch (Exception exception)
 				{
 					Debug.WriteLine($"Exception in ReceiveCommand deserializing {json}: {exception.Message}");
-					if (Echo != null)
-						Echo.Invoke($"Failed to deserialize {json}: {exception.Message}");
+					Echo?.Invoke($"Failed to deserialize {json}: {exception.Message}");
 
 					command = new ConnectionCommand();
 				}
@@ -230,8 +229,7 @@ namespace SignalRConsole
 			{
 				try
 				{
-					if (Echo != null)
-						Echo.Invoke(Json);
+					Echo?.Invoke(Json);
 
 					await m_hubConnection.SendAsync(ConsoleChat.c_sendCommand, From, Channel, To, Json);
 				}
