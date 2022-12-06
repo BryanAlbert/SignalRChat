@@ -7,18 +7,18 @@ Device Id: confred2-7ace-4e26-9e5e-2ac2afc2ead2,
 Creation Date: 2022-06-06T19:03:42, Modified Date: 2022-08-30T21:00:21
 Pick a command: t to list tables, a to add a friend, l to list friends,
 u to unfriend a friend, c to chat, or x to exit
-Listening> 
 (Sent Hello null command to Fred.)
+Listening>
 (Sent Hello null command to Bruce.)
-Busy...       
+Busy>
 Accept friend request from Bruce, email address bruce@hotmail.com? [y/n] 
 Y
-Listening> 
+Listening>
 You and Bruce are now friends!
 Your friend Bruce is offline.
 L
 Friends:
 Bruce, Bruce Albert, bruce@hotmail.com, Favorite Color: Red,
-   Created: 2022-06-06T19:03:41 Modified: 2022-11-18T22:15:29
+   Created: 2022-06-06T19:03:41 Modified: 2022-12-06T23:23:46
 X
 Finished.

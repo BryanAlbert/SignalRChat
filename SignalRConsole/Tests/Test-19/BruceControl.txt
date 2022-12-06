@@ -7,9 +7,9 @@ Device Id: conbruce-7ace-4e26-9e5e-2ac2afc2ead2,
 Creation Date: 2022-06-06T19:03:41, Modified Date: 2022-09-01T00:58:50
 Pick a command: t to list tables, a to add a friend, l to list friends,
 u to unfriend a friend, c to chat, or x to exit
-(Sent Hello null command to Bruce.)
-Listening> 
+Listening>
 L
+(Sent Hello null command to Bruce.)
 Friends:
 OLD Fred, Fred OLD Sanson, fred@gmail.OLD.com, Favorite Color: White,
    Created: 2022-06-06T19:03:42 Modified: 2022-06-06T19:03:42
@@ -17,6 +17,6 @@ Your friend Fred is online.
 L
 Friends:
 Fred, Fred Sanson, fred@gmail.com, Favorite Color: Green,
-   Created: 2022-06-06T19:03:42 Modified: 2022-11-18T22:28:54 (online)
+   Created: 2022-06-06T19:03:42 Modified: 2022-12-06T23:26:34 (online)
 X
 Finished.

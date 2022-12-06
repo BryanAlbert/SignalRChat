@@ -7,21 +7,21 @@ Device Id: conbruce-7ace-4e26-9e5e-2ac2afc2ead2,
 Creation Date: 2022-06-06T19:03:41, Modified Date: 2022-08-30T23:12:30
 Pick a command: t to list tables, a to add a friend, l to list friends,
 u to unfriend a friend, c to chat, or x to exit
-Listening> 
-(Sent Hello null command to Bruce.)
+Listening>
 A
-Busy...       
+Busy>
 What is your friend's handle? 
 Mom
 What is your friend's email? 
 jeanmariealbert@hotmail.com
 A friend request has been sent to Mom.
-Listening> 
+Listening>
+(Sent Hello null command to Bruce.)
 Your (pending) friend Mom is online.
 You and Mom are now friends!
 L
 Friends:
 Mom, Jean Albert, jeanmariealbert@hotmail.com, Favorite Color: Maroon,
-   Created: 2022-06-06T19:03:43 Modified: 2022-11-18T22:17:21 (online)
+   Created: 2022-06-06T19:03:43 Modified: 2022-12-06T23:24:56 (online)
 X
 Finished.

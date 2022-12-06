@@ -7,41 +7,41 @@ Device Id: conbruce-7ace-4e26-9e5e-2ac2afc2ead2,
 Creation Date: 2022-06-06T19:03:41, Modified Date: 2022-09-01T19:44:13
 Pick a command: t to list tables, a to add a friend, l to list friends,
 u to unfriend a friend, c to chat, or x to exit
-Listening> 
+Listening>
 (Sent Hello null command to Bruce.)
 A
-Busy...       
+Busy>
 What is your friend's handle? 
 Fred
 You and Fred are blocked. Both you and Fred must unfriend before you can become friends.
-Listening> 
+Listening>
 U
-Busy...       
+Busy>
 Friends:
 0: Fred
 Whom would you like to unfriend (number, Enter to abort): 
 0
 Fred has been unfriended.
-Listening> 
+Listening>
 A
-Busy...       
+Busy>
 What is your friend's handle? 
 Fred
 What is your friend's email? 
 fred@gmail.com
 A friend request has been sent to Fred.
-Listening> 
+Listening>
 Fred has blocked you. Fred must unfriend you before you can become friends.
 Your (pending) friend Fred is offline.
 Fred has blocked you. Fred must unfriend you before you can become friends.
-Busy...       
+Busy>
 Accept friend request from Fred, email address fred@gmail.com? [y/n] 
 Y
-Listening> 
+Listening>
 You and Fred are now friends!
 L
 Friends:
 Fred, Fred Sanson, fred@gmail.com, Favorite Color: Green,
-   Created: 2022-06-06T19:03:42 Modified: 2022-11-18T22:28:23 (online)
+   Created: 2022-06-06T19:03:42 Modified: 2022-12-06T23:26:28 (online)
 X
 Finished.

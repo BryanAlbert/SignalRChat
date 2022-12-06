@@ -7,16 +7,16 @@ Device Id: conbruce-7ace-4e26-9e5e-2ac2afc2ead2,
 Creation Date: 2022-06-06T19:03:41, Modified Date: 2022-09-01T00:58:50
 Pick a command: t to list tables, a to add a friend, l to list friends,
 u to unfriend a friend, c to chat, or x to exit
-Listening> 
+Listening>
 U
-Busy...       
+Busy>
 Friends:
 0: Fred
 Whom would you like to unfriend (number, Enter to abort): 
 0
 (Sent Hello null command to Bruce.)
 Fred has been unfriended.
-Listening> 
+Listening>
 L
 You have no friends.
 X
@@ -27,10 +27,10 @@ Bruce
 Name: Bruce Albert, Email: bruce@hotmail.com, Favorite color: Red,
 Id: brucef68-3c37-4aef-b8a6-1649659bbbc4,
 Device Id: conbruce-7ace-4e26-9e5e-2ac2afc2ead2,
-Creation Date: 2022-06-06T19:03:41, Modified Date: 2022-11-18T22:26:46
+Creation Date: 2022-06-06T19:03:41, Modified Date: 2022-12-06T23:26:11
 Pick a command: t to list tables, a to add a friend, l to list friends,
 u to unfriend a friend, c to chat, or x to exit
-Listening> 
+Listening>
 (Sent Hello null command to Bruce.)
 (Sent unfriend command to Fred.)
 L

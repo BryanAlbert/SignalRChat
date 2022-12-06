@@ -1,0 +1,9 @@
+Fred
+>wait-for: You have no tables.
+go away.
+>wait-for: Bruce has returned!
+R
+>wait-for: Bruce said: Yo.
+Bye now!
+>wait-for: Your friend Bruce is offline.
+X
