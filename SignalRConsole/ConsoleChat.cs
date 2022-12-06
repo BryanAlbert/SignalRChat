@@ -46,22 +46,29 @@ namespace SignalRConsole
 					try
 					{
 						m_consoleSemaphore.Wait();
-						Point cursor = new Point(m_console.CursorLeft, m_console.CursorTop);
-						m_console.SetCursorPosition(0, PromptLine);
-						int padding = m_state == States.Initializing ? 0 : (m_stateLabels[m_state].Length) -
-							m_stateLabels[value].Length + 2;
-
-						if (value == States.Listening)
+						if (m_console.ScriptMode < 2)
 						{
-							m_console.Write(padding > 0 ? $"{m_stateLabels[value]}>" +
-								$" {(padding > 0 ? new string(' ', padding) : "")}" : $"{value}> ");
-							while (padding-- > 0)
-								m_console.CursorLeft--;
+							Point cursor = new Point(m_console.CursorLeft, m_console.CursorTop);
+							m_console.SetCursorPosition(0, PromptLine);
+							int padding = m_state == States.Initializing ? 0 : (m_stateLabels[m_state].Length) -
+								m_stateLabels[value].Length + 2;
+
+							if (value == States.Listening)
+							{
+								m_console.Write(padding > 0 ? $"{m_stateLabels[value]}>" +
+									$" {(padding > 0 ? new string(' ', padding) : "")}" : $"{value}> ");
+								while (padding-- > 0)
+									m_console.CursorLeft--;
+							}
+							else
+							{
+								m_console.Write($"{m_stateLabels[value]}...{(padding > 0 ? new string(' ', padding) : "")}");
+								m_console.SetCursorPosition(cursor.X, cursor.Y);
+							}
 						}
 						else
 						{
-							m_console.Write($"{m_stateLabels[value]}...{(padding > 0 ? new string(' ', padding) : "")}");
-							m_console.SetCursorPosition(cursor.X, cursor.Y);
+							m_console.WriteLine($"{value}>");
 						}
 					}
 					finally
@@ -412,7 +419,9 @@ namespace SignalRConsole
 				m_consoleSemaphore.Wait();
 				if (from == Id)
 				{
-					m_console.CursorTop = OutputLine;
+					if (m_console.ScriptMode < 2)
+						m_console.CursorTop = OutputLine;
+
 					WriteLine($"You said: {message}");
 					Interrupt = false;
 				}
@@ -989,7 +998,9 @@ namespace SignalRConsole
 
 		private async Task GoAwayAsync()
 		{
-			m_console.CursorTop = OutputLine;
+			if (m_console.ScriptMode < 2)
+				m_console.CursorTop = OutputLine;
+
 			WriteLine($"(You went away)");
 			await SetStateAsync(State == States.FriendAway ? States.BothAway : States.Away);
 			EraseLog();
@@ -997,8 +1008,12 @@ namespace SignalRConsole
 			_ = await WriteLogReadKeyAsync("You are away, hit a key to return... ");
 			await SetStateAsync(State == States.BothAway ? States.FriendAway : States.Chatting);
 			await SendCommandAsync(CommandNames.TableList, Id, ActiveChatFriend.Id, ActiveChatFriend.Id, MyTableList);
-			Console.SetCursorPosition(0, OutputLine);
-			Console.Write(new string(' ', c_goAwayCommand.Length));
+			if (m_console.ScriptMode < 2)
+			{
+				Console.SetCursorPosition(0, OutputLine);
+				Console.Write(new string(' ', c_goAwayCommand.Length));
+			}
+
 			m_console.CursorLeft = 0;
 		}
 
@@ -1110,7 +1125,7 @@ namespace SignalRConsole
 			WaitWriteLine();
 			if (MyRaceScore > OpponentRaceScore)
 				WaitWriteLine($"Congratulations, you won: {MyRaceScore} to {OpponentRaceScore}!");
-			else if (MyRaceData.Score < OpponentRaceScore)
+			else if (MyRaceScore < OpponentRaceScore)
 				WaitWriteLine($"Sorry, you lost: {MyRaceScore} to {OpponentRaceScore}.");
 			else
 				WaitWriteLine($"It's a tie: {MyRaceScore} to {OpponentRaceScore}!");
@@ -1357,20 +1372,29 @@ namespace SignalRConsole
 
 				PreviousState = State;
 				State = States.Busy;
-				Tuple<Point, ConsoleKeyInfo> confirm = await WriteLogReadKeyAsync($"Accept friend request from" +
-					$" {pending.Handle}, email address {pending.Email}? [y/n] ");
+				try
+				{
+					await m_consoleSemaphore.WaitAsync();
+					Tuple<Point, ConsoleKeyInfo> confirm = await WriteLogReadKeyAsync($"Accept friend request from" +
+						$" {pending.Handle}, email address {pending.Email}? [y/n] ");
 
-				State = PreviousState;
-				pending.Blocked = confirm.Item2.Key != ConsoleKey.Y;
-				_ = m_user.Friends.Remove(existing);
-				_ = m_user.Friends.Remove(pending);
-				m_user.Friends.Add(pending);
-				SaveUser();
+					await SetStateAsync(PreviousState);
+					pending.Blocked = confirm.Item2.Key != ConsoleKey.Y;
+					_ = m_user.Friends.Remove(existing);
+					_ = m_user.Friends.Remove(pending);
+					m_user.Friends.Add(pending);
+					SaveUser();
 
-				if (m_online.Contains(pending))
-					await SendCommandAsync(CommandNames.Verify, Id, HandleChannelName, from, m_user, !pending.Blocked);
+					if (m_online.Contains(pending))
+						await SendCommandAsync(CommandNames.Verify, Id, HandleChannelName, from, m_user, !pending.Blocked);
 
-				m_console.SetCursorPosition(confirm.Item1.X, confirm.Item1.Y);
+					m_console.SetCursorPosition(confirm.Item1.X, confirm.Item1.Y);
+				}
+				finally
+				{
+					_ = m_consoleSemaphore.Release();
+				}
+
 				existing = pending;
 			}
 			else
@@ -1879,7 +1903,7 @@ namespace SignalRConsole
 
 		private bool IntersectTables()
 		{
-			foreach (string line in FormatTableList($"{ActiveChatFriend.Handle} has", OpponentTableList).Split("\n"))
+			foreach (string line in FormatTableList($"{ActiveChatFriend.Handle} has", OpponentTableList).Split("\r\n"))
 				WriteLogLine(line);
 
 			if (HaveTables)
@@ -2237,8 +2261,12 @@ namespace SignalRConsole
 			{
 				m_consoleSemaphore.Wait();
 				EraseLog();
-				OutputLine = m_console.CursorTop;
-				LogTop = LogBottom = OutputLine + c_logWindowOffset;
+				if (m_console.ScriptMode < 2)
+				{
+					OutputLine = m_console.CursorTop;
+					LogTop = LogBottom = OutputLine + c_logWindowOffset;
+				}
+
 				WriteLine();
 				WriteLine("Pick a command: t to list tables, a to add a friend, l to list friends,");
 				WriteLine("u to unfriend a friend, c to chat, or x to exit");
