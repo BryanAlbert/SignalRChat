@@ -7,14 +7,14 @@ Device Id: conbruce-7ace-4e26-9e5e-2ac2afc2ead2,
 Creation Date: 2022-06-06T19:03:41, Modified Date: 2022-08-31T19:41:59
 Pick a command: t to list tables, a to add a friend, l to list friends,
 u to unfriend a friend, c to chat, or x to exit
-Listening> 
+Listening>
 (Sent Hello null command to Bruce.)
 A
-Busy...       
+Busy>
 What is your friend's handle? 
 Fred
 Fred is already your friend!
-Listening> 
+Listening>
 L
 Friends:
 Fred, Fred Sanson, fred@gmail.com, Favorite Color: Green,

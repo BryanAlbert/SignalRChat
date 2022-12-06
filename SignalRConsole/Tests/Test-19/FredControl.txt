@@ -7,7 +7,7 @@ Device Id: confred2-7ace-4e26-9e5e-2ac2afc2ead2,
 Creation Date: 2022-06-06T19:03:42, Modified Date: 2022-09-01T01:06:14
 Pick a command: t to list tables, a to add a friend, l to list friends,
 u to unfriend a friend, c to chat, or x to exit
-Listening> 
+Listening>
 (Sent Hello null command to Fred.)
 L
 Friends:
@@ -24,13 +24,13 @@ Device Id: confred2-7ace-4e26-9e5e-2ac2afc2ead2,
 Creation Date: 2022-06-06T19:03:42, Modified Date: 2022-09-01T01:06:14
 Pick a command: t to list tables, a to add a friend, l to list friends,
 u to unfriend a friend, c to chat, or x to exit
-Listening> 
+Listening>
 (Sent Hello null command to Fred.)
 Your friend Bruce is online.
 Your friend Bruce is offline.
 L
 Friends:
 Bruce, Bruce Albert, bruce@hotmail.com, Favorite Color: Red,
-   Created: 2022-06-06T19:03:41 Modified: 2022-11-18T22:28:54
+   Created: 2022-06-06T19:03:41 Modified: 2022-12-06T23:26:34
 X
 Finished.

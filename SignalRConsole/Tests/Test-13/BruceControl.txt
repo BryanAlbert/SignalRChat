@@ -7,17 +7,17 @@ Device Id: conbruce-7ace-4e26-9e5e-2ac2afc2ead2,
 Creation Date: 2022-06-06T19:03:41, Modified Date: 2022-08-31T21:31:36
 Pick a command: t to list tables, a to add a friend, l to list friends,
 u to unfriend a friend, c to chat, or x to exit
-Listening> 
+Listening>
 (Sent Hello null command to Bruce.)
 Your friend Fred is online.
 U
-Busy...       
+Busy>
 Friends:
 0: Fred
 Whom would you like to unfriend (number, Enter to abort): 
 0
 Fred has been unfriended.
-Listening> 
+Listening>
 L
 You have no friends.
 X

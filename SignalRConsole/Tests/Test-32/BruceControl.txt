@@ -1,0 +1,53 @@
+Initializing server and connecting to URL: https://localhost:5001/chathub
+What is your handle (nickname)? 
+Bruce
+Name: Bruce Albert, Email: bruce@hotmail.com, Favorite color: Red,
+Id: brucef68-3c37-4aef-b8a6-1649659bbbc4,
+Device Id: conbruce-7ace-4e26-9e5e-2ac2afc2ead2,
+Creation Date: 2022-06-06T19:03:41, Modified Date: 2022-08-30T19:10:17
+Pick a command: t to list tables, a to add a friend, l to list friends,
+u to unfriend a friend, c to chat, or x to exit
+Listening>
+(Sent Hello null command to Bruce.)
+Your friend Fred is online.
+C
+Busy>
+Friends:
+0: Fred
+With whom would you like to chat? (number, Enter to abort): 
+0
+Connecting>
+Fred has these tables:
+Addition: (None)
+Subtraction: (None)
+Multiplication: (None)
+Division: (None)
+You have no tables and can't race.
+Chatting>
+You're the Race Leader!
+Type messages, type 'go away.' to go away,  or 'goodbye.' to leave the chat.
+go away.
+(You went away)
+Away>
+You are away, hit a key to return... 
+BothAway>
+Fred is away...
+R
+FriendAway>
+Fred has returned!
+Fred has these tables:
+Addition: (None)
+Subtraction: (None)
+Multiplication: (None)
+Division: (None)
+You have no tables and can't race.
+Chatting>
+Yo.
+You said: Yo.
+Fred said: Bye now!
+goodbye.
+Pick a command: t to list tables, a to add a friend, l to list friends,
+u to unfriend a friend, c to chat, or x to exit
+Listening>
+X
+Finished.

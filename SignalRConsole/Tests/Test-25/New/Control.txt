@@ -7,7 +7,7 @@ Device Id: connew65-1468-4409-a21a-f5b4f000ee4f,
 Creation Date: 2022-07-08T03:43:05, Modified Date: 2022-09-10T04:06:55
 Pick a command: t to list tables, a to add a friend, l to list friends,
 u to unfriend a friend, c to chat, or x to exit
-Listening> 
+Listening>
 (Sent Hello null command to Mia.)
 Mia is online on device conmia08-9a9b-4a6b-9db9-9e9b6238283f, sending merge data...
 Merging data from Mia, Id mia38308-9a9b-4a6b-9db9-9e9b6238283f, on device conmia08-9a9b-4a6b-9db9-9e9b6238283f...

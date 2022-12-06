@@ -8,8 +8,8 @@ Creation Date: 2022-07-06T23:11:31, Modified Date: 2022-07-08T10:21:36
 (Sent Hello null command to Mia.)
 Pick a command: t to list tables, a to add a friend, l to list friends,
 u to unfriend a friend, c to chat, or x to exit
+Listening>
 Mia is online on device xxxmia08-9a9b-4a6b-9db9-9e9b6238283f, sending merge data...
-Listening> 
 Merging data from Mia on device xxxmia08-9a9b-4a6b-9db9-9e9b6238283f...
 Merged data from Mia on device xxxmia08-9a9b-4a6b-9db9-9e9b6238283f.
 L
