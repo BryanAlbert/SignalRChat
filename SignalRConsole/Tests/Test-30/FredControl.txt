@@ -9,7 +9,6 @@ Pick a command: t to list tables, a to add a friend, l to list friends,
 u to unfriend a friend, c to chat, or x to exit
 Listening>
 (Sent Hello null command to Fred.)
-Listening>
 Your friend Bruce is online.
 Bruce has these tables:
 Addition: (None)
