@@ -1,0 +1,9 @@
+Bruce
+>wait-for: Listening>
+>wait-for: Your friend Fred is online.
+C
+0
+>wait-for: Type messages, type 'go away.' to go away,  or 'goodbye.' to leave the chat.
+Go away.
+>wait-for: Fred has left the chat.
+X

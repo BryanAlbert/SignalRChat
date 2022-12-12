@@ -1,0 +1,3 @@
+test-harness Leader goes away and follower disconnects
+start BruceInput.txt BruceOutput.txt Bruce
+start FredInput.txt FredOutput.txt Fred

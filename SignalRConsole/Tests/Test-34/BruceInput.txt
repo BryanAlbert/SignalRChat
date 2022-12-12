@@ -1,0 +1,8 @@
+Bruce
+>wait-for: Your friend Fred is online.
+C
+0
+Yo.
+>wait-for: Fred is away...
+Goodbye.
+X

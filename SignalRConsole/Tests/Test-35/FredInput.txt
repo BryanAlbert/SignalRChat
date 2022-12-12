@@ -1,0 +1,5 @@
+Fred
+>wait-for: Bruce is away...
+Goodbye.
+>wait-for: Your friend Bruce is offline.
+X

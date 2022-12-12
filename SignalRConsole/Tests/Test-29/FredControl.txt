@@ -36,6 +36,7 @@ You said: Bye now!
 Pick a command: t to list tables, a to add a friend, l to list friends,
 u to unfriend a friend, c to chat, or x to exit
 Listening>
+Bruce has left the chat.
 Your friend Bruce is offline.
 X
 Finished.
