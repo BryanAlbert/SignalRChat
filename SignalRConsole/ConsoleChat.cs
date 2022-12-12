@@ -98,7 +98,7 @@ namespace SignalRConsole
 			DisplayMenu();
 			while (true)
 			{
-				ConsoleKeyInfo menu = await ReadKeyAvailableAsync(() => State == States.Listening);
+				ConsoleKeyInfo menu = await ReadKeyAvailableAsync(() => State == States.Listening, () => false);
 				try
 				{
 					switch (menu.Key)
@@ -248,6 +248,7 @@ namespace SignalRConsole
 		private bool HaveTables => m_user.Operators.Any(x => x.Tables.Any(y => y.Cards.Count > 0));
 		private bool HaveIntersection { get; set; }
 		private bool IsStateRacing => State == States.RaceInitializing || State == States.Racing || State == States.RacingWaiting;
+		private bool IsStateAway => State == States.FriendAway || State == States.BothAway || State == States.Away;
 		private bool IsRaceLeader { get; set; }
 		private int PromptLine { get; set; }
 		private int ScoreboardLine { get; set; }
@@ -812,7 +813,6 @@ namespace SignalRConsole
 				_ = m_consoleSemaphore.Release();
 			}
 
-			State = States.Busy;
 			Friend friend = await ChooseFriendAsync($"Whom would you like to unfriend" +
 				$" (number, Enter to abort): ", m_user.Friends);
 
@@ -850,7 +850,6 @@ namespace SignalRConsole
 				_ = m_consoleSemaphore.Release();
 			}
 
-			State = States.Busy;
 			Friend friend = await ChooseFriendAsync("With whom would you like to chat?" +
 				" (number, Enter to abort): ", m_online);
 
@@ -1005,7 +1004,12 @@ namespace SignalRConsole
 			await SetStateAsync(State == States.FriendAway ? States.BothAway : States.Away);
 			EraseLog();
 			await SendCommandAsync(CommandNames.Away, Id, ActiveChatFriend.Id, ActiveChatFriend.Id);
-			_ = await WriteLogReadKeyAsync("You are away, hit a key to return... ");
+			_ = await WriteLogReadKeyAsync("You are away, hit a key to return... ", () => true, () => !IsStateAway);
+
+			// check if friend disconnected while we were away
+			if (State == States.Listening)
+				return;
+			
 			await SetStateAsync(State == States.BothAway ? States.FriendAway : States.Chatting);
 			await SendCommandAsync(CommandNames.TableList, Id, ActiveChatFriend.Id, ActiveChatFriend.Id, MyTableList);
 			if (m_console.ScriptMode < 2)
@@ -1222,6 +1226,7 @@ namespace SignalRConsole
 
 		private async Task<Friend> ChooseFriendAsync(string prompt, List<Friend> friends)
 		{
+			State = States.Busy;
 			Friend friend = null;
 			try
 			{
@@ -1231,7 +1236,7 @@ namespace SignalRConsole
 				for (index = 0; index < friends.Count; index++)
 					WriteLogLine($"{string.Format("{0:X}", index)}: {friends[index].Handle}");
 
-				Tuple<Point, ConsoleKeyInfo> result = await WriteLogReadKeyAsync(prompt);
+				Tuple<Point, ConsoleKeyInfo> result = await WriteLogReadKeyAsync(prompt, () => true, () => false);
 				while (true)
 				{
 					if (result.Item2.Key == ConsoleKey.Enter)
@@ -1244,7 +1249,7 @@ namespace SignalRConsole
 						break;
 
 					result = await WriteLogReadKeyAsync($"{result.Item2.KeyChar} not valid, enter a number between 0 and" +
-						$" {Math.Min(friends.Count, 9) - 1}, please try again: ");
+						$" {Math.Min(friends.Count, 9) - 1}, please try again: ", () => true, () => false);
 				}
 
 				Console.SetCursorPosition(result.Item1.X, result.Item1.Y);
@@ -1272,9 +1277,9 @@ namespace SignalRConsole
 					State = States.Listening;
 				}
 			}
-			else if (State == States.Chatting && command.Flag == false)
+			else if ((State == States.Chatting || State == States.Away) && command.Flag == false)
 			{
-				if (m_console.CursorLeft > 0)
+				if (m_console.CursorLeft > 0 && State != States.Away && State != States.BothAway)
 				{
 					await WaitWriteLineAsync($" {ActiveChatFriend.Handle} has left the chat, hit Enter...");
 					m_waitForEnter = true;
@@ -1282,6 +1287,7 @@ namespace SignalRConsole
 				else
 				{
 					EraseLogAndDisplayMenu();
+					WaitWriteLogLine($"{ActiveChatFriend.Handle} has left the chat.");
 				}
 
 				await LeaveChatChannelAsync(sendHello: false);
@@ -1376,7 +1382,7 @@ namespace SignalRConsole
 				{
 					await m_consoleSemaphore.WaitAsync();
 					Tuple<Point, ConsoleKeyInfo> confirm = await WriteLogReadKeyAsync($"Accept friend request from" +
-						$" {pending.Handle}, email address {pending.Email}? [y/n] ");
+						$" {pending.Handle}, email address {pending.Email}? [y/n] ", () => true, () => false);
 
 					await SetStateAsync(PreviousState);
 					pending.Blocked = confirm.Item2.Key != ConsoleKey.Y;
@@ -2334,12 +2340,12 @@ namespace SignalRConsole
 			}
 		}
 
-		private async Task<ConsoleKeyInfo> ReadKeyAvailableAsync(Func<bool> enable)
+		private async Task<ConsoleKeyInfo> ReadKeyAvailableAsync(Func<bool> enabled, Func<bool> cancel)
 		{
-			while (!enable() || !m_console.KeyAvailable)
+			while (!(enabled() && m_console.KeyAvailable) && !cancel())
 				await Task.Delay(10);
 
-			return m_console.ReadKey(intercept: true);
+			return cancel() ? new ConsoleKeyInfo('x', ConsoleKey.Escape, false, false, false) : m_console.ReadKey(intercept: true);
 		}
 
 		private static string Padding(int padding)
@@ -2516,7 +2522,8 @@ namespace SignalRConsole
 			m_log.Add(line + value);
 		}
 
-		private async Task<Tuple<Point, ConsoleKeyInfo>> WriteLogReadKeyAsync(string line)
+		private async Task<Tuple<Point, ConsoleKeyInfo>> WriteLogReadKeyAsync(string line, Func<bool> enabled,
+			Func<bool> cancel)
 		{
 			Point cursor = m_console.ScriptMode < 2 ? MoveCursorToLog() :
 				new Point(m_console.CursorLeft, m_console.CursorTop);
@@ -2526,7 +2533,7 @@ namespace SignalRConsole
 				m_log.Add(line);
 
 			_ = m_consoleSemaphore.Release();
-			ConsoleKeyInfo answer = await ReadKeyAvailableAsync(() => State != States.Listening);
+			ConsoleKeyInfo answer = await ReadKeyAvailableAsync(enabled, cancel);
 			await m_consoleSemaphore.WaitAsync();
 			return new Tuple<Point, ConsoleKeyInfo>(cursor, answer);
 		}
