@@ -533,16 +533,16 @@ namespace SignalRConsole
 						await m_consoleSemaphore.WaitAsync();
 						WriteLogLine($"Your {(friend.Blocked.HasValue ? "" : "(pending) ")}friend {friend.Handle} is offline.");
 						_ = m_online.Remove(friend);
-						if (ActiveChatFriend == friend)
-						{
-							await LeaveChatChannelAsync(sendHello: true);
-							DisplayMenu();
-						}
+						if (ActiveChatFriend != friend)
+							return;
 					}
 					finally
 					{
 						_ = m_consoleSemaphore.Release();
 					}
+
+					await LeaveChatChannelAsync(sendHello: true);
+					DisplayMenu();
 				}
 			}
 		}
