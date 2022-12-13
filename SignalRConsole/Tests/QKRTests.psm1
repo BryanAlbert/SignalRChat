@@ -140,6 +140,6 @@ function Start-Chat
 
 function Update-SignalRConsole
 {
-	Get-ChildItem ..\bin\Debug\net6.0\* -File | Copy-Item -Destination .
+	Get-ChildItem ..\bin\Debug\net7.0\* -File | Copy-Item -Destination .
 }
 
