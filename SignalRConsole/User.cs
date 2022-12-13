@@ -36,7 +36,7 @@ namespace SignalRConsole
 		}
 
 
-		public static Version c_dataVersion = new Version(1, 1);
+		public static Version c_dataVersion = new(1, 1);
 
 
 		public Version DataVersion { get; set; }

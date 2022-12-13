@@ -37,9 +37,9 @@ namespace SignalRConsole
 					foreach (Card card in table.Cards)
 					{
 						Console.WriteLine($"Checking {kind.Name} card {card.Fact.First} by {card.Fact.Second}");
-						Dictionary<string, Tuple<int?, int?, int?, int?>> quizzed = new Dictionary<string, Tuple<int?, int?, int?, int?>>();
-						Dictionary<string, Tuple<int?, int?, int?, int?>> correct = new Dictionary<string, Tuple<int?, int?, int?, int?>>();
-						Dictionary<string, Tuple<int?, int?, int?, int?>> time = new Dictionary<string, Tuple<int?, int?, int?, int?>>();
+						Dictionary<string, Tuple<int?, int?, int?, int?>> quizzed = new();
+						Dictionary<string, Tuple<int?, int?, int?, int?>> correct = new();
+						Dictionary<string, Tuple<int?, int?, int?, int?>> time = new();
 						_ = GetData(Users[0], kind, card, (x) => x.Quizzed, "MergeQuizzed", (x, y) => x.MergeQuizzed[y], quizzed, table.Base);
 						_ = GetData(Users[0], kind, card, (x) => x.Correct, "MergeCorrect", (x, y) => x.MergeCorrect[y], correct, table.Base);
 						_ = GetData(Users[0], kind, card, (x) => x.TotalTime, "MergeTme", (x, y) => x.MergeTime[y], time, table.Base);
@@ -72,6 +72,178 @@ namespace SignalRConsole
 
 			return true;
 		}
+
+
+		private static bool GetData(User[] user, OperatorTables kind, Card card, Func<Card, int> cardData, string mergeTitle,
+			Func<Card, int, int> mergeData, Dictionary<string, Tuple<int?, int?, int?, int?>> data, int tableBase)
+		{
+			Card initialCard = user[0].Operators.FirstOrDefault(x =>
+				x.Name == kind.Name).Tables.FirstOrDefault(x =>
+				x.Base == tableBase)?.Cards.FirstOrDefault(x =>
+				x.Fact.First == card.Fact.First && x.Fact.Second == card.Fact.Second);
+
+			if (initialCard != null && !GetData(user[0], kind, initialCard, cardData, mergeTitle, mergeData, data, true))
+				return false;
+
+			return GetData(user[1], kind, card, cardData, mergeTitle, mergeData, data, false);
+		}
+
+		private static bool GetData(User user, OperatorTables kind, Card card, Func<Card, int> cardData, string mergeTitle,
+			Func<Card, int, int> mergeData, Dictionary<string, Tuple<int?, int?, int?, int?>> data, bool initialFile)
+		{
+			if (initialFile)
+				UpdateDictionary(data, user.DeviceId, cardData(card), null, null, null);
+			else
+				UpdateDictionary(data, user.DeviceId, null, null, cardData(card), null);
+
+			bool success = true;
+			string device = "<not specified>";
+			int index = 0;
+			for (; index < card.MergeQuizzed?.Length; index++)
+			{
+				device = user.MergeIndex.FirstOrDefault(x => x.Value == index).Key;
+				if (initialFile)
+				{
+					if (!data.ContainsKey(device) || data[device].Item2 == null)
+					{
+						UpdateDictionary(data, device, null, mergeData(card, index), null, null);
+						continue;
+					}
+
+					if (!(success = data[device].Item2 == mergeData(card, index)))
+						break;
+				}
+				else
+				{
+					if (!data.ContainsKey(device) || data[device].Item4 == null)
+					{
+						UpdateDictionary(data, device, null, null, null, mergeData(card, index));
+						continue;
+					}
+
+					if (!(success = data[device].Item4 == mergeData(card, index)))
+						break;
+				}
+			}
+
+			if (success)
+				return true;
+
+			Console.WriteLine($"Error: {mergeTitle} mismatch for {device} in {user.FileName} for {kind.Name}, card" +
+				$" {card.Fact.First} by {card.Fact.Second}, expected {(initialFile ? data[device].Item2 : data[device].Item4)}" +
+				$" instead of {mergeData(card, index)}");
+
+			return false;
+		}
+
+		private static void UpdateDictionary(Dictionary<string, Tuple<int?, int?, int?, int?>> dictionary, string deviceId,
+			int? initial, int? initialMerge, int? final, int? finalMerge)
+		{
+			if (!dictionary.ContainsKey(deviceId))
+			{
+				dictionary[deviceId] = new Tuple<int?, int?, int?, int?>(initial, initialMerge, final, finalMerge);
+				return;
+			}
+
+			dictionary[deviceId] = new Tuple<int?, int?, int?, int?>(
+				initial ?? dictionary[deviceId].Item1, initialMerge ?? dictionary[deviceId].Item2,
+				final ?? dictionary[deviceId].Item3, finalMerge ?? dictionary[deviceId].Item4);
+		}
+
+		private static bool CheckCardTotals(User user, OperatorTables kind, Card card, Card match)
+		{
+			if (match.Quizzed != card.Quizzed)
+			{
+				Console.WriteLine($"Error: Quizzed mismatch in {user.FileName} for {kind.Name}," +
+					$" card {match.Fact.First} by {match.Fact.Second}, Quizzed is {match.Quizzed} not {card.Quizzed}");
+
+				return false;
+			}
+
+			if (match.Correct != card.Correct)
+			{
+				Console.WriteLine($"Error: Correct mismatch in {user.FileName} for {kind.Name}," +
+					$" card {match.Fact.First} by {match.Fact.Second}, Correct is {match.Correct} not {card.Correct}");
+
+				return false;
+			}
+
+			if (match.TotalTime != card.TotalTime)
+			{
+				Console.WriteLine($"Error: TotalTime mismatch in {user.FileName} for {kind.Name}," +
+					$" card {match.Fact.First} by {match.Fact.Second}, Quizzed is {match.TotalTime} not {card.TotalTime}");
+
+				return false;
+			}
+
+			return true;
+		}
+
+		private static bool CheckTotals(OperatorTables kind, Card card, Dictionary<string, Tuple<int?, int?, int?, int?>> quizzed,
+			Dictionary<string, Tuple<int?, int?, int?, int?>> correct, Dictionary<string, Tuple<int?, int?, int?, int?>> time)
+		{
+			int? sum = quizzed.Sum(x => x.Value.Item4);
+			if (card.Quizzed != sum)
+			{
+				Console.WriteLine($"Error: MergeQuizzed total {sum} does not match {kind.Name} card" +
+					$" {card.Fact.First} by {card.Fact.Second} Quizzed value {card.Quizzed}.");
+
+				return false;
+			}
+
+			sum = correct.Sum(x => x.Value.Item4);
+			if (card.Correct != sum)
+			{
+				Console.WriteLine($"Error: MergeCorrect total {sum} does not match {kind.Name} card" +
+					$" {card.Fact.First} by {card.Fact.Second} Correct {card.Correct}.");
+
+				return false;
+			}
+
+			sum = time.Sum(x => x.Value.Item4);
+			if (card.TotalTime != sum)
+			{
+				Console.WriteLine($"Error: MergeTotalTime total {sum} does not match {kind.Name} card" +
+					$" {card.Fact.First} by {card.Fact.Second} TotalTime {card.TotalTime}.");
+
+				return false;
+			}
+
+			return true;
+		}
+
+		private static bool CheckNewCounts(Card card, Func<Card, int> cardData, string type, string mergeType, string noun,
+			Dictionary<string, Tuple<int?, int?, int?, int?>> data)
+		{
+			int? initial = data.Sum(x => x.Value?.Item2);
+			int total = initial.Value;
+			Console.WriteLine($"Previous {type} value is {initial} (computed from {mergeType} values)," +
+				$" current {type} value is {cardData(card)}");
+
+			foreach (string deviceId in data.Keys)
+			{
+				int added = (data[deviceId]?.Item1 ?? 0) - initial.Value;
+				total += added;
+				Console.WriteLine($"Device {deviceId} added {added} {noun}{(added == 1 ? "" : "s")} and has" +
+					$" {data[deviceId].Item4} {noun}{(data[deviceId].Item4 == 1 ? "" : "s")} total");
+
+				if (added + (data[deviceId]?.Item2 ?? 0) != data[deviceId].Item4)
+				{
+					Console.WriteLine($"Error: {type} starting value {data[deviceId]?.Item2 ?? 0} plus the added value" +
+						$" {added} does not match the {mergeType} value {data[deviceId].Item4}");
+					return false;
+				}
+			}
+
+			if (total != cardData(card))
+			{
+				Console.WriteLine($"Error: initial values plus added {noun}s is {total} which doesn't add up to {type} value {cardData(card)}");
+				return false;
+			}
+
+			return true;
+		}
+
 
 		private bool LoadTables()
 		{
@@ -137,176 +309,6 @@ namespace SignalRConsole
 
 			Console.WriteLine($"Error: Folder match for -kqr folder {QkrAs} not found.");
 			return false;
-		}
-
-		private bool GetData(User[] user, OperatorTables kind, Card card, Func<Card, int> cardData, string mergeTitle,
-			Func<Card, int, int> mergeData, Dictionary<string, Tuple<int?, int?, int?, int?>> data, int tableBase)
-		{
-			Card initialCard = user[0].Operators.FirstOrDefault(x =>
-				x.Name == kind.Name).Tables.FirstOrDefault(x =>
-				x.Base == tableBase)?.Cards.FirstOrDefault(x =>
-				x.Fact.First == card.Fact.First && x.Fact.Second == card.Fact.Second);
-
-			if (initialCard != null && !GetData(user[0], kind, initialCard, cardData, mergeTitle, mergeData, data, true))
-				return false;
-
-			return GetData(user[1], kind, card, cardData, mergeTitle, mergeData, data, false);
-		}
-
-		private bool GetData(User user, OperatorTables kind, Card card, Func<Card, int> cardData, string mergeTitle,
-			Func<Card, int, int> mergeData, Dictionary<string, Tuple<int?, int?, int?, int?>> data, bool initialFile)
-		{
-			if (initialFile)
-				UpdateDictionary(data, user.DeviceId, cardData(card), null, null, null);
-			else
-				UpdateDictionary(data, user.DeviceId, null, null, cardData(card), null);
-
-			bool success = true;
-			string device = "<not specified>";
-			int index = 0;
-			for (; index < card.MergeQuizzed?.Length; index++)
-			{
-				device = user.MergeIndex.FirstOrDefault(x => x.Value == index).Key;
-				if (initialFile)
-				{
-					if (!data.ContainsKey(device) || data[device].Item2 == null)
-					{
-						UpdateDictionary(data, device, null, mergeData(card, index), null, null);
-						continue;
-					}
-
-					if (!(success = data[device].Item2 == mergeData(card, index)))
-						break;
-				}
-				else
-				{
-					if (!data.ContainsKey(device) || data[device].Item4 == null)
-					{
-						UpdateDictionary(data, device, null, null, null, mergeData(card, index));
-						continue;
-					}
-
-					if (!(success = data[device].Item4 == mergeData(card, index)))
-						break;
-				}
-			}
-
-			if (success)
-				return true;
-
-			Console.WriteLine($"Error: {mergeTitle} mismatch for {device} in {user.FileName} for {kind.Name}, card" +
-				$" {card.Fact.First} by {card.Fact.Second}, expected {(initialFile ? data[device].Item2 : data[device].Item4)}" +
-				$" instead of {mergeData(card, index)}");
-
-			return false;
-		}
-
-		private void UpdateDictionary(Dictionary<string, Tuple<int?, int?, int?, int?>> dictionary, string deviceId,
-			int? initial, int? initialMerge, int? final, int? finalMerge)
-		{
-			if (!dictionary.ContainsKey(deviceId))
-			{
-				dictionary[deviceId] = new Tuple<int?, int?, int?, int?>(initial, initialMerge, final, finalMerge);
-				return;
-			}
-
-			dictionary[deviceId] = new Tuple<int?, int?, int?, int?>(
-				initial ?? dictionary[deviceId].Item1, initialMerge ?? dictionary[deviceId].Item2,
-				final ?? dictionary[deviceId].Item3, finalMerge ?? dictionary[deviceId].Item4);
-		}
-
-		private bool CheckCardTotals(User user, OperatorTables kind, Card card, Card match)
-		{
-			if (match.Quizzed != card.Quizzed)
-			{
-				Console.WriteLine($"Error: Quizzed mismatch in {user.FileName} for {kind.Name}," +
-					$" card {match.Fact.First} by {match.Fact.Second}, Quizzed is {match.Quizzed} not {card.Quizzed}");
-
-				return false;
-			}
-
-			if (match.Correct != card.Correct)
-			{
-				Console.WriteLine($"Error: Correct mismatch in {user.FileName} for {kind.Name}," +
-					$" card {match.Fact.First} by {match.Fact.Second}, Correct is {match.Correct} not {card.Correct}");
-
-				return false;
-			}
-
-			if (match.TotalTime != card.TotalTime)
-			{
-				Console.WriteLine($"Error: TotalTime mismatch in {user.FileName} for {kind.Name}," +
-					$" card {match.Fact.First} by {match.Fact.Second}, Quizzed is {match.TotalTime} not {card.TotalTime}");
-
-				return false;
-			}
-
-			return true;
-		}
-
-		private bool CheckTotals(OperatorTables kind, Card card, Dictionary<string, Tuple<int?, int?, int?, int?>> quizzed,
-			Dictionary<string, Tuple<int?, int?, int?, int?>> correct, Dictionary<string, Tuple<int?, int?, int?, int?>> time)
-		{
-			int? sum = quizzed.Sum(x => x.Value.Item4);
-			if (card.Quizzed != sum)
-			{
-				Console.WriteLine($"Error: MergeQuizzed total {sum} does not match {kind.Name} card" +
-					$" {card.Fact.First} by {card.Fact.Second} Quizzed value {card.Quizzed}.");
-
-				return false;
-			}
-
-			sum = correct.Sum(x => x.Value.Item4);
-			if (card.Correct != sum)
-			{
-				Console.WriteLine($"Error: MergeCorrect total {sum} does not match {kind.Name} card" +
-					$" {card.Fact.First} by {card.Fact.Second} Correct {card.Correct}.");
-
-				return false;
-			}
-
-			sum = time.Sum(x => x.Value.Item4);
-			if (card.TotalTime != sum)
-			{
-				Console.WriteLine($"Error: MergeTotalTime total {sum} does not match {kind.Name} card" +
-					$" {card.Fact.First} by {card.Fact.Second} TotalTime {card.TotalTime}.");
-
-				return false;
-			}
-
-			return true;
-		}
-
-		private bool CheckNewCounts(Card card, Func<Card, int> cardData, string type, string mergeType, string noun,
-			Dictionary<string, Tuple<int?, int?, int?, int?>> data)
-		{
-			int? initial = data.Sum(x => x.Value?.Item2);
-			int total = initial.Value;
-			Console.WriteLine($"Previous {type} value is {initial} (computed from {mergeType} values)," +
-				$" current {type} value is {cardData(card)}");
-
-			foreach (string deviceId in data.Keys)
-			{
-				int added = (data[deviceId]?.Item1 ?? 0) - initial.Value;
-				total += added;
-				Console.WriteLine($"Device {deviceId} added {added} {noun}{(added == 1 ? "" : "s")} and has" +
-					$" {data[deviceId].Item4} {noun}{(data[deviceId].Item4 == 1 ? "" : "s")} total");
-
-				if (added + (data[deviceId]?.Item2 ?? 0) != data[deviceId].Item4)
-				{
-					Console.WriteLine($"Error: {type} starting value {data[deviceId]?.Item2 ?? 0} plus the added value" +
-						$" {added} does not match the {mergeType} value {data[deviceId].Item4}");
-					return false;
-				}
-			}
-
-			if (total != cardData(card))
-			{
-				Console.WriteLine($"Error: initial values plus added {noun}s is {total} which doesn't add up to {type} value {cardData(card)}");
-				return false;
-			}
-
-			return true;
 		}
 	}
 }

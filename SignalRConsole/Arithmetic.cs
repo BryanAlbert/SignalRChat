@@ -25,7 +25,7 @@ namespace SignalRConsole
 		}
 
 
-		public static readonly Dictionary<FactOperator, Operator> Operator = new Dictionary<FactOperator, Operator>()
+		public static readonly Dictionary<FactOperator, Operator> Operator = new()
 		{
 			{
 				FactOperator.Multiplication, new Operator

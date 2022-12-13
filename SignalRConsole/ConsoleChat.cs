@@ -31,9 +31,9 @@ namespace SignalRConsole
 		}
 
 
-		private static readonly SemaphoreSlim m_commandSemaphore = new SemaphoreSlim(1, 1);
-		private static readonly SemaphoreSlim m_consoleSemaphore = new SemaphoreSlim(1, 1);
-		private static readonly SemaphoreSlim m_loopSemaphore = new SemaphoreSlim(1, 1);
+		private static readonly SemaphoreSlim m_commandSemaphore = new(1, 1);
+		private static readonly SemaphoreSlim m_consoleSemaphore = new(1, 1);
+		private static readonly SemaphoreSlim m_loopSemaphore = new(1, 1);
 
 
 		public States State
@@ -48,7 +48,7 @@ namespace SignalRConsole
 						m_consoleSemaphore.Wait();
 						if (m_console.ScriptMode < 2)
 						{
-							Point cursor = new Point(m_console.CursorLeft, m_console.CursorTop);
+							Point cursor = new(Harness.CursorLeft, Harness.CursorTop);
 							m_console.SetCursorPosition(0, PromptLine);
 							int padding = m_state == States.Initializing ? 0 : (m_stateLabels[m_state].Length) -
 								m_stateLabels[value].Length + 2;
@@ -58,7 +58,7 @@ namespace SignalRConsole
 								m_console.Write(padding > 0 ? $"{m_stateLabels[value]}>" +
 									$" {(padding > 0 ? new string(' ', padding) : "")}" : $"{value}> ");
 								while (padding-- > 0)
-									m_console.CursorLeft--;
+									Harness.CursorLeft--;
 							}
 							else
 							{
@@ -194,7 +194,7 @@ namespace SignalRConsole
 		public const string c_leaveChatCommand = "goodbye.";
 		public const string c_raceCommand = "race!";
 		public const string c_goAwayCommand = "go away.";
-		public readonly Dictionary<States, string> m_stateLabels = new Dictionary<States, string>
+		public readonly Dictionary<States, string> m_stateLabels = new()
 		{
 			{ States.Initializing, "Initializing" },
 			{ States.Changing, "Changing" },
@@ -230,6 +230,165 @@ namespace SignalRConsole
 			Racing,
 			RacingWaiting,
 			Resetting
+		}
+
+
+		private static int ComputeRaceScore(RaceData raceData1, RaceData raceData2)
+		{
+			switch (raceData1.Score)
+			{
+				case 2:
+					return raceData2.Score == 2 ? raceData1.Time < raceData2.Time ? 2 : 1 : 2;
+				case 1:
+					return raceData2.Score == 1 ? raceData1.Time < raceData2.Time ? 1 : 0 : 1;
+				case 0:
+					return 0;
+				default:
+					Debug.WriteLine($"Error in ComputeScore, unexpected score {raceData1.Score} (expected 0, 1, or 2)");
+					return 0;
+			}
+		}
+
+		private static bool CommandMatch(ref string guess, ConsoleKeyInfo key, string command, out bool complete)
+		{
+			complete = false;
+			if (key.Key == ConsoleKey.Backspace)
+			{
+				if (guess.Length > 0)
+				{
+					guess = guess[..^1];
+					Console.CursorLeft--;
+					Console.Write(" ");
+					Console.CursorLeft--;
+				}
+
+				return true;
+			}
+
+			if (guess.Length >= command.Length || guess + key.KeyChar != command[..(guess.Length + 1)])
+				return false;
+
+			Console.Write(key.KeyChar);
+			guess += key.KeyChar;
+			complete = guess == command;
+			return true;
+		}
+
+		private static string FormatTableList(string title, Dictionary<string, List<int>> tables)
+		{
+			StringBuilder result = new();
+			_ = result.AppendLine(string.Format("{0} these tables:", title));
+			foreach (string type in tables.Keys)
+			{
+				string list = string.Empty;
+				if (tables[type].Count > 0)
+				{
+					tables[type].ForEach(x => list += $"{x}, ");
+					list = list[..^2];
+				}
+				else
+				{
+					list = "(None)";
+				}
+
+				_ = result.AppendLine($"{type}: {list}");
+			}
+
+			return result.ToString();
+		}
+
+		private static void MergeCards(Card card, int mergeIndex, Card myCard, int myMergeIndex)
+		{
+			if (myCard == null)
+			{
+				int quizzed = card.Quizzed - (card.MergeQuizzed?.Sum() ?? 0);
+				int correct = card.Correct - (card.MergeCorrect?.Sum() ?? 0);
+				int time = card.TotalTime - (card.MergeTime?.Sum() ?? 0);
+				InitializeMergeProperties(card, myMergeIndex, true);
+				card.Quizzed = card.MergeQuizzed[myMergeIndex] = quizzed;
+				card.Correct = card.MergeCorrect[myMergeIndex] = correct;
+				card.TotalTime = card.MergeTime[myMergeIndex] = time;
+			}
+			else
+			{
+				InitializeMergeProperties(card, mergeIndex);
+				InitializeMergeProperties(myCard, myMergeIndex);
+				int count = card.Quizzed - card.MergeQuizzed.Sum();
+				myCard.Quizzed += count - myCard.MergeQuizzed[myMergeIndex];
+				myCard.MergeQuizzed[myMergeIndex] = count;
+				count = card.Correct - card.MergeCorrect.Sum();
+				myCard.Correct += count - myCard.MergeCorrect[myMergeIndex];
+				myCard.MergeCorrect[myMergeIndex] = count;
+				count = card.TotalTime - card.MergeTime.Sum();
+				myCard.TotalTime += count - myCard.MergeTime[myMergeIndex];
+				myCard.MergeTime[myMergeIndex] = count;
+			}
+		}
+
+		private static void InitializeMergeProperties(Card card, int mergeIndex, bool clear = false)
+		{
+			if (card.MergeQuizzed == null || clear)
+			{
+				card.MergeQuizzed = new int[++mergeIndex];
+				card.MergeCorrect = new int[mergeIndex];
+				card.MergeTime = new int[mergeIndex];
+			}
+			else if (mergeIndex > (card.MergeQuizzed?.Length ?? 0) - 1)
+			{
+				card.MergeQuizzed = GrowArray(card.MergeQuizzed);
+				card.MergeCorrect = GrowArray(card.MergeCorrect);
+				card.MergeTime = GrowArray(card.MergeTime);
+			}
+		}
+
+		private static int[] GrowArray(int[] mergeQuizzed)
+		{
+			int[] resized = new int[mergeQuizzed.Length + 1];
+			for (int index = 0; index < mergeQuizzed.Length; index++)
+				resized[index] = mergeQuizzed[index];
+
+			return resized;
+		}
+
+		private static int GetMergeIndex(Dictionary<string, int> ourMergeIndex, string theirDeviceId, ref bool save)
+		{
+			if (ourMergeIndex.ContainsKey(theirDeviceId))
+				return ourMergeIndex[theirDeviceId];
+
+			int mergeIndex = ourMergeIndex.Count > 0 ? ourMergeIndex.Values.Max() + 1 : 0;
+			ourMergeIndex[theirDeviceId] = mergeIndex;
+			save = true;
+			return mergeIndex;
+		}
+
+		private static string Padding(int padding)
+		{
+			return padding > 0 ? new string(' ', padding) : string.Empty;
+		}
+
+		private static string MakeHandleChannelName(Friend friend)
+		{
+			return $"{friend.Email}{c_delimiter}{friend.Handle}";
+		}
+
+		private static string MakeHandleChannelName(string name, string email)
+		{
+			return $"{email}{c_delimiter}{name}";
+		}
+
+		private static string MakeChatChannelName(User user)
+		{
+			return $"{user.Id}{c_delimiter}{c_chatChannelName}";
+		}
+
+		private static string MakeChatChannelName(Friend friend)
+		{
+			return $"{friend.Id}{c_delimiter}{c_chatChannelName}";
+		}
+
+		private static string[] ParseChannelName(string channelName)
+		{
+			return channelName.Split(c_delimiter);
 		}
 
 
@@ -324,14 +483,14 @@ namespace SignalRConsole
 			try
 			{
 				m_consoleSemaphore.Wait();
-				color = m_console.ForegroundColor;
-				m_console.ForegroundColor = ConsoleColor.Yellow;
+				color = Harness.ForegroundColor;
+				Harness.ForegroundColor = ConsoleColor.Yellow;
 				WriteLogLine($"Registration token from server: {token}");
 			}
 			finally
 			{
 				_ = m_consoleSemaphore.Release();
-				m_console.ForegroundColor = color;
+				Harness.ForegroundColor = color;
 			}
 
 			RegistrationToken = token;
@@ -421,7 +580,7 @@ namespace SignalRConsole
 				if (from == Id)
 				{
 					if (m_console.ScriptMode < 2)
-						m_console.CursorTop = OutputLine;
+						Harness.CursorTop = OutputLine;
 
 					WriteLine($"You said: {message}");
 					Interrupt = false;
@@ -435,7 +594,7 @@ namespace SignalRConsole
 					Point cursor;
 					if (Interrupt)
 					{
-						cursor = new Point(m_console.CursorLeft, m_console.CursorTop);
+						cursor = new Point(Harness.CursorLeft, Harness.CursorTop);
 					}
 					else
 					{
@@ -998,7 +1157,7 @@ namespace SignalRConsole
 		private async Task GoAwayAsync()
 		{
 			if (m_console.ScriptMode < 2)
-				m_console.CursorTop = OutputLine;
+				Harness.CursorTop = OutputLine;
 
 			WriteLine($"(You went away)");
 			await SetStateAsync(State == States.FriendAway ? States.BothAway : States.Away);
@@ -1018,13 +1177,13 @@ namespace SignalRConsole
 				Console.Write(new string(' ', c_goAwayCommand.Length));
 			}
 
-			m_console.CursorLeft = 0;
+			Harness.CursorLeft = 0;
 		}
 
 		private async Task<int> RaceLoopAsync()
 		{
-			RaceData raceData = new RaceData();
-			Dictionary<string, List<int>> list = new Dictionary<string, List<int>>();
+			RaceData raceData = new();
+			Dictionary<string, List<int>> list = new();
 			int cardCount = 0;
 			foreach (string key in MyTableList.Keys)
 			{
@@ -1108,22 +1267,6 @@ namespace SignalRConsole
 			OpponentRaceScore += ComputeRaceScore(OpponentRaceData, MyRaceData);
 		}
 
-		private int ComputeRaceScore(RaceData raceData1, RaceData raceData2)
-		{
-			switch (raceData1.Score)
-			{
-				case 2:
-					return raceData2.Score == 2 ? raceData1.Time < raceData2.Time ? 2 : 1 : 2;
-				case 1:
-					return raceData2.Score == 1 ? raceData1.Time < raceData2.Time ? 1 : 0 : 1;
-				case 0:
-					return 0;
-				default:
-					Debug.WriteLine($"Error in ComputeScore, unexpected score {raceData1.Score} (expected 0, 1, or 2)");
-					return 0;
-			}
-		}
-
 		private void ReportScore()
 		{
 			WaitWriteLine();
@@ -1172,9 +1315,9 @@ namespace SignalRConsole
 				m_consoleSemaphore.Wait();
 				if (Echo != null)
 				{
-					int line = m_console.CursorTop;
+					int line = Harness.CursorTop;
 					State = States.Listening;
-					m_console.CursorTop = line;
+					Harness.CursorTop = line;
 				}
 			}
 			finally
@@ -1279,7 +1422,7 @@ namespace SignalRConsole
 			}
 			else if ((State == States.Chatting || State == States.Away) && command.Flag == false)
 			{
-				if (m_console.CursorLeft > 0 && State != States.Away && State != States.BothAway)
+				if (Harness.CursorLeft > 0 && State != States.Away && State != States.BothAway)
 				{
 					await WaitWriteLineAsync($" {ActiveChatFriend.Handle} has left the chat, hit Enter...");
 					m_waitForEnter = true;
@@ -1574,7 +1717,7 @@ namespace SignalRConsole
 			if (ShowCountdown)
 				await CountdownAsync();
 
-			Fact fact = new Fact(raceData.First, raceData.Second, Arithmetic.Operator[(FactOperator) raceData.Operator]);
+			Fact fact = new(raceData.First, raceData.Second, Arithmetic.Operator[(FactOperator) raceData.Operator]);
 			DateTime startTime = DateTime.Now;
 			ExpireTime = startTime + c_countdownFrom;
 			TimeLeft = (int) c_countdownFrom.TotalSeconds;
@@ -1870,7 +2013,7 @@ namespace SignalRConsole
 				if (AnswerPrompt == null || TimeLeft < 1)
 					return;
 
-				Point cursor = new Point(Console.CursorLeft, Console.CursorTop);
+				Point cursor = new(Console.CursorLeft, Console.CursorTop);
 				Console.CursorLeft = 0;
 				Console.Write(AnswerPrompt = AnswerPrompt.Replace(string.Format("{0,2:0}:", TimeLeft),
 					string.Format("{0,2:0}:", --TimeLeft)));
@@ -1880,31 +2023,6 @@ namespace SignalRConsole
 			{
 				_ = m_consoleSemaphore.Release();
 			}
-		}
-
-		bool CommandMatch(ref string guess, ConsoleKeyInfo key, string command, out bool complete)
-		{
-			complete = false;
-			if (key.Key == ConsoleKey.Backspace)
-			{
-				if (guess.Length > 0)
-				{
-					guess = guess[..^1];
-					Console.CursorLeft--;
-					Console.Write(" ");
-					Console.CursorLeft--;
-				}
-
-				return true;
-			}
-
-			if (guess.Length >= command.Length || guess + key.KeyChar != command[..(guess.Length + 1)])
-				return false;
-
-			Console.Write(key.KeyChar);
-			guess += key.KeyChar;
-			complete = guess == command;
-			return true;
 		}
 
 		private bool IntersectTables()
@@ -1940,29 +2058,6 @@ namespace SignalRConsole
 			}
 
 			return true;
-		}
-
-		private string FormatTableList(string title, Dictionary<string, List<int>> tables)
-		{
-			StringBuilder result = new StringBuilder();
-			_ = result.AppendLine(string.Format("{0} these tables:", title));
-			foreach (string type in tables.Keys)
-			{
-				string list = string.Empty;
-				if (tables[type].Count > 0)
-				{
-					tables[type].ForEach(x => list += $"{x}, ");
-					list = list[..^2];
-				}
-				else
-				{
-					list = "(None)";
-				}
-
-				_ = result.AppendLine($"{type}: {list}");
-			}
-
-			return result.ToString();
 		}
 
 		private async Task SendMergeAsync(Friend friend)
@@ -2138,70 +2233,6 @@ namespace SignalRConsole
 			return save;
 		}
 
-		private void MergeCards(Card card, int mergeIndex, Card myCard, int myMergeIndex)
-		{
-			if (myCard == null)
-			{
-				int quizzed = card.Quizzed - (card.MergeQuizzed?.Sum() ?? 0);
-				int correct = card.Correct - (card.MergeCorrect?.Sum() ?? 0);
-				int time = card.TotalTime - (card.MergeTime?.Sum() ?? 0);
-				InitializeMergeProperties(card, myMergeIndex, true);
-				card.Quizzed = card.MergeQuizzed[myMergeIndex] = quizzed;
-				card.Correct = card.MergeCorrect[myMergeIndex] = correct;
-				card.TotalTime = card.MergeTime[myMergeIndex] = time;
-			}
-			else
-			{
-				InitializeMergeProperties(card, mergeIndex);
-				InitializeMergeProperties(myCard, myMergeIndex);
-				int count = card.Quizzed - card.MergeQuizzed.Sum();
-				myCard.Quizzed += count - myCard.MergeQuizzed[myMergeIndex];
-				myCard.MergeQuizzed[myMergeIndex] = count;
-				count = card.Correct - card.MergeCorrect.Sum();
-				myCard.Correct += count - myCard.MergeCorrect[myMergeIndex];
-				myCard.MergeCorrect[myMergeIndex] = count;
-				count = card.TotalTime - card.MergeTime.Sum();
-				myCard.TotalTime += count - myCard.MergeTime[myMergeIndex];
-				myCard.MergeTime[myMergeIndex] = count;
-			}
-		}
-
-		private void InitializeMergeProperties(Card card, int mergeIndex, bool clear = false)
-		{
-			if (card.MergeQuizzed == null || clear)
-			{
-				card.MergeQuizzed = new int[++mergeIndex];
-				card.MergeCorrect = new int[mergeIndex];
-				card.MergeTime = new int[mergeIndex];
-			}
-			else if (mergeIndex > (card.MergeQuizzed?.Length ?? 0) - 1)
-			{
-				card.MergeQuizzed = GrowArray(card.MergeQuizzed);
-				card.MergeCorrect = GrowArray(card.MergeCorrect);
-				card.MergeTime = GrowArray(card.MergeTime);
-			}
-		}
-
-		private int[] GrowArray(int[] mergeQuizzed)
-		{
-			int[] resized = new int[mergeQuizzed.Length + 1];
-			for (int index = 0; index < mergeQuizzed.Length; index++)
-				resized[index] = mergeQuizzed[index];
-
-			return resized;
-		}
-
-		private int GetMergeIndex(Dictionary<string, int> ourMergeIndex, string theirDeviceId, ref bool save)
-		{
-			if (ourMergeIndex.ContainsKey(theirDeviceId))
-				return ourMergeIndex[theirDeviceId];
-
-			int mergeIndex = ourMergeIndex.Count > 0 ? ourMergeIndex.Values.Max() + 1 : 0;
-			ourMergeIndex[theirDeviceId] = mergeIndex;
-			save = true;
-			return mergeIndex;
-		}
-
 		private Tuple<Friend, Friend> UpdateFriendData(Friend updated)
 		{
 			Friend friend = m_user.Friends.FirstOrDefault(x => x.Id == updated.Id) ??
@@ -2232,7 +2263,7 @@ namespace SignalRConsole
 			TimeSpan interval = TimeSpan.FromMilliseconds(intervalms);
 			DateTime timeout = DateTime.Now + TimeSpan.FromSeconds(timeouts);
 			m_console.Write(message);
-			Point cursorPosition = new Point(m_console.CursorLeft, m_console.CursorTop);
+			Point cursorPosition = new(Harness.CursorLeft, Harness.CursorTop);
 			LogBottom = cursorPosition.Y;
 			char bullet = '.';
 			for (int x = cursorPosition.X; State != States.Changing && DateTime.Now < timeout; x++)
@@ -2269,14 +2300,14 @@ namespace SignalRConsole
 				EraseLog();
 				if (m_console.ScriptMode < 2)
 				{
-					OutputLine = m_console.CursorTop;
+					OutputLine = Harness.CursorTop;
 					LogTop = LogBottom = OutputLine + c_logWindowOffset;
 				}
 
 				WriteLine();
 				WriteLine("Pick a command: t to list tables, a to add a friend, l to list friends,");
 				WriteLine("u to unfriend a friend, c to chat, or x to exit");
-				PromptLine = m_console.CursorTop;
+				PromptLine = Harness.CursorTop;
 				OutputLine++;
 				LogTop++;
 				LogBottom++;
@@ -2309,7 +2340,7 @@ namespace SignalRConsole
 				int timeDigits = Math.Max(GetDigitCount(myTime), GetDigitCount(opponentTime)) + 2;
 				int correctDigits = Math.Max(GetDigitCount(MyRaceData.Correct), GetDigitCount(OpponentRaceData.Correct));
 				int wrongDigits = Math.Max(GetDigitCount(MyRaceData.Wrong), GetDigitCount(OpponentRaceData.Wrong));
-				Point cursor = new Point(Console.CursorLeft, Console.CursorTop);
+				Point cursor = new(Console.CursorLeft, Console.CursorTop);
 				Console.SetCursorPosition(0, ScoreboardLine);
 				Console.WriteLine($"Racer{Padding(nameDigits - 5)}  Try      Time{Padding(timeDigits - 2)}" +
 					$" Right, Wrong  Card Total     ");
@@ -2348,11 +2379,6 @@ namespace SignalRConsole
 			return cancel() ? new ConsoleKeyInfo('x', ConsoleKey.Escape, false, false, false) : m_console.ReadKey(intercept: true);
 		}
 
-		private static string Padding(int padding)
-		{
-			return padding > 0 ? new string(' ', padding) : string.Empty;
-		}
-
 		private void WaitWriteLine(string line = null, bool printEndline = true)
 		{
 			try
@@ -2387,9 +2413,9 @@ namespace SignalRConsole
 			if (printEndline)
 			{
 				OutputLine++;
-				int extraLines = m_console.CursorTop;
+				int extraLines = Harness.CursorTop;
 				m_console.WriteLine(line ?? string.Empty);
-				if ((extraLines = m_console.CursorTop - extraLines - 1) > 0)
+				if ((extraLines = Harness.CursorTop - extraLines - 1) > 0)
 				{
 					for (; extraLines > 0; extraLines--)
 					{
@@ -2414,12 +2440,12 @@ namespace SignalRConsole
 				return;
 			}
 
-			Point cursor = new Point(m_console.CursorLeft, m_console.CursorTop);
+			Point cursor = new(Harness.CursorLeft, Harness.CursorTop);
 			Console.SetCursorPosition(0, LogTop);
-			ConsoleColor color = m_console.ForegroundColor;
+			ConsoleColor color = Harness.ForegroundColor;
 			try
 			{
-				Console.ForegroundColor = m_console.BackgroundColor;
+				Console.ForegroundColor = Harness.BackgroundColor;
 				foreach (string line in m_log)
 					Console.WriteLine(line);
 			}
@@ -2434,7 +2460,7 @@ namespace SignalRConsole
 
 		private Point TrimLog()
 		{
-			Point cursor = new Point(m_console.CursorLeft, m_console.CursorTop);
+			Point cursor = new(Harness.CursorLeft, Harness.CursorTop);
 			if (m_console.ScriptMode > 1)
 				return cursor;
 
@@ -2445,10 +2471,10 @@ namespace SignalRConsole
 				return cursor;
 			}
 
-			ConsoleColor color = m_console.ForegroundColor;
+			ConsoleColor color = Harness.ForegroundColor;
 			try
 			{
-				Console.ForegroundColor = m_console.BackgroundColor;
+				Console.ForegroundColor = Harness.BackgroundColor;
 				m_console.SetCursorPosition(0, LogTop++);
 				Console.WriteLine(m_log[0]);
 				m_log.RemoveAt(0);
@@ -2498,9 +2524,9 @@ namespace SignalRConsole
 			}
 
 			Point cursor = MoveCursorToLog();
-			int extraLines = m_console.CursorTop;
+			int extraLines = Harness.CursorTop;
 			m_console.WriteLine(line);
-			if ((extraLines = m_console.CursorTop - extraLines) > 1)
+			if ((extraLines = Harness.CursorTop - extraLines) > 1)
 				LogBottom += extraLines - 1;
 
 			m_log.Add(line);
@@ -2526,7 +2552,7 @@ namespace SignalRConsole
 			Func<bool> cancel)
 		{
 			Point cursor = m_console.ScriptMode < 2 ? MoveCursorToLog() :
-				new Point(m_console.CursorLeft, m_console.CursorTop);
+				new Point(Harness.CursorLeft, Harness.CursorTop);
 
 			m_console.Write(line);
 			if (m_console.ScriptMode < 2)
@@ -2549,7 +2575,7 @@ namespace SignalRConsole
 		{
 			// scroll the window up so our cursor movement doesn't go out of bounds
 			// TODO: seems we should be able to move the window in the buffer but I couldn't get it to work, so this
-			Point cursor = new Point(m_console.CursorLeft, m_console.CursorTop);
+			Point cursor = new(Harness.CursorLeft, Harness.CursorTop);
 			if (m_console.ScriptMode < 2 && line >= Console.WindowHeight - 1)
 			{
 				Console.CursorTop = Console.WindowHeight - 1;
@@ -2566,31 +2592,6 @@ namespace SignalRConsole
 			}
 
 			return cursor;
-		}
-
-		private string MakeHandleChannelName(Friend friend)
-		{
-			return $"{friend.Email}{c_delimiter}{friend.Handle}";
-		}
-
-		private string MakeHandleChannelName(string name, string email)
-		{
-			return $"{email}{c_delimiter}{name}";
-		}
-
-		private string MakeChatChannelName(User user)
-		{
-			return $"{user.Id}{c_delimiter}{c_chatChannelName}";
-		}
-
-		private string MakeChatChannelName(Friend friend)
-		{
-			return $"{friend.Id}{c_delimiter}{c_chatChannelName}";
-		}
-
-		private string[] ParseChannelName(string channelName)
-		{
-			return channelName.Split(c_delimiter);
 		}
 
 
@@ -2615,13 +2616,13 @@ namespace SignalRConsole
 		private RaceData m_myRaceData;
 		private int m_myRaceScore;
 		private int m_opponentRaceScore;
-		private readonly List<User> m_users = new List<User>();
-		private readonly List<Friend> m_online = new List<Friend>();
-		private readonly List<string> m_log = new List<string>();
-		private readonly Stack<States> m_states = new Stack<States>();
-		private readonly List<string> m_merged = new List<string>();
-		private readonly Random m_random = new Random();
-		private readonly JsonSerializerOptions m_serializerOptions = new JsonSerializerOptions()
+		private readonly List<User> m_users = new();
+		private readonly List<Friend> m_online = new();
+		private readonly List<string> m_log = new();
+		private readonly Stack<States> m_states = new();
+		private readonly List<string> m_merged = new();
+		private readonly Random m_random = new();
+		private readonly JsonSerializerOptions m_serializerOptions = new()
 		{
 			WriteIndented = true
 		};

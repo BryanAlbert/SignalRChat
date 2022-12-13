@@ -65,13 +65,15 @@ namespace SignalRConsole
 		}
 
 
+		public static int CursorLeft { get => Console.CursorLeft; set { Console.CursorLeft = value; } }
+		public static int CursorTop { get => Console.CursorTop; set { Console.CursorTop = value; } }
+		public static ConsoleColor ForegroundColor { get => Console.ForegroundColor; set { Console.ForegroundColor = value; } }
+		public static ConsoleColor BackgroundColor { get => Console.BackgroundColor; set { Console.BackgroundColor = value; } }
+
+
 		public string Tag { get; private set; }
 		public int ScriptMode { get; private set; }
 		public string WorkingDirectory { get; set; } = ".";
-		public int CursorLeft { get => Console.CursorLeft; set { Console.CursorLeft = value; } }
-		public int CursorTop { get => Console.CursorTop; set { Console.CursorTop = value; } }
-		public ConsoleColor ForegroundColor { get => Console.ForegroundColor; set { Console.ForegroundColor = value; } }
-		public ConsoleColor BackgroundColor { get => Console.BackgroundColor; set { Console.BackgroundColor = value; } }
 		public string NextInputLine { get; private set; }
 		public string CurrentOutputLine
 		{
@@ -258,11 +260,11 @@ namespace SignalRConsole
 		private readonly List<string> m_args;
 		private readonly string m_inputStreamFilename;
 		private readonly string m_outputStreamFilename;
-		private readonly List<string> m_output = new List<string>();
+		private readonly List<string> m_output = new();
 		private IEnumerator<string> m_inputStream;
 		private bool m_eof;
 		private StreamWriter m_outputStream;
 		private bool m_menuBlocked;
-		private readonly object m_lock = new object();
+		private readonly object m_lock = new();
 	}
 }

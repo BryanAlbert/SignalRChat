@@ -25,7 +25,7 @@ namespace SignalRConsole
 							break;
 
 						string workingDirectory = Directory.GetParent(m_args[0]).FullName;
-						List<Task<int>> tasks = new List<Task<int>>();
+						List<Task<int>> tasks = new();
 						foreach (string line in lines)
 						{
 							if (line[0] == '#')
@@ -40,7 +40,7 @@ namespace SignalRConsole
 								case c_start:
 									string commandLine = line[(c_start.Length + 1)..];
 									Console.WriteLine($"\nProgram: Launching with command line: {commandLine}");
-									ConsoleChat consoleChat = new ConsoleChat();
+									ConsoleChat consoleChat = new();
 									tasks.Add(Task.Run(async () => await consoleChat.RunAsync(new Harness(commandLine.Split(" "),
 										workingDirectory))));
 									while (consoleChat.State != States.Listening && consoleChat.State != States.Broken)
@@ -58,7 +58,7 @@ namespace SignalRConsole
 									commandLine = line[(line.LastIndexOf('"') + 2)..];
 									Console.WriteLine($"\nProgram: Launching with command line: {commandLine}");
 									consoleChat = new ConsoleChat();
-									Harness harness = new Harness(commandLine.Split(' '), workingDirectory);
+									Harness harness = new(commandLine.Split(' '), workingDirectory);
 									tasks.Add(Task.Run(async () => await consoleChat.RunAsync(harness)));
 									while (!harness.OutputMatches(waitForOutput, command == c_startWaitForRegex))
 										await Task.Delay(10);
@@ -183,7 +183,7 @@ namespace SignalRConsole
 			}
 
 			Console.WriteLine("\nValidating merge results...");
-			CheckMerge check = new CheckMerge(NextArg(), NextArg(), qkrAs, qkrFolder);
+			CheckMerge check = new(NextArg(), NextArg(), qkrAs, qkrFolder);
 			ExitCode = check.RunCheck() ? 0 : -1;
 			Console.WriteLine($"\nCheck {(ExitCode == 0 ? "succeeded" : "failed")}.");
 		}

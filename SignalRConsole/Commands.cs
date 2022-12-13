@@ -29,7 +29,7 @@ namespace SignalRConsole
 
 			public static async Task SendCommandAsync(CommandNames name, string from, string channel, string to)
 			{
-				ConnectionCommand command = new ConnectionCommand()
+				ConnectionCommand command = new()
 				{
 					Command = name.ToString(),
 					From = from,
@@ -54,7 +54,7 @@ namespace SignalRConsole
 			public static async Task SendCommandAsync(CommandNames name, string from, string channel, string to,
 				User user, bool? flag)
 			{
-				ConnectionCommand command = new ConnectionCommand()
+				ConnectionCommand command = new()
 				{
 					Command = name.ToString(),
 					From = from,
@@ -78,7 +78,7 @@ namespace SignalRConsole
 			public static async Task SendCommandAsync(CommandNames name, string from, string channel, string to,
 				User user)
 			{
-				ConnectionCommand command = new ConnectionCommand()
+				ConnectionCommand command = new()
 				{
 					Command = CommandNames.Merge.ToString(),
 					From = from,
@@ -101,7 +101,7 @@ namespace SignalRConsole
 			public static async Task SendCommandAsync(CommandNames name, string from, string channel, string to,
 				Dictionary<string, List<int>> tables)
 			{
-				ConnectionCommand command = new ConnectionCommand()
+				ConnectionCommand command = new()
 				{
 					Command = name.ToString(),
 					From = from,
@@ -124,7 +124,7 @@ namespace SignalRConsole
 			public static async Task SendCommandAsync(CommandNames name, string from, string channel, string to,
 				RaceData raceData)
 			{
-				ConnectionCommand command = new ConnectionCommand()
+				ConnectionCommand command = new()
 				{
 					Command = name.ToString(),
 					From = from,
@@ -206,6 +206,7 @@ namespace SignalRConsole
 				await command.SendCommandAsync();
 				return command;
 			}
+
 
 			public enum CommandNames
 			{
