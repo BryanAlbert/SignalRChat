@@ -187,11 +187,6 @@ function Update-ControlFiles($updateQkr)
 	Pop-Location
 }
 
-function Update-SignalRConsole
-{
-	Get-ChildItem ..\bin\Debug\netcoreapp3.1\* -File | Copy-Item -Destination .
-}
-
 function Compare-Files($control, $file, $errorLevel, $syncWindow, $merge)
 {
 	"Comparing: $control with $file"

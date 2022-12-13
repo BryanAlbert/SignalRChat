@@ -137,3 +137,9 @@ function Start-Chat
         dotnet.exe .\SignalRConsole.dll $global:test $args
     }
 }
+
+function Update-SignalRConsole
+{
+	Get-ChildItem ..\bin\Debug\net6.0\* -File | Copy-Item -Destination .
+}
+
