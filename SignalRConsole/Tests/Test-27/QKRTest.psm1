@@ -102,13 +102,6 @@ function Remove-File($file)
 	}
 }
 
-function Start-TestFor($age)
-{
-	$where = Join-Path $test $age
-	"Calling Start-Chat in $where for Mia"
-	Start-Chat (Join-Path $where "Input.txt") (Join-Path $where "Output.txt") $age
-}
-
 function Run-Test
 {
 	$script = Join-Path $test "Test.txt"

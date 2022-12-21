@@ -19,7 +19,7 @@ function Get-Description($verbose)
 	To test QKR, run Reset-Test QKR then run Start-TestFor Bruce 1. Connect
 	Internet as Fred on QKR, after Bruce exits, accept friend request and pop
 	to Home. Run Start-TestFor Bruce 2, Connect Internet as Fred again, verify
-	friendship with Bruce, then pop to Home and verify that Bruce exits.
+	friendship with Bruce, then pop to Home and exit, verify that Bruce exits.
 	
 	Next Connect Internet as Bruce on QKR, run Start-TestFor Fred 1, add Fred
 	on QKR (fred@gmail.com), pop to Home and verify that Fred exits. Run

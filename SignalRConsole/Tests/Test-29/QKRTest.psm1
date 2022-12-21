@@ -16,10 +16,14 @@ function Get-Description($verbose)
 	QKR       Configure for testing QKR
 	
 	To test QKR, run Reset-Test QKR then run Start-TestFor Bruce, Connect Internet
-	as Fred on QKR, <incomplete>.
+	as Fred on QKR. When Bruce sends 'Yo.', tap Tables, pop back to Internet Connect,
+	and send the message, 'Bye now!' Verify that Bruce disconnects and exits,
+	then pop to Home.
 		
-	Next Connect Internet as Bruce on QKR and run Start-TestFor Fred. <incomplete>
-	Test results with Check-Test `$true.`n"
+	Next Connect Internet as Bruce on QKR then run Start-TestFor Fred. Connect with 
+	Fred on QKR and send the message 'Yo.' Verify that Fred goes away and returns,
+	when he says 'Bye now!', disconnect, pop to Home and close QKR, verifying that
+	Fred exits. Test results with Check-Test `$true.`n"
 	}
 }
 

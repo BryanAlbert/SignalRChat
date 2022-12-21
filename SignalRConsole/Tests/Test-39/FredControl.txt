@@ -23,10 +23,10 @@ Go away.
 (You went away)
 Away>
 You are away, hit a key to return... 
-BothAway>
+Both Away>
 Bruce is away...
 R
-FriendAway>
+Friend Away>
 Goodbye.
 Pick a command: t to list tables, a to add a friend, l to list friends,
 u to unfriend a friend, c to chat, or x to exit

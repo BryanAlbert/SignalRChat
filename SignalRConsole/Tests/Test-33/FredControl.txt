@@ -22,10 +22,10 @@ go away.
 (You went away)
 Away>
 You are away, hit a key to return... 
-BothAway>
+Both Away>
 Bruce is away...
 R
-FriendAway>
+Friend Away>
 Bruce has returned!
 Bruce has these tables:
 Addition: (None)

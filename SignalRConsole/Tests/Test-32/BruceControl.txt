@@ -30,10 +30,10 @@ go away.
 (You went away)
 Away>
 You are away, hit a key to return... 
-BothAway>
+Both Away>
 Fred is away...
 R
-FriendAway>
+Friend Away>
 Fred has returned!
 Fred has these tables:
 Addition: (None)

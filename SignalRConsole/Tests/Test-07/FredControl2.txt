@@ -2,49 +2,53 @@ Initializing server and connecting to URL: https://localhost:5001/chathub
 What is your handle (nickname)? 
 Fred
 Name: Fred Sanson, Email: fred@gmail.com, Favorite color: Green,
-Id: fredac24-3f25-41e0-84f2-3f34f54d072e, Device Id: confred2-7ace-4e26-9e5e-2ac2afc2ead2,
+Id: fredac24-3f25-41e0-84f2-3f34f54d072e,
+Device Id: confred2-7ace-4e26-9e5e-2ac2afc2ead2,
 Creation Date: 2022-06-06T19:03:42, Modified Date: 2022-08-31T00:29:31
 Pick a command: t to list tables, a to add a friend, l to list friends,
 u to unfriend a friend, c to chat, or x to exit
-Listening> 
+Listening>
+(Sent Hello null command to Fred.)
 A
-Busy...       
+Busy>
 What is your friend's handle? 
 Mom
 What is your friend's email? 
 jeanmariealbert@hotmail.com
-(Sent Hello null command to Fred.)
 A friend request has been sent to Mom.
-Listening> 
+Listening>
 Your (pending) friend Mom is online.
 You and Mom are now friends!
 L
 Friends:
-Mom, Jean Albert, jeanmariealbert@hotmail.com, Maroon, Created: 2022-06-06T19:03:43 Modified: 2022-08-31T16:12:22 (online)
+Mom, Jean Albert, jeanmariealbert@hotmail.com, Favorite Color: Maroon,
+   Created: 2022-06-06T19:03:43 Modified: 2022-12-17T00:31:43 (online)
 X
 Finished.
 Initializing server and connecting to URL: https://localhost:5001/chathub
 What is your handle (nickname)? 
 Fred
 Name: Fred Sanson, Email: fred@gmail.com, Favorite color: Green,
-Id: fredac24-3f25-41e0-84f2-3f34f54d072e, Device Id: confred2-7ace-4e26-9e5e-2ac2afc2ead2,
+Id: fredac24-3f25-41e0-84f2-3f34f54d072e,
+Device Id: confred2-7ace-4e26-9e5e-2ac2afc2ead2,
 Creation Date: 2022-06-06T19:03:42, Modified Date: 2022-08-31T00:29:31
 Pick a command: t to list tables, a to add a friend, l to list friends,
 u to unfriend a friend, c to chat, or x to exit
-Listening> 
+Listening>
+(Sent Hello null command to Fred.)
 A
-Busy...       
+Busy>
 What is your friend's handle? 
 Mom
 What is your friend's email? 
 jeanmariealbert@hotmail.com
-(Sent Hello null command to Fred.)
 A friend request has been sent to Mom.
-Listening> 
+Listening>
 Your (pending) friend Mom is online.
 You and Mom are now friends!
 L
 Friends:
-Mom, Jean Albert, jeanmariealbert@hotmail.com, Maroon, Created: 2022-06-06T19:03:43 Modified: 2022-08-31T16:14:15 (online)
+Mom, Jean Albert, jeanmariealbert@hotmail.com, Favorite Color: Maroon,
+   Created: 2022-06-06T19:03:43 Modified: 2022-12-17T00:33:01 (online)
 X
 Finished.

@@ -23,7 +23,7 @@ Go away.
 (You went away)
 Away>
 You are away, hit a key to return... 
-BothAway>
+Both Away>
 Bruce is away...
 Bruce has returned!
 Away>

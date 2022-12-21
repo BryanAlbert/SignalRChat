@@ -68,7 +68,7 @@ namespace SignalRConsole
 						}
 						else
 						{
-							m_console.WriteLine($"{value}>");
+							m_console.WriteLine($"{m_stateLabels[value]}>");
 						}
 					}
 					finally
@@ -352,8 +352,8 @@ namespace SignalRConsole
 
 		private static int GetMergeIndex(Dictionary<string, int> ourMergeIndex, string theirDeviceId, ref bool save)
 		{
-			if (ourMergeIndex.ContainsKey(theirDeviceId))
-				return ourMergeIndex[theirDeviceId];
+			if (ourMergeIndex.TryGetValue(theirDeviceId, out int value))
+				return value;
 
 			int mergeIndex = ourMergeIndex.Count > 0 ? ourMergeIndex.Values.Max() + 1 : 0;
 			ourMergeIndex[theirDeviceId] = mergeIndex;

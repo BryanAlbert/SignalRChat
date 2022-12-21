@@ -2,54 +2,60 @@ Initializing server and connecting to URL: https://localhost:5001/chathub
 What is your handle (nickname)? 
 Bruce
 Name: Bruce Albert, Email: bruce@hotmail.com, Favorite color: Red,
-Id: brucef68-3c37-4aef-b8a6-1649659bbbc4, Device Id: conbruce-7ace-4e26-9e5e-2ac2afc2ead2,
+Id: brucef68-3c37-4aef-b8a6-1649659bbbc4,
+Device Id: conbruce-7ace-4e26-9e5e-2ac2afc2ead2,
 Creation Date: 2022-06-06T19:03:41, Modified Date: 2022-08-31T18:06:41
 Pick a command: t to list tables, a to add a friend, l to list friends,
 u to unfriend a friend, c to chat, or x to exit
-Listening> 
+Listening>
+(Sent Hello null command to Bruce.)
 A
-Busy...       
+Busy>
 What is your friend's handle? 
 Mom
 What is your friend's email? 
 jeanmariealbert@hotmail.com
-(Sent Hello null command to Bruce.)
 A friend request has been sent to Mom.
-Listening> 
+Listening>
 A
-Busy...       
+Busy>
 What is your friend's handle? 
 Fred
 What is your friend's email? 
 fred@gmail.com
 A friend request has been sent to Fred.
-Listening> 
+Listening>
 L
 Friends:
-Mom, jeanmariealbert@hotmail.com, (pending)
-Fred, fred@gmail.com, (pending)
+Mom, jeanmariealbert@hotmail.com,
+   (pending)
+Fred, fred@gmail.com,
+   (pending)
 X
 Finished.
 Initializing server and connecting to URL: https://localhost:5001/chathub
 What is your handle (nickname)? 
 Bruce
 Name: Bruce Albert, Email: bruce@hotmail.com, Favorite color: Red,
-Id: brucef68-3c37-4aef-b8a6-1649659bbbc4, Device Id: conbruce-7ace-4e26-9e5e-2ac2afc2ead2,
-Creation Date: 2022-06-06T19:03:41, Modified Date: 2022-08-31T18:41:50
+Id: brucef68-3c37-4aef-b8a6-1649659bbbc4,
+Device Id: conbruce-7ace-4e26-9e5e-2ac2afc2ead2,
+Creation Date: 2022-06-06T19:03:41, Modified Date: 2022-12-17T01:11:00
 Pick a command: t to list tables, a to add a friend, l to list friends,
 u to unfriend a friend, c to chat, or x to exit
-Listening> 
+Listening>
 (Sent Hello null command to Bruce.)
 Your (pending) friend Mom is online.
-Busy...       
+Busy>
 Accept friend request from Fred, email address fred@gmail.com? [y/n] 
 Y
-Listening> 
+Listening>
 You and Fred are now friends!
 You and Mom are now friends!
 L
 Friends:
-Mom, Jean Albert, jeanmariealbert@hotmail.com, Maroon, Created: 2022-06-06T19:03:43 Modified: 2022-08-31T18:42:33 (online)
-Fred, Fred Sanson, fred@gmail.com, Green, Created: 2022-06-06T19:03:42 Modified: 2022-08-31T18:42:29 (online)
+Mom, Jean Albert, jeanmariealbert@hotmail.com, Favorite Color: Maroon,
+   Created: 2022-06-06T19:03:43 Modified: 2022-12-17T01:12:08 (online)
+Fred, Fred Sanson, fred@gmail.com, Favorite Color: Green,
+   Created: 2022-06-06T19:03:42 Modified: 2022-12-17T01:12:00 (online)
 X
 Finished.

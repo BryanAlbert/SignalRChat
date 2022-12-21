@@ -30,7 +30,7 @@ go away.
 (You went away)
 Away>
 You are away, hit a key to return... 
-BothAway>
+Both Away>
 Fred is away...
 Fred has returned!
 Away>

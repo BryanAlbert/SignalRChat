@@ -28,7 +28,7 @@ You're the Race Leader!
 Type messages, type 'go away.' to go away,  or 'goodbye.' to leave the chat.
 Yo.
 You said: Yo.
-FriendAway>
+Friend Away>
 Fred is away...
 goodbye.
 Pick a command: t to list tables, a to add a friend, l to list friends,

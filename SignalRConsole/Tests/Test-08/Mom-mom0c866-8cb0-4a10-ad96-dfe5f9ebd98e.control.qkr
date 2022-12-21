@@ -7,7 +7,7 @@
   "Handle": "Mom",
   "Color": "Maroon",
   "Created": "2022-06-06T19:03:43",
-  "Modified": "2022-08-31T18:42:33",
+  "Modified": "2022-12-17T01:12:08",
   "MergeIndex": {},
   "Friends": [
     {
@@ -18,7 +18,7 @@
       "Handle": "Fred",
       "Color": "Green",
       "Created": "2022-06-06T19:03:42",
-      "Modified": "2022-08-31T18:42:09",
+      "Modified": "2022-12-17T01:11:33",
       "Blocked": false,
       "BluetoothId": null,
       "BluetoothDeviceName": null
@@ -31,7 +31,7 @@
       "Handle": "Bruce",
       "Color": "Red",
       "Created": "2022-06-06T19:03:41",
-      "Modified": "2022-08-31T18:42:29",
+      "Modified": "2022-12-17T01:12:00",
       "Blocked": false,
       "BluetoothId": null,
       "BluetoothDeviceName": null

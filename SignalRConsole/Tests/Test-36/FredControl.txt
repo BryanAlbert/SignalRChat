@@ -18,14 +18,14 @@ Division: (None)
 You have no tables.
 Chatting>
 Type messages, type 'go away.' to go away, or 'goodbye.' to leave the chat.
-FriendAway>
+Friend Away>
 Bruce is away...
 Go away.
 (You went away)
-BothAway>
+Both Away>
 You are away, hit a key to return... 
 R
-FriendAway>
+Friend Away>
 Goodbye.
 Pick a command: t to list tables, a to add a friend, l to list friends,
 u to unfriend a friend, c to chat, or x to exit

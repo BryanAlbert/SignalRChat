@@ -15,10 +15,15 @@ function Get-Description($verbose)
 	ResetQKR  Delete json files from QKR's LocalState folder
 	QKR       Configure for testing QKR
 	
-	To test QKR, run Reset-Test QKR then run Start-TestFor Bruce, Connect Internet
-	as Fred on QKR, <incomplete>.
+	To test QKR, run Reset-Test QKR then run Start-TestFor Bruce, Connect with
+	Internet as Fred on QKR. When Bruce goes away, tap Tables then pop back to
+	Internet Connect. When Bruce sends 'Yo.', respond with the message, 'Bye now!',
+	verify that Bruce disconnects and exits, then pop to Home.
 		
-	Next Connect Internet as Bruce on QKR and run Start-TestFor Fred. <incomplete>
+	Next Connect with Internet as Bruce on QKR then run Start-TestFor Fred. Connect
+	with Fred on QKR, tap Tables, when Fred goes away and returns in the Console,
+	pop back to Internet Connect and send the message 'Yo.' When Bruce responds with
+	'Bye now!', disconnect, pop to Home and close QKR, verifying that Fred exits.
 	Test results with Check-Test `$true.`n"
 	}
 }

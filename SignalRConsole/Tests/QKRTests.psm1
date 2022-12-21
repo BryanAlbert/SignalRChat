@@ -109,8 +109,17 @@ function Start-TestFor($user, $number)
 {
     if ($null -eq $number)
     {
-        "Calling Start-Chat in $test for $user"
-        Start-Chat $test ($user + "Input.txt") ($user + "Output.txt") $user
+        $path = Join-Path $test $user
+        if (Test-Path $path)
+        {
+            "Calling Start-Chat in $path"
+            Start-Chat $path Input.txt Output.txt $user
+        }
+        else
+        {
+            "Calling Start-Chat in $test for $user"
+            Start-Chat $test ($user + "Input.txt") ($user + "Output.txt") $user
+        }
     }
     else
     {

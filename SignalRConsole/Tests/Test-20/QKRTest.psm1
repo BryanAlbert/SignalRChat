@@ -16,7 +16,7 @@ function Get-Description($verbose)
 	New       Configure QKR with New json file
 
 	To test QKR, run Reset-Test New, run Start-TestFor Old then Connect Internet as Mia on
-	QKR. Verify that Mia has friend Bruce, pop back to Home and verify that Mia is yellow
+	QKR. Verify that Mia has friend Bruce, pop back to Home and verify that Mia is now red
 	and that the console exits, then close QKR. Check preliminary results with Check-Test New.
 	
 	Next, run Reset-Test Old, launch QKR, log in as Mia and note that Mia is turquoise.
@@ -91,13 +91,6 @@ function Remove-File($file)
 		"Deleting $file"
 		Remove-Item $file
 	}
-}
-
-function Start-TestFor($age)
-{
-	$where = Join-Path $test $age
-	"Calling Start-Chat in $where for Mia"
-	Start-Chat (Join-Path $where "Input.txt") (Join-Path $where "Output.txt") $age
 }
 
 function Run-Test

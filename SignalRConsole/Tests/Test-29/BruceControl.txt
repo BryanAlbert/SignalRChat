@@ -28,7 +28,7 @@ You're the Race Leader!
 Type messages, type 'go away.' to go away,  or 'goodbye.' to leave the chat.
 Yo.
 You said: Yo.
-FriendAway>
+Friend Away>
 Fred is away...
 Fred has returned!
 Fred has these tables:
