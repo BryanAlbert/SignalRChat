@@ -91,7 +91,7 @@ namespace SignalRConsole
 			if (!await LoadUsersAsync(m_console.NextArg()))
 				return -2;
 
-			InitializeCommands(m_hubConnection);
+			InitializeCommands(m_hubConnection, Handle);
 			await MonitorChannelsAsync();
 			await MonitorFriendsAsync();
 
@@ -620,9 +620,7 @@ namespace SignalRConsole
 			if (to == Id || to == Handle || to == DeviceId)
 			{
 				ConnectionCommand command = DeserializeCommand(json);
-				if (Echo != null || command.CommandName == CommandNames.Echo && command.Flag == true)
-					WriteLogLine($"{ActiveChatFriend?.Handle ?? from}: {json}");
-
+				Echo?.Invoke(ActiveChatFriend?.Handle ?? from, json);
 				await m_commandSemaphore.WaitAsync();
 				try
 				{
@@ -662,7 +660,7 @@ namespace SignalRConsole
 							await ProcessMergeCommandAsync(command, to);
 							break;
 						case CommandNames.Echo:
-							Echo = command.Flag == true ? ((x) => WriteLogLine($"{Handle}: {x}")) : (Action<string>) null;
+							ProcessEchoCommand(command);
 							break;
 						case CommandNames.Unrecognized:
 						default:
@@ -1083,6 +1081,9 @@ namespace SignalRConsole
 
 					if (await CheckForCommandAsync(message))
 					{
+						if (m_console.ScriptMode < 2)
+							Harness.CursorTop = OutputLine;
+
 						WriteLine($"You sent the command: {message}");
 						continue;
 					}
@@ -1122,7 +1123,7 @@ namespace SignalRConsole
 			}
 
 			Echo = null;
-			EraseLogAndDisplayMenu();
+			DisplayMenu();
 			return;
 		}
 
@@ -1170,13 +1171,15 @@ namespace SignalRConsole
 				return;
 			
 			await SetStateAsync(State == States.BothAway ? States.FriendAway : States.Chatting);
-			await SendCommandAsync(CommandNames.TableList, Id, ActiveChatFriend.Id, ActiveChatFriend.Id, MyTableList);
 			if (m_console.ScriptMode < 2)
 			{
 				Console.SetCursorPosition(0, OutputLine);
 				Console.Write(new string(' ', c_goAwayCommand.Length));
+				Console.CursorLeft = 0;
 			}
 
+			WriteLine($"(You returned)");
+			await SendCommandAsync(CommandNames.TableList, Id, ActiveChatFriend.Id, ActiveChatFriend.Id, MyTableList);
 			Harness.CursorLeft = 0;
 		}
 
@@ -1197,7 +1200,6 @@ namespace SignalRConsole
 			for (raceData.QuizCount = 1; raceData.QuizCount <= c_roundsPerQuiz; raceData.QuizCount++)
 			{
 				int index = m_random.Next(cardCount);
-				Debug.WriteLine($"{raceData.QuizCount} index is {index}");
 				string key = null;
 				foreach (string test in list.Keys)
 				{
@@ -1289,14 +1291,7 @@ namespace SignalRConsole
 				ActiveChatFriend.Id);
 
 			if (command?.CommandName == CommandNames.Echo)
-			{
-				Action<string> echo = Echo;
-				Echo = command.Flag == true ? (x) => WaitWriteLogLine($"{Handle}: {x}") : (Action<string>) null;
-
-				// echo the Echo command
-				if (echo == null && Echo != null)
-					Echo.Invoke(command.Json);
-			}
+				Echo = command.Flag == true ? (x, y) => WriteLine($"{x}: {y}") : null;
 
 			return command != null;
 		}
@@ -1306,26 +1301,6 @@ namespace SignalRConsole
 			_ = m_consoleSemaphore.Release();
 			State = state;
 			await m_consoleSemaphore.WaitAsync();
-		}
-
-		private void EraseLogAndDisplayMenu()
-		{
-			try
-			{
-				m_consoleSemaphore.Wait();
-				if (Echo != null)
-				{
-					int line = Harness.CursorTop;
-					State = States.Listening;
-					Harness.CursorTop = line;
-				}
-			}
-			finally
-			{
-				_ = m_consoleSemaphore.Release();
-			}
-
-			DisplayMenu();
 		}
 
 		private async Task LeaveChatChannelAsync(bool sendHello)
@@ -1405,170 +1380,21 @@ namespace SignalRConsole
 			return friend;
 		}
 
-		private async Task ProcessHelloCommandAsync(string from, ConnectionCommand command)
+		private void ProcessAwayCommand()
 		{
-			if (State == States.Connecting)
+			State = State == States.Away ? States.BothAway : States.FriendAway;
+			try
 			{
-				if (command.Flag == true)
-				{
-					await SendCommandAsync(CommandNames.TableList, Id, from, from, MyTableList);
-				}
-				else
-				{
-					await m_hubConnection.SendAsync(c_leaveChannel, ActiveChatChannelName, Id);
-					await WaitWriteLogLineAsync($"{command.Racer.Handle} can't chat at the moment.");
-					State = States.Listening;
-				}
+				m_consoleSemaphore.Wait();
+				if (State != States.BothAway)
+					EraseLog();
+
+				WriteLogLine($"{ActiveChatFriend.Handle} is away...");
 			}
-			else if ((State == States.Chatting || State == States.Away) && command.Flag == false)
+			finally
 			{
-				if (Harness.CursorLeft > 0 && State != States.Away && State != States.BothAway)
-				{
-					await WaitWriteLineAsync($" {ActiveChatFriend.Handle} has left the chat, hit Enter...");
-					m_waitForEnter = true;
-				}
-				else
-				{
-					EraseLogAndDisplayMenu();
-					WaitWriteLogLine($"{ActiveChatFriend.Handle} has left the chat.");
-				}
-
-				await LeaveChatChannelAsync(sendHello: false);
+				_ = m_consoleSemaphore.Release();
 			}
-			else
-			{
-				await CheckFriendshipAsync(from, command);
-			}
-		}
-
-		private async Task CheckFriendshipAsync(string from, ConnectionCommand hello)
-		{
-			Tuple<Friend, Friend> update = UpdateFriendData(hello.Racer);
-			Friend existing = update.Item1;
-			Friend pending = update.Item2;
-			if (from == Id || pending.Handle == Handle && pending.Name == Name && pending.Email == Email)
-			{
-				await SendMergeAsync(pending);
-			}
-			else if (hello.Flag == false || (!hello.Flag.HasValue && existing?.Blocked == false))
-			{
-				if (existing != null)
-				{
-					if (!existing.Blocked.HasValue)
-					{
-						await WaitWriteLogLineAsync($"{existing.Handle} has blocked you. {existing.Handle} must" +
-							$" unfriend you before you can become friends.");
-					}
-					else if (existing.Blocked == false)
-					{
-						await WaitWriteLogLineAsync($"{existing.Handle} has unfriended you.");
-						await UnfriendAsync(existing);
-					}
-				}
-
-				return;
-			}
-			else if (!existing?.Blocked.HasValue ?? true)
-			{
-				if (hello.Flag == true)
-				{
-					if (existing == null)
-					{
-						// we unfriended him while he was away, send Hello with false
-						await SendCommandAsync(CommandNames.Hello, Id, pending.Id, pending.Id, m_user, false);
-
-						// special output for triggering while scripting
-						if (m_console.ScriptMode > 0)
-							await WaitWriteLogLineAsync($"(Sent unfriend command to {pending.Handle}.)");
-					}
-					else if (!existing.Blocked.HasValue)
-					{
-						// he accepted our friend request while we were away
-						existing.Blocked = false;
-						SaveUser();
-						await SendCommandAsync(CommandNames.Hello, Id, existing.Id, existing.Id, m_user, true);
-					}
-				}
-				else
-				{
-					await SendCommandAsync(CommandNames.Verify, Id, MakeHandleChannelName(existing ?? pending),
-						from, m_user, null);
-				}
-			}
-
-			if (existing != null && !m_online.Contains(existing))
-			{
-				await WaitWriteLogLineAsync($"Your {(existing.Blocked.HasValue ? "" : "(pending) ")}friend {existing.Handle} is online.");
-				m_online.Add(existing);
-				if (existing.Blocked == false)
-					await SendCommandAsync(CommandNames.Hello, Id, existing.Id, existing.Id, m_user, true);
-			}
-		}
-
-		private async Task ProcessVerifyCommandAsync(string from, ConnectionCommand verify)
-		{
-			Tuple<Friend, Friend> update = UpdateFriendData(verify.Racer);
-			Friend existing = update.Item1;
-			Friend pending = update.Item2;
-			if (!verify.Flag.HasValue)
-			{
-				// add a Friends record to get notifications for him
-				if (existing == null)
-					m_user.Friends.Add(pending);
-
-				if (!m_online.Contains(pending))
-					m_online.Add(pending);
-
-				PreviousState = State;
-				State = States.Busy;
-				try
-				{
-					await m_consoleSemaphore.WaitAsync();
-					Tuple<Point, ConsoleKeyInfo> confirm = await WriteLogReadKeyAsync($"Accept friend request from" +
-						$" {pending.Handle}, email address {pending.Email}? [y/n] ", () => true, () => false);
-
-					await SetStateAsync(PreviousState);
-					pending.Blocked = confirm.Item2.Key != ConsoleKey.Y;
-					_ = m_user.Friends.Remove(existing);
-					_ = m_user.Friends.Remove(pending);
-					m_user.Friends.Add(pending);
-					SaveUser();
-
-					if (m_online.Contains(pending))
-						await SendCommandAsync(CommandNames.Verify, Id, HandleChannelName, from, m_user, !pending.Blocked);
-
-					m_console.SetCursorPosition(confirm.Item1.X, confirm.Item1.Y);
-				}
-				finally
-				{
-					_ = m_consoleSemaphore.Release();
-				}
-
-				existing = pending;
-			}
-			else
-			{
-				if (existing != null)
-					existing.Blocked = !verify.Flag;
-
-				SaveUser();
-				if (verify.Flag == false)
-				{
-					_ = m_online.Remove(existing);
-					await m_hubConnection.SendAsync(c_leaveChannel, verify.Racer, Handle);
-				}
-			}
-
-			if (existing != null)
-				await WaitWriteLogLineAsync($"You and {existing.Handle} are {(existing.Blocked.Value ? "not" : "now")} friends!");
-		}
-
-		private async Task UnfriendAsync(Friend friend)
-		{
-			await m_hubConnection.SendAsync(c_leaveChannel, friend.Id ?? MakeHandleChannelName(friend), Id);
-			_ = m_online.Remove(friend);
-			_ = m_user.Friends.Remove(friend);
-			SaveUser();
 		}
 
 		private async Task ProcessTableListCommandAsync(string from, Dictionary<string, List<int>> tables)
@@ -1635,23 +1461,6 @@ namespace SignalRConsole
 
 			if (runMessageLoop)
 				await MessageLoopAsync();
-		}
-
-		private void ProcessAwayCommand()
-		{
-			State = State == States.Away ? States.BothAway : States.FriendAway;
-			try
-			{
-				m_consoleSemaphore.Wait();
-				if (State != States.BothAway)
-					EraseLog();
-
-				WriteLogLine($"{ActiveChatFriend.Handle} is away...");
-			}
-			finally
-			{
-				_ = m_consoleSemaphore.Release();
-			}
 		}
 
 		private async Task ProcessInitiateRaceCommandAsync()
@@ -1823,6 +1632,237 @@ namespace SignalRConsole
 
 				await MessageLoopAsync();
 			}
+		}
+
+		private async Task ProcessHelloCommandAsync(string from, ConnectionCommand command)
+		{
+			if (State == States.Connecting)
+			{
+				if (command.Flag == true)
+				{
+					await SendCommandAsync(CommandNames.TableList, Id, from, from, MyTableList);
+				}
+				else
+				{
+					await m_hubConnection.SendAsync(c_leaveChannel, ActiveChatChannelName, Id);
+					await WaitWriteLogLineAsync($"{command.Racer.Handle} can't chat at the moment.");
+					State = States.Listening;
+				}
+			}
+			else if ((State == States.Chatting || State == States.Away) && command.Flag == false)
+			{
+				if (Harness.CursorLeft > 0 && State != States.Away && State != States.BothAway)
+				{
+					await WaitWriteLineAsync($" {ActiveChatFriend.Handle} has left the chat, hit Enter...");
+					m_waitForEnter = true;
+				}
+				else
+				{
+					DisplayMenu();
+					WaitWriteLogLine($"{ActiveChatFriend.Handle} has left the chat.");
+				}
+
+				await LeaveChatChannelAsync(sendHello: false);
+			}
+			else
+			{
+				await CheckFriendshipAsync(from, command);
+			}
+		}
+
+		private async Task ProcessVerifyCommandAsync(string from, ConnectionCommand verify)
+		{
+			Tuple<Friend, Friend> update = UpdateFriendData(verify.Racer);
+			Friend existing = update.Item1;
+			Friend pending = update.Item2;
+			if (!verify.Flag.HasValue)
+			{
+				// add a Friends record to get notifications for him
+				if (existing == null)
+					m_user.Friends.Add(pending);
+
+				if (!m_online.Contains(pending))
+					m_online.Add(pending);
+
+				PreviousState = State;
+				State = States.Busy;
+				try
+				{
+					await m_consoleSemaphore.WaitAsync();
+					Tuple<Point, ConsoleKeyInfo> confirm = await WriteLogReadKeyAsync($"Accept friend request from" +
+						$" {pending.Handle}, email address {pending.Email}? [y/n] ", () => true, () => false);
+
+					await SetStateAsync(PreviousState);
+					pending.Blocked = confirm.Item2.Key != ConsoleKey.Y;
+					_ = m_user.Friends.Remove(existing);
+					_ = m_user.Friends.Remove(pending);
+					m_user.Friends.Add(pending);
+					SaveUser();
+
+					if (m_online.Contains(pending))
+						await SendCommandAsync(CommandNames.Verify, Id, HandleChannelName, from, m_user, !pending.Blocked);
+
+					m_console.SetCursorPosition(confirm.Item1.X, confirm.Item1.Y);
+				}
+				finally
+				{
+					_ = m_consoleSemaphore.Release();
+				}
+
+				existing = pending;
+			}
+			else
+			{
+				if (existing != null)
+					existing.Blocked = !verify.Flag;
+
+				SaveUser();
+				if (verify.Flag == false)
+				{
+					_ = m_online.Remove(existing);
+					await m_hubConnection.SendAsync(c_leaveChannel, verify.Racer, Handle);
+				}
+			}
+
+			if (existing != null)
+				await WaitWriteLogLineAsync($"You and {existing.Handle} are {(existing.Blocked.Value ? "not" : "now")} friends!");
+		}
+
+		private async Task ProcessMergeCommandAsync(ConnectionCommand merge, string to)
+		{
+			User user = merge.Merge;
+			if (!DateTime.TryParse(m_user.Created, out DateTime myCreated) ||
+				!DateTime.TryParse(user.Created, out DateTime created))
+			{
+				WriteLogLine($"Error in MergeAccountsAsync parsing Created date '{m_user.Created}' or '{user.Created}'.");
+				return;
+			}
+
+			if (myCreated == created || to != DeviceId)
+				return;
+
+			if (!DateTime.TryParse(m_user.Modified, out DateTime myModified) ||
+				!DateTime.TryParse(user.Modified, out DateTime modified))
+			{
+				WriteLogLine($"Error in MergeAccountsAsync parsing Modified date '{m_user.Modified}' or '{user.Modified}'.");
+				return;
+			}
+
+			bool updateId = m_user.Id != user.Id && myCreated > created;
+			bool update = myModified < modified && (m_user.Name != user.Name || m_user.Handle != user.Handle ||
+				m_user.Email != user.Email || m_user.Color != user.Color);
+
+			if (updateId)
+			{
+				// don't leave the DeviceId channel since other Merge commands may be coming in on it
+				await m_hubConnection.SendAsync(c_leaveChannel, ChatChannelName, Id);
+				m_user.Id = user.Id;
+				await m_hubConnection.SendAsync(c_joinChannel, IdChannelName, Id);
+				await m_hubConnection.SendAsync(c_joinChannel, ChatChannelName, Id);
+			}
+
+			if (update)
+			{
+				m_user.Name = user.Name;
+				m_user.Handle = user.Handle;
+				m_user.Email = user.Email;
+				m_user.Color = user.Color;
+			}
+
+			await WaitWriteLogLineAsync($"Merging data from {Handle}{(updateId ? $", Id {user.Id}," : "")} on device {user.DeviceId}...");
+			m_merged.Add(user.DeviceId);
+			update = MergeFriends(update, user);
+			update = MergeTables(update, user);
+			await WaitWriteLogLineAsync($"Merged data from {Handle} on device {user.DeviceId}.");
+			if (update || updateId)
+				SaveUser();
+		}
+
+		private void ProcessEchoCommand(ConnectionCommand command)
+		{
+			bool echo = Echo == null;
+			if (command.Flag == true)
+			{
+				Echo = (x, y) => WriteLine($"{x}: {y}");
+				if (echo)
+					Echo.Invoke(ActiveChatFriend.Handle, command.Json);
+			}
+			else
+			{
+				Echo = null;
+			}
+		}
+
+		private async Task CheckFriendshipAsync(string from, ConnectionCommand hello)
+		{
+			Tuple<Friend, Friend> update = UpdateFriendData(hello.Racer);
+			Friend existing = update.Item1;
+			Friend pending = update.Item2;
+			if (from == Id || pending.Handle == Handle && pending.Name == Name && pending.Email == Email)
+			{
+				await SendMergeAsync(pending);
+			}
+			else if (hello.Flag == false || (!hello.Flag.HasValue && existing?.Blocked == false))
+			{
+				if (existing != null)
+				{
+					if (!existing.Blocked.HasValue)
+					{
+						await WaitWriteLogLineAsync($"{existing.Handle} has blocked you. {existing.Handle} must" +
+							$" unfriend you before you can become friends.");
+					}
+					else if (existing.Blocked == false)
+					{
+						await WaitWriteLogLineAsync($"{existing.Handle} has unfriended you.");
+						await UnfriendAsync(existing);
+					}
+				}
+
+				return;
+			}
+			else if (!existing?.Blocked.HasValue ?? true)
+			{
+				if (hello.Flag == true)
+				{
+					if (existing == null)
+					{
+						// we unfriended him while he was away, send Hello with false
+						await SendCommandAsync(CommandNames.Hello, Id, pending.Id, pending.Id, m_user, false);
+
+						// special output for triggering while scripting
+						if (m_console.ScriptMode > 0)
+							await WaitWriteLogLineAsync($"(Sent unfriend command to {pending.Handle}.)");
+					}
+					else if (!existing.Blocked.HasValue)
+					{
+						// he accepted our friend request while we were away
+						existing.Blocked = false;
+						SaveUser();
+						await SendCommandAsync(CommandNames.Hello, Id, existing.Id, existing.Id, m_user, true);
+					}
+				}
+				else
+				{
+					await SendCommandAsync(CommandNames.Verify, Id, MakeHandleChannelName(existing ?? pending),
+						from, m_user, null);
+				}
+			}
+
+			if (existing != null && !m_online.Contains(existing))
+			{
+				await WaitWriteLogLineAsync($"Your {(existing.Blocked.HasValue ? "" : "(pending) ")}friend {existing.Handle} is online.");
+				m_online.Add(existing);
+				if (existing.Blocked == false)
+					await SendCommandAsync(CommandNames.Hello, Id, existing.Id, existing.Id, m_user, true);
+			}
+		}
+
+		private async Task UnfriendAsync(Friend friend)
+		{
+			await m_hubConnection.SendAsync(c_leaveChannel, friend.Id ?? MakeHandleChannelName(friend), Id);
+			_ = m_online.Remove(friend);
+			_ = m_user.Friends.Remove(friend);
+			SaveUser();
 		}
 
 		private void InitializeScoreboard()
@@ -2010,7 +2050,7 @@ namespace SignalRConsole
 			try
 			{
 				m_consoleSemaphore.Wait();
-				if (AnswerPrompt == null || TimeLeft < 1)
+				if (AnswerPrompt == null || TimeLeft < 1 || !IsStateRacing)
 					return;
 
 				Point cursor = new(Console.CursorLeft, Console.CursorTop);
@@ -2094,56 +2134,6 @@ namespace SignalRConsole
 
 			ShowCountdown = true;
 			InitializeScoreboard();
-		}
-
-		private async Task ProcessMergeCommandAsync(ConnectionCommand merge, string to)
-		{
-			User user = merge.Merge;
-			if (!DateTime.TryParse(m_user.Created, out DateTime myCreated) ||
-				!DateTime.TryParse(user.Created, out DateTime created))
-			{
-				WriteLogLine($"Error in MergeAccountsAsync parsing Created date '{m_user.Created}' or '{user.Created}'.");
-				return;
-			}
-
-			if (myCreated == created || to != DeviceId)
-				return;
-
-			if (!DateTime.TryParse(m_user.Modified, out DateTime myModified) ||
-				!DateTime.TryParse(user.Modified, out DateTime modified))
-			{
-				WriteLogLine($"Error in MergeAccountsAsync parsing Modified date '{m_user.Modified}' or '{user.Modified}'.");
-				return;
-			}
-
-			bool updateId = m_user.Id != user.Id && myCreated > created;
-			bool update = myModified < modified && (m_user.Name != user.Name || m_user.Handle != user.Handle ||
-				m_user.Email != user.Email || m_user.Color != user.Color);
-
-			if (updateId)
-			{
-				// don't leave the DeviceId channel since other Merge commands may be coming in on it
-				await m_hubConnection.SendAsync(c_leaveChannel, ChatChannelName, Id);
-				m_user.Id = user.Id;
-				await m_hubConnection.SendAsync(c_joinChannel, IdChannelName, Id);
-				await m_hubConnection.SendAsync(c_joinChannel, ChatChannelName, Id);
-			}
-
-			if (update)
-			{
-				m_user.Name = user.Name;
-				m_user.Handle = user.Handle;
-				m_user.Email = user.Email;
-				m_user.Color = user.Color;
-			}
-
-			await WaitWriteLogLineAsync($"Merging data from {Handle}{(updateId ? $", Id {user.Id}," : "")} on device {user.DeviceId}...");
-			m_merged.Add(user.DeviceId);
-			update = MergeFriends(update, user);
-			update = MergeTables(update, user);
-			await WaitWriteLogLineAsync($"Merged data from {Handle} on device {user.DeviceId}.");
-			if (update || updateId)
-				SaveUser();
 		}
 
 		private bool MergeFriends(bool save, User user)
@@ -2434,7 +2424,7 @@ namespace SignalRConsole
 
 		private void EraseLog()
 		{
-			if (m_console.ScriptMode > 1 || m_log.Count == 0 || Echo != null &&
+			if (m_console.ScriptMode > 1 || m_log.Count == 0 &&
 				(IsStateRacing || State == States.Chatting))
 			{
 				return;
@@ -2605,7 +2595,7 @@ namespace SignalRConsole
 		private const int c_logWindowOffset = 2;
 		private const string c_connectionJsonCommand = "{ ?\"Command\":";
 		private readonly TimeSpan c_resultDisplayTime = TimeSpan.FromSeconds(2.0);
-		private readonly TimeSpan c_countdownFrom = TimeSpan.FromSeconds(30.0);
+		private readonly TimeSpan c_countdownFrom = TimeSpan.FromSeconds(10.0);
 		private const int c_roundsPerQuiz = 10;
 		private Harness m_console;
 		private User m_user;

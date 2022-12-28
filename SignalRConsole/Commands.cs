@@ -19,12 +19,16 @@ namespace SignalRConsole
 			}
 
 
-			public static Action<string> Echo { get; set; }
+			[JsonIgnore]
+			public static string FromHandle { get; set; }
+			[JsonIgnore]
+			public static Action<string, string> Echo { get; set; }
 
 
-			public static void InitializeCommands(HubConnection hubConnection)
+			public static void InitializeCommands(HubConnection hubConnection, string handle)
 			{
 				m_hubConnection = hubConnection;
+				FromHandle = handle;
 			}
 
 			public static async Task SendCommandAsync(CommandNames name, string from, string channel, string to)
@@ -188,8 +192,7 @@ namespace SignalRConsole
 				catch (Exception exception)
 				{
 					Debug.WriteLine($"Exception in ReceiveCommand deserializing {json}: {exception.Message}");
-					Echo?.Invoke($"Failed to deserialize {json}: {exception.Message}");
-
+					Console.WriteLine("ConnectionCommand", $"Failed to deserialize {json}: {exception.Message}");
 					command = new ConnectionCommand();
 				}
 
@@ -230,8 +233,7 @@ namespace SignalRConsole
 			{
 				try
 				{
-					Echo?.Invoke(Json);
-
+					Echo?.Invoke(FromHandle, Json);
 					await m_hubConnection.SendAsync(ConsoleChat.c_sendCommand, From, Channel, To, Json);
 				}
 				catch (Exception exception)
