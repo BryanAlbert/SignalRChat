@@ -43,6 +43,11 @@ namespace SignalRConsole
 			QuizCount = source.QuizCount;
 		}
 
+		public bool IsFinal(bool isRaceLeader, RaceData opponent)
+		{
+			return isRaceLeader ? !opponent.Busy : Correct + Wrong == opponent.Correct + opponent.Wrong;
+		}
+
 
 		public int Operator { get; set; }
 		public int Base { get; set; }
