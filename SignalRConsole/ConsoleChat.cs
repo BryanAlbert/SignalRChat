@@ -419,6 +419,8 @@ namespace SignalRConsole
 		private bool ShowCountdown { get; set; }
 		private DateTime ExpireTime { get; set; }
 		private int TimeLeft { get; set; }
+		private RaceData MyRaceData { get; set; }
+		private RaceData OpponentRaceData { get; set; }
 		private int MyRaceScore
 		{
 			get => m_myRaceScore;
@@ -439,25 +441,6 @@ namespace SignalRConsole
 			}
 		}
 
-		private RaceData MyRaceData
-		{
-			get => m_myRaceData;
-			set
-			{
-				m_myRaceData = value;
-				UpdateScoreboard();
-			}
-		}
-
-		private RaceData OpponentRaceData
-		{
-			get => m_opponentRaceData;
-			set
-			{
-				m_opponentRaceData = value;
-				UpdateScoreboard();
-			}
-		}
 
 		private Dictionary<string, List<int>> MyTableList
 		{
@@ -1168,7 +1151,7 @@ namespace SignalRConsole
 			// check if friend disconnected while we were away
 			if (State == States.Listening)
 				return;
-			
+
 			await SetStateAsync(State == States.BothAway ? States.FriendAway : States.Chatting);
 			if (m_console.ScriptMode < 2)
 			{
@@ -1262,14 +1245,15 @@ namespace SignalRConsole
 
 		private void ComputeRaceScore()
 		{
-#if true
-			MyRaceScore += ComputeRaceScore(MyRaceData, OpponentRaceData);
-			OpponentRaceScore += ComputeRaceScore(OpponentRaceData, MyRaceData);
-#else
-			// TODO: testing, don't accumulate scores so it's easier to see what happened
-			MyRaceScore = ComputeRaceScore(MyRaceData, OpponentRaceData);
-			OpponentRaceScore = ComputeRaceScore(OpponentRaceData, MyRaceData);
-#endif
+			lock (m_lock)
+			{
+				if (m_totalsComputedForCard < MyRaceData.QuizCount)
+				{
+					m_totalsComputedForCard = MyRaceData.QuizCount;
+					MyRaceScore += ComputeRaceScore(MyRaceData, OpponentRaceData);
+					OpponentRaceScore += ComputeRaceScore(OpponentRaceData, MyRaceData);
+				}
+			}
 		}
 
 		private void ReportScore()
@@ -1523,13 +1507,14 @@ namespace SignalRConsole
 			raceData.Wrong = MyRaceData.Wrong;
 			OpponentRaceData.SetCard(raceData);
 			MyRaceData = raceData;
+			UpdateScoreboard();
 			if (IsRaceLeader)
 				await SendCommandAsync(CommandNames.RaceCard, Id, ActiveChatFriend.Id, ActiveChatFriend.Id, OpponentRaceData);
 
 			if (ShowCountdown)
 				await CountdownAsync();
 
-			Fact fact = new(raceData.First, raceData.Second, Arithmetic.Operator[(FactOperator) raceData.Operator]);
+			Fact fact = new(MyRaceData.First, MyRaceData.Second, Arithmetic.Operator[(FactOperator) MyRaceData.Operator]);
 			DateTime startTime = DateTime.Now;
 			ExpireTime = startTime + c_countdownFrom;
 			TimeLeft = (int) c_countdownFrom.TotalSeconds;
@@ -1538,50 +1523,47 @@ namespace SignalRConsole
 			{
 				using (new Timer(RenderPrompt, prompt, 0, 1000))
 				{
-					int guess = await ReadAnswerAsync(fact.Answer, "Correct!", raceData);
-
+					int guess = await ReadAnswerAsync(fact.Answer, "Correct!");
 					if (guess < 0)
 						return guess;
 
+					MyRaceData.Time = (int) (DateTime.Now - startTime).TotalMilliseconds;
 					if (guess == fact.Answer)
 					{
-						raceData.Time = (int) (DateTime.Now - startTime).TotalMilliseconds;
-						raceData.Score = 2;
-						raceData.Correct++;
+						MyRaceData.Score = 2;
+						MyRaceData.Correct++;
 						break;
 					}
 
-					raceData.Time = (int) (DateTime.Now - startTime).TotalMilliseconds;
-					raceData.Try = 2;
-					MyRaceData = raceData;
-					await SendRaceResultAsync(null);
+					MyRaceData.Try = 2;
+					UpdateScoreboard();
+					await SendCommandAsync(CommandNames.CardResult, Id, ActiveChatFriend.Id, ActiveChatFriend.Id, MyRaceData);
 					await WaitWriteLineAsync("Not quite...");
-					if ((guess = await ReadAnswerAsync(fact.Answer, "You are right!", raceData)) < 0)
+					if ((guess = await ReadAnswerAsync(fact.Answer, "You are right!")) < 0)
 						return guess;
 
-					raceData.Time = (int) (DateTime.Now - startTime).TotalMilliseconds;
-					raceData.Busy = false;
+					MyRaceData.Time = (int) (DateTime.Now - startTime).TotalMilliseconds;
 					if (guess == fact.Answer)
 					{
-						raceData.Score = 1;
-						raceData.Correct++;
+						MyRaceData.Score = 1;
+						MyRaceData.Correct++;
 						break;
 					}
 
 					WaitWriteLine($"No! {fact.Render} = {fact.Answer}");
-					raceData.Score = 0;
-					raceData.Wrong++;
+					MyRaceData.Score = 0;
+					MyRaceData.Wrong++;
 				}
 			} while (false);
 
-			await SendRaceResultAsync(raceData);
-			MyRaceData = raceData;
+			await SendRaceResultAsync();
 			return 0;
 		}
 
 		private void ProcessCardResultCommand(RaceData raceData)
 		{
 			OpponentRaceData = raceData;
+			UpdateScoreboard();
 			if (!MyRaceData.Busy && MyRaceData.IsFinal(IsRaceLeader, raceData))
 				ComputeRaceScore();
 		}
@@ -1867,6 +1849,8 @@ namespace SignalRConsole
 				MyRaceScore = OpponentRaceScore = 0;
 				MyRaceData = new RaceData();
 				OpponentRaceData = new RaceData();
+				m_totalsComputedForCard = 0;
+				UpdateScoreboard();
 				ShowCountdown = true;
 				OutputLine += 3;
 				LogTop += 3;
@@ -1915,7 +1899,7 @@ namespace SignalRConsole
 			}
 		}
 
-		private async Task<int> ReadAnswerAsync(int rawAnswer, string correctMessage, RaceData raceData)
+		private async Task<int> ReadAnswerAsync(int rawAnswer, string correctMessage)
 		{
 			string guess = string.Empty;
 			string answer = rawAnswer.ToString();
@@ -1948,10 +1932,9 @@ namespace SignalRConsole
 						{
 							WriteLine();
 							WriteLine("Time.");
-							raceData.Wrong++;
-							raceData.Time = (int) c_countdownFrom.TotalMilliseconds;
-							MyRaceData = raceData;
-							await SendRaceResultAsync(raceData.Busy ? raceData : null);
+							MyRaceData.Wrong++;
+							MyRaceData.Time = (int) c_countdownFrom.TotalMilliseconds;
+							await SendRaceResultAsync();
 							return -1;
 						}
 					}
@@ -2019,20 +2002,17 @@ namespace SignalRConsole
 			return -5;
 		}
 
-		private async Task SendRaceResultAsync(RaceData raceData)
+		private async Task SendRaceResultAsync()
 		{
 			await SendCommandAsync(CommandNames.CardResult, Id, ActiveChatFriend.Id, ActiveChatFriend.Id, MyRaceData);
-			if (raceData != null)
-			{
-				raceData.Busy = false;
-				MyRaceData = raceData;
-				await Task.Delay(c_resultDisplayTime);
-				if (!MyRaceData.Busy && MyRaceData.IsFinal(IsRaceLeader, OpponentRaceData))
-					ComputeRaceScore();
+			MyRaceData.Busy = false;
+			UpdateScoreboard();
+			await Task.Delay(c_resultDisplayTime);
+			if (!MyRaceData.Busy && MyRaceData.IsFinal(IsRaceLeader, OpponentRaceData))
+				ComputeRaceScore();
 
-				if (!IsRaceLeader)
-					await SendCommandAsync(CommandNames.CardResult, Id, ActiveChatFriend.Id, ActiveChatFriend.Id, MyRaceData);
-			}
+			if (!IsRaceLeader)
+				await SendCommandAsync(CommandNames.CardResult, Id, ActiveChatFriend.Id, ActiveChatFriend.Id, MyRaceData);
 		}
 
 		private void RenderPrompt(object prompt)
@@ -2586,17 +2566,22 @@ namespace SignalRConsole
 		private const int c_logWindowOffset = 2;
 		private const string c_connectionJsonCommand = "{ ?\"Command\":";
 		private readonly TimeSpan c_resultDisplayTime = TimeSpan.FromSeconds(2.0);
+#if false
+		// testing: don't time out for  four minutes
 		private readonly TimeSpan c_countdownFrom = TimeSpan.FromSeconds(240.0);
+#else
+		private readonly TimeSpan c_countdownFrom = TimeSpan.FromSeconds(10.0);
+#endif
 		private const int c_roundsPerQuiz = 10;
 		private Harness m_console;
 		private User m_user;
 		private States m_state;
 		private bool m_waitForEnter;
 		private Dictionary<string, List<int>> m_myTables;
-		private RaceData m_opponentRaceData;
-		private RaceData m_myRaceData;
 		private int m_myRaceScore;
 		private int m_opponentRaceScore;
+		private int m_totalsComputedForCard;
+		private readonly object m_lock = new();
 		private readonly List<User> m_users = new();
 		private readonly List<Friend> m_online = new();
 		private readonly List<string> m_log = new();
