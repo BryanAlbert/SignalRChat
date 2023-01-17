@@ -1021,7 +1021,7 @@ namespace SignalRConsole
 				{
 					WriteLine($"You're the Race Leader!");
 					WriteLine($"Type messages, type '{c_goAwayCommand}' to go away," +
-						$" {(HaveTables ? $"'{c_raceCommand}' to race, " : "")}" +
+						$"{(HaveIntersection ? $" '{c_raceCommand}' to race," : "")}" +
 						$" or '{c_leaveChatCommand}' to leave the chat.");
 				}
 				else
@@ -1116,7 +1116,7 @@ namespace SignalRConsole
 
 			if (IsRaceLeader)
 			{
-				if (HaveTables)
+				if (HaveIntersection)
 				{
 					WriteLine();
 					await SendCommandAsync(CommandNames.InitiateRace, Id, ActiveChatFriend.Id, ActiveChatFriend.Id);
@@ -2048,7 +2048,7 @@ namespace SignalRConsole
 				int count = m_user.Operators.Count(x => OpponentTableList.Any(y => x.Name == y.Key &&
 					x.Tables.Any(z => y.Value.Contains(z.Base))));
 
-				HaveIntersection = count == 0;
+				HaveIntersection = count > 0;
 				if (HaveIntersection)
 				{
 					WriteLogLine($"You and {ActiveChatFriend.Handle} have no tables in common" +
@@ -2567,7 +2567,7 @@ namespace SignalRConsole
 		private const string c_connectionJsonCommand = "{ ?\"Command\":";
 		private readonly TimeSpan c_resultDisplayTime = TimeSpan.FromSeconds(2.0);
 #if false
-		// testing: don't time out for  four minutes
+		// testing: don't time out for four minutes
 		private readonly TimeSpan c_countdownFrom = TimeSpan.FromSeconds(240.0);
 #else
 		private readonly TimeSpan c_countdownFrom = TimeSpan.FromSeconds(10.0);
