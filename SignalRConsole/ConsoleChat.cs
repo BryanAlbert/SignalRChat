@@ -1427,7 +1427,11 @@ namespace SignalRConsole
 					if (State != States.RaceInitializing)
 					{
 						if (runMessageLoop)
+						{
 							WriteLogLine(string.Empty);
+							if (IsRaceLeader)
+								WriteLogLine(string.Empty);
+						}
 
 						_ = IntersectTables();
 					}
@@ -2400,8 +2404,7 @@ namespace SignalRConsole
 				return;
 			}
 
-			_ = CheckScrollWindow(LogBottom);
-			Point cursor = new(Harness.CursorLeft, Harness.CursorTop);
+			Point cursor = CheckScrollWindow(LogBottom);
 			Console.SetCursorPosition(0, LogTop);
 			ConsoleColor color = Harness.ForegroundColor;
 			try
