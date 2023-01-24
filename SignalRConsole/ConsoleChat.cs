@@ -193,7 +193,7 @@ namespace SignalRConsole
 		public const string c_fileExtension = ".qkr.json";
 		public const string c_leaveChatCommand = "goodbye.";
 		public const string c_raceCommand = "race!";
-		public const string c_goAwayCommand = "go away.";
+		public const string c_tablesCommand = "tables.";
 		public readonly Dictionary<States, string> m_stateLabels = new()
 		{
 			{ States.Initializing, "Initializing" },
@@ -406,7 +406,7 @@ namespace SignalRConsole
 		private Friend ActiveChatFriend { get; set; }
 		private bool HaveTables => m_user.Operators.Any(x => x.Tables.Any(y => y.Cards.Count > 0));
 		private bool HaveIntersection { get; set; }
-		private bool IsStateRacing => State == States.RaceInitializing || State == States.Racing || State == States.RacingWaiting;
+		private bool IsStateRacing => State == States.Racing || State == States.RacingWaiting;
 		private bool IsStateAway => State == States.FriendAway || State == States.BothAway || State == States.Away;
 		private bool IsRaceLeader { get; set; }
 		private int PromptLine { get; set; }
@@ -1020,13 +1020,13 @@ namespace SignalRConsole
 				if (IsRaceLeader)
 				{
 					WriteLine($"You're the Race Leader!");
-					WriteLine($"Type messages, type '{c_goAwayCommand}' to go away," +
+					WriteLine($"Type messages, type '{c_tablesCommand}' to go open tables," +
 						$"{(HaveIntersection ? $" '{c_raceCommand}' to race," : "")}" +
 						$" or '{c_leaveChatCommand}' to leave the chat.");
 				}
 				else
 				{
-					WriteLine($"Type messages, type '{c_goAwayCommand}' to go away, or" +
+					WriteLine($"Type messages, type '{c_tablesCommand}' to open tables, or" +
 						$" '{c_leaveChatCommand}' to leave the chat.");
 				}
 			}
@@ -1070,9 +1070,9 @@ namespace SignalRConsole
 						continue;
 					}
 
-					if (message.ToLower() == c_goAwayCommand)
+					if (message.ToLower() == c_tablesCommand)
 					{
-						await GoAwayAsync();
+						await OpenTablesAsync();
 						continue;
 					}
 
@@ -1109,6 +1109,40 @@ namespace SignalRConsole
 			return;
 		}
 
+		private async Task ConfirmRaceAsync()
+		{
+			Tuple<Point, ConsoleKeyInfo> confirm;
+			States state = State;
+			State = States.RaceInitializing;
+			try
+			{
+				await m_consoleSemaphore.WaitAsync();
+				EraseLog();
+				_ = IntersectTables(true);
+				if (state == States.Chatting)
+				{
+					await SendCommandAsync(CommandNames.TableList, Id, ActiveChatFriend.Id, ActiveChatFriend.Id, MyTableList);
+				}
+				else if (state == States.Racing || state == States.RacingWaiting)
+				{
+					await SendCommandAsync(CommandNames.InitiateRace, Id, ActiveChatFriend.Id, ActiveChatFriend.Id, MyTableList);
+					return;
+				}
+
+				confirm = await WriteLogReadKeyAsync($"Hit r to race, c to return to chat... ", () => true, () => false);
+				m_console.SetCursorPosition(confirm.Item1.X, confirm.Item1.Y);
+			}
+			finally
+			{
+				_ = m_consoleSemaphore.Release();
+			}
+
+			if (confirm.Item2.Key == ConsoleKey.R)
+				InitializeScoreboard();
+			else
+				await SendCommandAsync(CommandNames.NavigateBack, Id, ActiveChatFriend.Id, ActiveChatFriend.Id);
+		}
+
 		private async Task<bool> CheckRaceCommandAsync()
 		{
 			if (m_console.ScriptMode > 1)
@@ -1137,14 +1171,14 @@ namespace SignalRConsole
 			return false;
 		}
 
-		private async Task GoAwayAsync()
+		private async Task OpenTablesAsync()
 		{
 			if (m_console.ScriptMode < 2)
 				Harness.CursorTop = OutputLine;
 
-			WriteLine($"(You went away)");
-			await SetStateAsync(State == States.FriendAway ? States.BothAway : States.Away);
 			EraseLog();
+			IntersectTables(true);
+			await SetStateAsync(State == States.FriendAway ? States.BothAway : States.Away);
 			await SendCommandAsync(CommandNames.Away, Id, ActiveChatFriend.Id, ActiveChatFriend.Id);
 			_ = await WriteLogReadKeyAsync("You are away, hit a key to return... ", () => true, () => !IsStateAway);
 
@@ -1156,7 +1190,7 @@ namespace SignalRConsole
 			if (m_console.ScriptMode < 2)
 			{
 				Console.SetCursorPosition(0, OutputLine);
-				Console.Write(new string(' ', c_goAwayCommand.Length));
+				Console.Write(new string(' ', c_tablesCommand.Length));
 				Console.CursorLeft = 0;
 			}
 
@@ -1388,17 +1422,19 @@ namespace SignalRConsole
 		{
 			OpponentTableList = tables;
 			States newState = States.Initializing;
-			bool runMessageLoop;
+			bool runMessageLoop = false;
 			do
 			{
 				try
 				{
 					await m_consoleSemaphore.WaitAsync();
-					if (State == States.Racing)
+					if (IsStateRacing)
 					{
 						// opponent popped from Quiz page
+						newState = States.RaceInitializing;
 						EraseLog();
-						runMessageLoop = true;
+						_ = IntersectTables(true);
+						await SendCommandAsync(CommandNames.TableList, Id, from, from, MyTableList);
 						break;
 					}
 
@@ -1433,7 +1469,7 @@ namespace SignalRConsole
 								WriteLogLine(string.Empty);
 						}
 
-						_ = IntersectTables();
+						_ = IntersectTables(false);
 					}
 					else if (IsRaceLeader)
 					{
@@ -1456,10 +1492,19 @@ namespace SignalRConsole
 
 		private async Task ProcessInitiateRaceCommandAsync()
 		{
-			if (State == States.Chatting)
+			if (IsStateRacing)
 			{
-				InitializeScoreboard();
 				State = States.RaceInitializing;
+				WriteLine();
+				if (m_weQuit)
+					WriteLine($"Waiting for {ActiveChatFriend.Handle} to end the race...");
+				else
+					WriteLine($"{ActiveChatFriend.Handle} is ending the race...");
+			}
+			else
+			{
+				State = States.RaceInitializing;
+				WriteLine($"{ActiveChatFriend.Handle} is initializing the race...");
 			}
 
 			if (IsRaceLeader)
@@ -1474,6 +1519,7 @@ namespace SignalRConsole
 			if (m_commandSemaphore.CurrentCount == 0)
 				_ = m_commandSemaphore.Release();
 
+			InitializeScoreboard();
 			State = States.Racing;
 			if (!IsRaceLeader)
 				await SendCommandAsync(CommandNames.StartRace, Id, ActiveChatFriend.Id, ActiveChatFriend.Id);
@@ -1485,11 +1531,6 @@ namespace SignalRConsole
 				{
 					Console.SetCursorPosition(0, OutputLine);
 					await MessageLoopAsync();
-				}
-				else if (result == -4)
-				{
-					// we quit
-					await ProcessNavigateBackCommandAsync(true);
 				}
 			}
 		}
@@ -1588,26 +1629,16 @@ namespace SignalRConsole
 				await SendCommandAsync(CommandNames.StartRace, Id, ActiveChatFriend.Id, ActiveChatFriend.Id);
 		}
 
-		private async Task ProcessNavigateBackCommandAsync(bool weQuit = false)
+		private async Task ProcessNavigateBackCommandAsync()
 		{
-			if (IsStateRacing)
+			if (State == States.RaceInitializing)
 			{
-				try
-				{
-					await m_consoleSemaphore.WaitAsync();
-					WriteLine();
-					WriteLine();
-					if (weQuit)
-						WriteLine("Ending the race...");
-					else
-						WriteLine($"{ActiveChatFriend.Handle} is ending the race...");
-				}
-				finally
-				{
-					_ = m_consoleSemaphore.Release();
-				}
-
+				WaitWriteLine($"{ActiveChatFriend.Handle} has ended the race.");
 				await MessageLoopAsync();
+			}
+			else if (IsStateRacing)
+			{
+				await SendCommandAsync(CommandNames.InitiateRace, Id, ActiveChatFriend.Id, ActiveChatFriend.Id, MyTableList);
 			}
 		}
 
@@ -1957,18 +1988,9 @@ namespace SignalRConsole
 					{
 						if (complete)
 						{
-							await SendCommandAsync(CommandNames.NavigateBack, Id, ActiveChatFriend.Id, ActiveChatFriend.Id);
-							await SendCommandAsync(CommandNames.NavigateBack, Id, ActiveChatFriend.Id, ActiveChatFriend.Id);
-							if (!IsRaceLeader)
-							{
-								_ = m_consoleSemaphore.Release();
-								await ProcessNavigateBackCommandAsync(weQuit: true);
-							}
-							else
-							{
-								WriteLine();
-							}
-
+							// when the Tables page appears it sends InitiateRace, mimic that
+							m_weQuit= true;
+							await SendCommandAsync(CommandNames.InitiateRace, Id, ActiveChatFriend.Id, ActiveChatFriend.Id);
 							return -4;
 						}
 					}
@@ -2039,30 +2061,39 @@ namespace SignalRConsole
 			}
 		}
 
-		private bool IntersectTables()
+		private bool IntersectTables(bool showTables)
 		{
-			foreach (string line in FormatTableList($"{ActiveChatFriend.Handle} has", OpponentTableList).Split("\r\n"))
-				WriteLogLine(line);
+			int count = m_user.Operators.Count(x => OpponentTableList.Any(y => x.Name == y.Key &&
+				x.Tables.Any(z => y.Value.Contains(z.Base))));
+
+			HaveIntersection = count > 0;
+			if (showTables || !HaveIntersection)
+			{
+				foreach (string line in FormatTableList($"{ActiveChatFriend.Handle} has", OpponentTableList).Split("\r\n"))
+					WriteLogLine(line);
+			}
 
 			if (HaveTables)
 			{
-				foreach (string line in FormatTableList("You have", MyTableList).Split("\n"))
-					WriteLogLine(line);
+				if (showTables)
+				{
+					foreach (string line in FormatTableList("You have", MyTableList).Split("\n"))
+						WriteLogLine(line);
+				}
 
-				int count = m_user.Operators.Count(x => OpponentTableList.Any(y => x.Name == y.Key &&
-					x.Tables.Any(z => y.Value.Contains(z.Base))));
-
-				HaveIntersection = count > 0;
 				if (HaveIntersection)
+				{
+					if (showTables)
+					{
+						WriteLogLine($"You and {ActiveChatFriend.Handle} have {count} {(count == 1 ? "set" : "sets")}" +
+						$" of tables in common.");
+					}
+				}
+				else
 				{
 					WriteLogLine($"You and {ActiveChatFriend.Handle} have no tables in common" +
 						$"{(IsRaceLeader ? " and can't race." : ".")}");
 					return false;
-				}
-				else
-				{
-					WriteLogLine($"You and {ActiveChatFriend.Handle} have {count} {(count == 1 ? "set" : "sets")}" +
-						$" of tables in common.");
 				}
 			}
 			else
@@ -2569,7 +2600,7 @@ namespace SignalRConsole
 		private const int c_logWindowOffset = 2;
 		private const string c_connectionJsonCommand = "{ ?\"Command\":";
 		private readonly TimeSpan c_resultDisplayTime = TimeSpan.FromSeconds(2.0);
-#if false
+#if true
 		// testing: don't time out for four minutes
 		private readonly TimeSpan c_countdownFrom = TimeSpan.FromSeconds(240.0);
 #else
@@ -2580,6 +2611,7 @@ namespace SignalRConsole
 		private User m_user;
 		private States m_state;
 		private bool m_waitForEnter;
+		private bool m_weQuit;
 		private Dictionary<string, List<int>> m_myTables;
 		private int m_myRaceScore;
 		private int m_opponentRaceScore;
