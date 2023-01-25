@@ -1109,38 +1109,21 @@ namespace SignalRConsole
 			return;
 		}
 
-		private async Task ConfirmRaceAsync()
+		private async Task<bool> ConfirmRaceAsync()
 		{
 			Tuple<Point, ConsoleKeyInfo> confirm;
-			States state = State;
-			State = States.RaceInitializing;
-			try
+			EraseLog();
+			_ = IntersectTables(true);
+			confirm = await WriteLogReadKeyAsync($"Hit r to race, c to return to chat... ", () => true, () => false);
+			m_console.SetCursorPosition(confirm.Item1.X, confirm.Item1.Y);
+			if (confirm.Item2.Key != ConsoleKey.R)
 			{
-				await m_consoleSemaphore.WaitAsync();
-				EraseLog();
-				_ = IntersectTables(true);
-				if (state == States.Chatting)
-				{
-					await SendCommandAsync(CommandNames.TableList, Id, ActiveChatFriend.Id, ActiveChatFriend.Id, MyTableList);
-				}
-				else if (state == States.Racing || state == States.RacingWaiting)
-				{
-					await SendCommandAsync(CommandNames.InitiateRace, Id, ActiveChatFriend.Id, ActiveChatFriend.Id, MyTableList);
-					return;
-				}
-
-				confirm = await WriteLogReadKeyAsync($"Hit r to race, c to return to chat... ", () => true, () => false);
-				m_console.SetCursorPosition(confirm.Item1.X, confirm.Item1.Y);
-			}
-			finally
-			{
-				_ = m_consoleSemaphore.Release();
-			}
-
-			if (confirm.Item2.Key == ConsoleKey.R)
-				InitializeScoreboard();
-			else
 				await SendCommandAsync(CommandNames.NavigateBack, Id, ActiveChatFriend.Id, ActiveChatFriend.Id);
+				return false;
+			}
+
+			await SendCommandAsync(CommandNames.StartRace, Id, ActiveChatFriend.Id, ActiveChatFriend.Id);
+			return true;
 		}
 
 		private async Task<bool> CheckRaceCommandAsync()
@@ -1473,7 +1456,8 @@ namespace SignalRConsole
 					}
 					else if (IsRaceLeader)
 					{
-						await SendCommandAsync(CommandNames.StartRace, Id, from, from);
+						if (await ConfirmRaceAsync())
+							newState = States.Racing;
 					}
 				}
 				finally
@@ -1504,7 +1488,8 @@ namespace SignalRConsole
 			else
 			{
 				State = States.RaceInitializing;
-				WriteLine($"{ActiveChatFriend.Handle} is initializing the race...");
+				if (!IsRaceLeader)
+					WriteLine($"{ActiveChatFriend.Handle} is initializing the race...");
 			}
 
 			if (IsRaceLeader)
