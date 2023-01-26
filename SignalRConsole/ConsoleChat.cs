@@ -193,6 +193,8 @@ namespace SignalRConsole
 		public const string c_fileExtension = ".qkr.json";
 		public const string c_leaveChatCommand = "goodbye.";
 		public const string c_raceCommand = "race!";
+		public const string c_quitCommand = "quit";
+		public const string c_resetCommand = "reset";
 		public const string c_tablesCommand = "tables.";
 		public readonly Dictionary<States, string> m_stateLabels = new()
 		{
@@ -1458,6 +1460,8 @@ namespace SignalRConsole
 					{
 						if (await ConfirmRaceAsync())
 							newState = States.Racing;
+						else
+							runMessageLoop = true;
 					}
 				}
 				finally
@@ -1476,26 +1480,37 @@ namespace SignalRConsole
 
 		private async Task ProcessInitiateRaceCommandAsync()
 		{
-			if (IsStateRacing)
+			bool racing = IsStateRacing;
+			State = States.RaceInitializing;
+			if (racing)
 			{
-				State = States.RaceInitializing;
 				WriteLine();
 				if (m_weQuit)
-					WriteLine($"Waiting for {ActiveChatFriend.Handle} to end the race...");
+				{
+					if (!IsRaceLeader)
+						WriteLine($"Waiting for {ActiveChatFriend.Handle} to end the race...");
+				}
 				else
-					WriteLine($"{ActiveChatFriend.Handle} is ending the race...");
+				{
+					if (IsRaceLeader)
+						WriteLine($"{ActiveChatFriend.Handle} would like to end the race...");
+					else
+						WriteLine($"{ActiveChatFriend.Handle} is ending the race...");
+				}
 			}
 			else
 			{
-				State = States.RaceInitializing;
 				if (!IsRaceLeader)
 					WriteLine($"{ActiveChatFriend.Handle} is initializing the race...");
 			}
 
-			if (IsRaceLeader)
-				await SendCommandAsync(CommandNames.TableList, Id, ActiveChatFriend.Id, ActiveChatFriend.Id, MyTableList);
-			else
+			// follower always responds with InitiateRace, leader with TableList--unless follower is quitting
+			if (!IsRaceLeader || racing && !m_weQuit)
 				await SendCommandAsync(CommandNames.InitiateRace, Id, ActiveChatFriend.Id, ActiveChatFriend.Id);
+			else
+				await SendCommandAsync(CommandNames.TableList, Id, ActiveChatFriend.Id, ActiveChatFriend.Id, MyTableList);
+
+			m_weQuit = false;
 		}
 
 		private async Task ProcessStartRaceCommandAsync()
@@ -1969,7 +1984,15 @@ namespace SignalRConsole
 				{
 					await m_consoleSemaphore.WaitAsync();
 					ConsoleKeyInfo keyInfo = Console.ReadKey(true);
-					if (CommandMatch(ref guess, keyInfo, "quit", out bool complete))
+					if (CommandMatch(ref guess, keyInfo, c_resetCommand, out bool complete))
+					{
+						if (complete)
+						{
+							await SendCommandAsync(CommandNames.Reset, Id, ActiveChatFriend.Id, ActiveChatFriend.Id);
+							break;
+						}
+					}
+					else if (CommandMatch(ref guess, keyInfo, c_quitCommand, out complete))
 					{
 						if (complete)
 						{
@@ -1977,14 +2000,6 @@ namespace SignalRConsole
 							m_weQuit= true;
 							await SendCommandAsync(CommandNames.InitiateRace, Id, ActiveChatFriend.Id, ActiveChatFriend.Id);
 							return -4;
-						}
-					}
-					else if (CommandMatch(ref guess, keyInfo, "reset", out complete))
-					{
-						if (complete)
-						{
-							await SendCommandAsync(CommandNames.Reset, Id, ActiveChatFriend.Id, ActiveChatFriend.Id);
-							break;
 						}
 					}
 					else if (int.TryParse(keyInfo.KeyChar.ToString(), out int digit))
@@ -2123,7 +2138,8 @@ namespace SignalRConsole
 			}
 
 			ShowCountdown = true;
-			InitializeScoreboard();
+			if (!IsRaceLeader)
+				InitializeScoreboard();
 		}
 
 		private bool MergeFriends(bool save, User user)
