@@ -41,10 +41,11 @@ namespace SignalRConsole
 			{
 				FactOperator.Division, new Operator
 				{
+					// since Console only creates cards from the RaceCard command, they're just first, second
 					FactOperator = FactOperator.Division,
 					Name = FactOperator.Division.ToString(),
 					Symbol = c_arithmeticDivisionSymbol,
-					Create = (b, c) => new Tuple<int, int>(b * c, b),
+					Create = (b, c) => new Tuple<int, int>(b, c),
 					Compute = (f, s) => f / s,
 					Filter = (t, f) => t.Contains(f.First / f.Second)
 				}
@@ -63,10 +64,11 @@ namespace SignalRConsole
 			{
 				FactOperator.Subtraction, new Operator
 				{
+					// since Console only creates cards from the RaceCard command, they're just first, second
 					FactOperator = FactOperator.Subtraction,
 					Name = FactOperator.Subtraction.ToString(),
 					Symbol = c_arithmeticSubtractionSymbol,
-					Create = (b, c) => new Tuple<int, int>(b + c - 1, b),
+					Create = (b, c) => new Tuple<int, int>(b, c),
 					Compute = (f, s) => f - s,
 					Filter = (t, f) => t.Contains(f.First - f.Second + 1)
 				}
