@@ -85,6 +85,13 @@ namespace SignalRConsole
 		public async Task<int> RunAsync(Harness console)
 		{
 			m_console = console;
+
+#if false
+			// Testing console window limitations, move to the end of the window
+			for (int line = Console.CursorTop; line < Console.BufferHeight; line++)
+				Console.WriteLine($"Moving down, line {line} of {Console.BufferHeight}");
+#endif
+
 			if (!await StartServerAsync())
 				return -1;
 
@@ -2277,6 +2284,7 @@ namespace SignalRConsole
 				await Task.Delay(interval);
 			}
 
+			_ = CheckScrollWindow(LogBottom);
 			m_console.SetCursorPosition(0, LogBottom + 1);
 			return DateTime.Now < timeout;
 		}
@@ -2293,7 +2301,9 @@ namespace SignalRConsole
 			try
 			{
 				m_consoleSemaphore.Wait();
-				EraseLog();
+				if (LogTop > 0)
+					EraseLog();
+
 				if (m_console.ScriptMode < 2)
 				{
 					OutputLine = Harness.CursorTop;
@@ -2601,7 +2611,7 @@ namespace SignalRConsole
 		private const int c_logWindowOffset = 2;
 		private const string c_connectionJsonCommand = "{ ?\"Command\":";
 		private readonly TimeSpan c_resultDisplayTime = TimeSpan.FromSeconds(2.0);
-#if true
+#if false
 		// testing: don't time out for four minutes
 		private readonly TimeSpan c_countdownFrom = TimeSpan.FromSeconds(240.0);
 #else
