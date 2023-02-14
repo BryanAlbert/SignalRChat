@@ -8,9 +8,11 @@ function Get-Descriptions($number)
 {
     if ($null -eq $number)
     {
-        Get-ChildItem . -Recurse QKRTest.psm1 | ForEach-Object `
-	    {
-            Import-Module -DisableNameChecking -Force $_
+    Get-ChildItem .\Test-* -Directory | ForEach-Object `
+    {
+        $testCount++
+        $global:test = Split-Path -Leaf $_
+        Import-Module -DisableNameChecking -Force (Join-Path $_ QKRTest.psm1)
             Get-Description $false
         }
     }
@@ -29,10 +31,10 @@ function Load-Test($number, $discard)
 
     $testPath = Join-Path ".\Test-$number" QKRTest.psm1
 	"Loading $testPath"
+    $global:test = (Split-Path -Parent $testPath).Substring(2)
     if ($null -eq $discard -or $discard -ne $true) {
         Import-Module -DisableNameChecking -Global -Force $testPath
-    }
-    else {
+    } else {
         Import-Module -DisableNameChecking -Force $testPath
     }
 }
@@ -40,8 +42,10 @@ function Load-Test($number, $discard)
 function Reset-Tests
 {
     $testCount = 0
-    Get-ChildItem .\Test-* -Directory | ForEach-Object {
+    Get-ChildItem .\Test-* -Directory | ForEach-Object `
+    {
         $testCount++
+        $global:test = Split-Path -Leaf $_
         Import-Module -DisableNameChecking -Force (Join-Path $_ QKRTest.psm1)
         Reset-Test "All" $false
     }
@@ -58,9 +62,11 @@ function Run-Tests
     $global:warningList = @("Warnings in: ")
     $global:errorList = @("Errors in: ")
     $testCount = 0
-    Get-ChildItem .\Test-* -Directory | ForEach-Object {
+    Get-ChildItem .\Test-* -Directory | ForEach-Object `
+    {
         $testCount++
         Import-Module -DisableNameChecking -Force (Join-Path $_ QKRTest.psm1)
+        $global:test = Split-Path -Leaf $_
         "`nRunning test from: $test"
         Reset-Test $false $false
         Run-Test
@@ -152,3 +158,25 @@ function Update-SignalRConsole
 	Get-ChildItem ..\bin\Debug\net7.0\* -File | Copy-Item -Destination .
 }
 
+function Insert-Test($at)
+{
+    [int] $last = (Get-ChildItem .\Test-* | Select-Object -Last 1).Name.Substring(5)
+    for ($i = $last; $i -ge $at; $i--)
+    {
+        if ($i -lt 10) {
+            $source = ".\Test-0$i"
+        } else {
+            $source = ".\Test-$i"
+        }
+    
+        $j = $i + 1
+        if ($j -lt 10) {
+            $target = ".\Test-0$j"
+        } else {
+            $target = ".\Test-$j"
+        }
+    
+        Write-Host "Renaming $source to $target"
+        Rename-Item $source $target
+    }
+}

@@ -1,25 +1,8 @@
 {
-  "Description": "Existing device with new data, before previously-merged devices with more data are merged.",
+  "Description": "Existing device with data, before merging with existing device and new device.",
   "DataVersion": "1.1",
-  "MergeIndex": {
-    "firste13-9aeb-41dc-aa7a-21d295f8d95d": 0,
-    "third7d6-2399-4557-ba66-4ccbc049e6ad": 1
-  },
-  "Friends": [
-    {
-      "Blocked": false,
-      "BluetoothId": null,
-      "BluetoothDeviceName": null,
-      "DeviceId": "conbruce-7ace-4e26-9e5e-2ac2afc2ead2",
-      "Id": "brucef68-3c37-4aef-b8a6-1649659bbbc4",
-      "Email": "bruce@hotmail.com",
-      "Name": "Bruce Albert",
-      "Handle": "Bruce",
-      "Color": "Red",
-      "Created": "2022-07-06T03:05:12",
-      "Modified": "2022-07-06T03:05:12"
-    }
-  ],
+  "MergeIndex": {},
+  "Friends": [],
   "Operators": [
     {
       "Name": "Multiplication",
@@ -32,133 +15,10 @@
                 "First": 1,
                 "Second": 1
               },
-              "Quizzed": 14,
-              "Correct": 12,
-              "TotalTime": 8902,
-              "BestTime": 518,
-              "MergeQuizzed": [
-                3,
-                4
-              ],
-              "MergeCorrect": [
-                3,
-                3
-              ],
-              "MergeTime": [
-                1744,
-                2325
-              ]
-            },
-            {
-              "Fact": {
-                "First": 1,
-                "Second": 2
-              },
-              "Quizzed": 4,
-              "Correct": 3,
-              "TotalTime": 2192,
-              "BestTime": 661,
-              "MergeQuizzed": null,
-              "MergeCorrect": null,
-              "MergeTime": null
-            },
-            {
-              "Fact": {
-                "First": 1,
-                "Second": 3
-              },
-              "Quizzed": 0,
-              "Correct": 0,
-              "TotalTime": 0,
-              "BestTime": 0,
-              "MergeQuizzed": null,
-              "MergeCorrect": null,
-              "MergeTime": null
-            }
-          ]
-        },
-        {
-          "Base": 2,
-          "Cards": [
-            {
-              "Fact": {
-                "First": 2,
-                "Second": 1
-              },
-              "Quizzed": 5,
-              "Correct": 5,
-              "TotalTime": 4069,
-              "BestTime": 24,
-              "MergeQuizzed": null,
-              "MergeCorrect": null,
-              "MergeTime": null
-            },
-            {
-              "Fact": {
-                "First": 2,
-                "Second": 2
-              },
               "Quizzed": 2,
-              "Correct": 2,
-              "TotalTime": 1595,
-              "BestTime": 787,
-              "MergeQuizzed": null,
-              "MergeCorrect": null,
-              "MergeTime": null
-            },
-            {
-              "Fact": {
-                "First": 2,
-                "Second": 3
-              },
-              "Quizzed": 1,
               "Correct": 1,
-              "TotalTime": 856,
-              "BestTime": 856,
-              "MergeQuizzed": null,
-              "MergeCorrect": null,
-              "MergeTime": null
-            }
-          ]
-        },
-        {
-          "Base": 3,
-          "Cards": [
-            {
-              "Fact": {
-                "First": 3,
-                "Second": 1
-              },
-              "Quizzed": 0,
-              "Correct": 0,
-              "TotalTime": 0,
-              "BestTime": 0,
-              "MergeQuizzed": null,
-              "MergeCorrect": null,
-              "MergeTime": null
-            },
-            {
-              "Fact": {
-                "First": 3,
-                "Second": 2
-              },
-              "Quizzed": 2,
-              "Correct": 2,
-              "TotalTime": 1877,
-              "BestTime": 846,
-              "MergeQuizzed": null,
-              "MergeCorrect": null,
-              "MergeTime": null
-            },
-            {
-              "Fact": {
-                "First": 3,
-                "Second": 3
-              },
-              "Quizzed": 1,
-              "Correct": 0,
-              "TotalTime": 0,
-              "BestTime": 0,
+              "TotalTime": 1162,
+              "BestTime": 520,
               "MergeQuizzed": null,
               "MergeCorrect": null,
               "MergeTime": null
@@ -169,11 +29,11 @@
     }
   ],
   "DeviceId": "second65-1468-4409-a21a-f5b4f000ee4f",
-  "Id": "mia38308-9a9b-4a6b-9db9-9e9b6238283f",
+  "Id": "second65-1468-4409-a21a-f5b4f000ee4f",
   "Email": "mia@albertnet.us",
   "Name": "Mia Albert",
   "Handle": "Mia",
   "Color": "Turquoise",
   "Created": "2022-07-08T03:43:05",
-  "Modified": "2022-09-12T16:51:11"
+  "Modified": "2022-09-10T20:49:39"
 }

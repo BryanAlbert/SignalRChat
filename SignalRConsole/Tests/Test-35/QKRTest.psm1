@@ -1,8 +1,6 @@
-$global:test = "Test-35"
-
 function Get-Description($verbose)
 {
-	"`n${test}: Leader goes away and follower disconnects
+	"`n${test}: Follower goes away and leader disconnects
 	
 	Bruce online, Fred online, Bruce initiates chat, Fred goes away, Bruce
 	disconnects, exits, Fred exits.`n"
@@ -15,14 +13,15 @@ function Get-Description($verbose)
 	ResetQKR  Delete json files from QKR's LocalState folder
 	QKR       Configure for testing QKR
 	
-	To test QKR, run Reset-Test QKR then run Start-TestFor Bruce and Connect with
-	Internet as Fred on QKR. When Bruce goes away, disconnect on QKR, verifying that
-	Bruce disconnects and exits, then pop to Home.
-
-	Next Connect Internet as Bruce on QKR, run Start-TestFor Fred, connect with Fred
-	on QKR and tap Tables. When Fred disconnects (status is Listening on Console),
-	pop back to Internet Connect, verify that we're no longer chatting and pop to
-	Home. Verify that Fred exits and clsoe QKR. Test results with Check-Test `$true.`n"
+	To test QKR, run Reset-Test QKR then run Start-TestFor Bruce, Connect Internet
+	as Fred on QKR and when Bruce says, 'Yo.', tap Tables. When Bruce exits in the
+	Console, pop back to Internet Connect and verify that QKR disconnects, showing
+	Fred offline, then pop back to Home.
+		
+	Next Connect Internet as Bruce on QKR and run Start-TestFor Fred. Connect to
+	Fred on QKR and send the message 'Yo.' When Fred goes away, disconnect, pop
+	back to Home, verifying that Fred exits, and close QKR. Test results with
+	Check-Test `$true.`n"
 	}
 }
 

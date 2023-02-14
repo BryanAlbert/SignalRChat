@@ -1,6 +1,6 @@
 Fred
->wait-for: Bruce is away...
-go away.
+>wait-for: You have no tables.
+Tables.
 >wait-for: Bruce has returned!
 R
 >wait-for: Bruce said: Yo.

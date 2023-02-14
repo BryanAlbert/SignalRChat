@@ -1,20 +1,20 @@
 Initializing server and connecting to URL: https://localhost:5001/chathub
 What is your handle (nickname)? 
 Mia
-Name: Mia Albert, Email: mia@albertnet.us, Favorite color: Turquoise,
-Id: mia38308-9a9b-4a6b-9db9-9e9b6238283f,
+Name: Mia Albert, Email: mia@albertnet.us, Favorite color: Yellow,
+Id: third7d6-2399-4557-ba66-4ccbc049e6ad,
 Device Id: third7d6-2399-4557-ba66-4ccbc049e6ad,
-Creation Date: 2022-07-18T21:10:09, Modified Date: 2022-09-12T16:51:10
+Creation Date: 2022-07-18T21:10:09, Modified Date: 2022-09-10T20:49:56
 Pick a command: t to list tables, a to add a friend, l to list friends,
 u to unfriend a friend, c to chat, or x to exit
 Listening>
 (Sent Hello null command to Mia.)
 Mia is online on device second65-1468-4409-a21a-f5b4f000ee4f, sending merge data...
 Mia is online on device firste13-9aeb-41dc-aa7a-21d295f8d95d, sending merge data...
+Merging data from Mia, Id mia38308-9a9b-4a6b-9db9-9e9b6238283f, on device second65-1468-4409-a21a-f5b4f000ee4f...
+Merged data from Mia on device second65-1468-4409-a21a-f5b4f000ee4f.
 Merging data from Mia on device firste13-9aeb-41dc-aa7a-21d295f8d95d...
 Merged data from Mia on device firste13-9aeb-41dc-aa7a-21d295f8d95d.
-Merging data from Mia on device second65-1468-4409-a21a-f5b4f000ee4f...
-Merged data from Mia on device second65-1468-4409-a21a-f5b4f000ee4f.
 L
 Friends:
 Bruce, Bruce Albert, bruce@hotmail.com, Favorite Color: Red,
@@ -33,207 +33,21 @@ Tables json:
               "First": 1,
               "Second": 1
             },
-            "Quizzed": 28,
-            "Correct": 25,
-            "TotalTime": 18279,
-            "BestTime": 303,
+            "Quizzed": 9,
+            "Correct": 7,
+            "TotalTime": 5231,
+            "BestTime": 518,
             "MergeQuizzed": [
-              7,
-              7
-            ],
-            "MergeCorrect": [
-              6,
-              7
-            ],
-            "MergeTime": [
-              4833,
-              4745
-            ]
-          },
-          {
-            "Fact": {
-              "First": 1,
-              "Second": 2
-            },
-            "Quizzed": 6,
-            "Correct": 4,
-            "TotalTime": 2853,
-            "BestTime": 661,
-            "MergeQuizzed": [
-              4,
-              2
-            ],
-            "MergeCorrect": [
-              3,
-              1
-            ],
-            "MergeTime": [
-              2192,
-              661
-            ]
-          },
-          {
-            "Fact": {
-              "First": 1,
-              "Second": 3
-            },
-            "Quizzed": 0,
-            "Correct": 0,
-            "TotalTime": 0,
-            "BestTime": 0,
-            "MergeQuizzed": [
-              0,
-              0
-            ],
-            "MergeCorrect": [
-              0,
-              0
-            ],
-            "MergeTime": [
-              0,
-              0
-            ]
-          }
-        ]
-      },
-      {
-        "Base": 2,
-        "Cards": [
-          {
-            "Fact": {
-              "First": 2,
-              "Second": 1
-            },
-            "Quizzed": 8,
-            "Correct": 8,
-            "TotalTime": 6591,
-            "BestTime": 24,
-            "MergeQuizzed": [
-              5,
+              2,
               3
             ],
             "MergeCorrect": [
-              5,
+              1,
               3
             ],
             "MergeTime": [
-              4069,
-              2522
-            ]
-          },
-          {
-            "Fact": {
-              "First": 2,
-              "Second": 2
-            },
-            "Quizzed": 3,
-            "Correct": 3,
-            "TotalTime": 2403,
-            "BestTime": 787,
-            "MergeQuizzed": [
-              2,
-              1
-            ],
-            "MergeCorrect": [
-              2,
-              1
-            ],
-            "MergeTime": [
-              1595,
-              808
-            ]
-          },
-          {
-            "Fact": {
-              "First": 2,
-              "Second": 3
-            },
-            "Quizzed": 1,
-            "Correct": 1,
-            "TotalTime": 856,
-            "BestTime": 856,
-            "MergeQuizzed": [
-              1,
-              0
-            ],
-            "MergeCorrect": [
-              1,
-              0
-            ],
-            "MergeTime": [
-              856,
-              0
-            ]
-          }
-        ]
-      },
-      {
-        "Base": 3,
-        "Cards": [
-          {
-            "Fact": {
-              "First": 3,
-              "Second": 1
-            },
-            "Quizzed": 0,
-            "Correct": 0,
-            "TotalTime": 0,
-            "BestTime": 0,
-            "MergeQuizzed": [
-              0,
-              0
-            ],
-            "MergeCorrect": [
-              0,
-              0
-            ],
-            "MergeTime": [
-              0,
-              0
-            ]
-          },
-          {
-            "Fact": {
-              "First": 3,
-              "Second": 2
-            },
-            "Quizzed": 2,
-            "Correct": 2,
-            "TotalTime": 1877,
-            "BestTime": 846,
-            "MergeQuizzed": [
-              2,
-              0
-            ],
-            "MergeCorrect": [
-              2,
-              0
-            ],
-            "MergeTime": [
-              1877,
-              0
-            ]
-          },
-          {
-            "Fact": {
-              "First": 3,
-              "Second": 3
-            },
-            "Quizzed": 1,
-            "Correct": 0,
-            "TotalTime": 0,
-            "BestTime": 0,
-            "MergeQuizzed": [
-              1,
-              0
-            ],
-            "MergeCorrect": [
-              0,
-              0
-            ],
-            "MergeTime": [
-              0,
-              0
+              1162,
+              1744
             ]
           }
         ]

@@ -1,0 +1,12 @@
+Fred
+# so that we don't crash by exiting too quickly while initializing with the server
+>wait-for: (Sent Hello null command to Fred.)
+A
+Bruce
+bruce@hotmail.com
+A
+Mom
+jeanmariealbert@hotmail.com
+>wait-for: Your friend Bruce is offline.
+L
+X

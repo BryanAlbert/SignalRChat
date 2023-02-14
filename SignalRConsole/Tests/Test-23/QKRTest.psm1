@@ -1,10 +1,8 @@
-$global:test = "Test-23"
-
 function Get-Description($verbose)
 {
-	"`n${test}: After initial merge, merge more data from Old
+	"`n${test}: After initial merge, merge more data from New
 	
-	Old Mia online, New Mia comes online, merges, lists, exits, Old merges, lists, exits.	`n"
+	Old Mia online, New Mia comes online, merges, lists, exits, Old merges, lists, exits.`n"
 
 	if ($null -eq $verbose -or $verbose)
 	{
@@ -16,8 +14,8 @@ function Get-Description($verbose)
 	New       Configure QKR with New json file
 
 	To test QKR, run Reset-Test New, run Start-TestFor Old then Connect Internet as Mia on
-	QKR. Pop back to Home and verify that Mia is turquoise and that the console exits, then
-	close QKR. Check preliminary results with Check-Test New.
+	QKR. Verify that QKR gets friend Bruce, pop back to Home and verify that Mia is turquoise
+	and that the console exits, then close QKR. Check preliminary results with Check-Test New.
 	
 	Next, run Reset-Test Old, Connect Internet as Mia on QKR then run Start-TestFor New. Pop
 	back to Home and verify that Mia is turquoise and that the console exits, then close QKR.

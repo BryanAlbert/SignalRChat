@@ -1,0 +1,5 @@
+Bruce
+>wait-for: (Sent Hello null command to Bruce.)
+>wait-for: You and Fred are now friends!
+L
+X

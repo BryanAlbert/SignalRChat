@@ -1,4 +1,5 @@
-test-harness Bruce adds Fred, offline, Fred online, add Bruce, Bruce online
-start-wait BruceInput1.txt BruceOutput.txt Bruce
-start-wait-for: "A friend request has been sent to Bruce." FredInput.txt FredOutput.txt Fred
+test-harness Bruce friend, Fred online, Bruce unfriend, Fred answers Y
+start-wait-for: "A friend request has been sent to Fred." BruceInput1.txt BruceOutput.txt Bruce
+start-wait FredInput1.txt FredOutput.txt Fred
+start FredInput2.txt FredOutput.txt Fred
 start BruceInput2.txt BruceOutput.txt Bruce

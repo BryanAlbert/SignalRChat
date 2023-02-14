@@ -1,11 +1,9 @@
-$global:test = "Test-38"
-
 function Get-Description($verbose)
 {
-	"`n${test}: Leader goes away, follower goes away, leader returns, disconnects
+	"`n${test}: Follower goes away, leader goes away, returns, disconnects
 	
-	Bruce online, Fred online, Bruce initiates chat, goes away, Fred goes away,
-	Bruce returns, disconnects, exits, Fred exits.`n"
+	Bruce online, Fred online, Bruce initiates chat, Fred goes away, Bruce goes
+	away, returns, disconnects, exits, Fred exits.`n"
 
 	if ($null -eq $verbose -or $verbose)
 	{
@@ -16,15 +14,14 @@ function Get-Description($verbose)
 	QKR       Configure for testing QKR
 	
 	To test QKR, run Reset-Test QKR then run Start-TestFor Bruce, Connect Internet
-	as Fred on QKR, and when Bruce goes away, tap Tables. Verify that Bruce disconnects
+	as Fred on QKR, and tap Tables when Bruce says, 'Yo.' Verify that Bruce disconnects
 	and exits, then pop back to Internet Connect, verify that Bruce is offline and pop
-	back to Home. 
+	back to Home.
 		
 	Next Connect Internet as Bruce on QKR and run Start-TestFor Fred. Connect to Fred
-	on QKR, tap Tables, and when Fred goes away (Console status is Both Away), pop back
-	to Internet Connect. Disconnect, verifying that Bruce has disconnected (Console
-	status is Listening), pop to Home and verify that Bruce exits, then close QKR. Test
-	results with Check-Test `$true.`n"
+	on QKR, send 'Yo.', and when Fred goes away, tap Tables. Pop back to Internet
+	Connect and disconnect, verifying that Fred's status is Listening, then pop back
+	to Home. Verify that Fred exits and close QKR. Test results with Check-Test `$true.`n"
 	}
 }
 

@@ -9,7 +9,21 @@
   "Created": "2022-06-06T19:03:42",
   "Modified": "2022-06-06T19:03:42",
   "MergeIndex": {},
-  "Friends": [],
+  "Friends": [
+    {
+      "Id": "brucef68-3c37-4aef-b8a6-1649659bbbc4",
+      "DeviceId": "qkrbruce-7ace-4e26-9e5e-2ac2afc2ead2",
+      "Email": "bruce@hotmail.com",
+      "Name": "Bruce Albert",
+      "Handle": "Bruce",
+      "Color": "Red",
+      "Created": "2022-06-06T19:03:41",
+      "Modified": "2022-06-06T19:03:41",
+      "Blocked": false,
+      "BluetoothId": null,
+      "BluetoothDeviceName": null
+    }
+  ],
   "Operators": [
     {
       "Name": "Addition",

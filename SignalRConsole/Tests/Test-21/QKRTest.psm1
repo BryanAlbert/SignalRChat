@@ -1,11 +1,9 @@
-$global:test = "Test-21"
-
 function Get-Description($verbose)
 {
-	"`n${test}: Merging old account with no tables with new account with tables
+	"`n${test}: Merging old account with tables with a new, empty account
 	
 	Old Mia online, New Mia comes online, merges, lists, exits, Old merges, lists, exits.`n"
-
+	
 	if ($null -eq $verbose -or $verbose)
 	{
 	"`tRun Reset-Test with one of the following arguments to reset and/or configure:
@@ -16,12 +14,13 @@ function Get-Description($verbose)
 	New       Configure QKR with New json file
 
 	To test QKR, run Reset-Test New, run Start-TestFor Old then Connect Internet as Mia on
-	QKR. Pop back to Home and verify that Mia is turquoise and that the console exits, then
-	close QKR. Check preliminary results with Check-Test New.
+	QKR. Verify that Mia has friend Bruce, pop back to Home and verify that Mia is now red
+	and that the console exits, then close QKR. Check preliminary results with Check-Test New.
 	
-	Next, run Reset-Test Old, Connect Internet as Mia on QKR then run Start-TestFor New. Pop
-	back to Home and verify that Mia is turquoise and that the console exits, then close QKR.
-	Check results with Check-Test Old.`n"
+	Next, run Reset-Test Old, launch QKR, log in as Mia and note that Mia is turquoise.
+	Connect Internet as Mia then run Start-TestFor New. Pop back to Home and verify that
+	Mia is yellow and that the console exits, then close QKR. check results with
+	Check-Test Old.`n"
 	}
 }
 
@@ -40,7 +39,7 @@ function Reset-Test($reset, $showDescription)
 			"Resetting Console..."
 			Remove-Files .\Old\Output.txt, .\New\Output.txt
 			Copy-Item .\New\Mia.qkr .\New\Mia.qkr.json
-			Copy-Item .\Old\Mia.qkr .\Old\Mia.qkr.json
+			Copy-Item .\Old\Mia.qkr .\Old\Mia.qkr.json 
 		}
 		"ResetQKR"
 		{
@@ -58,7 +57,7 @@ function Reset-Test($reset, $showDescription)
 		{
 			"Configuring for testing New on QKR at $global:qkrLocalState"
 			Remove-Files $oldPath, $newPath, .\Old\Output.txt
-			Copy-Item .\Old\Mia.qkr .\Old\Mia.qkr.json
+			Copy-Item .\Old\Mia.qkr .\Old\Mia.qkr.json 
 			Copy-Item .\New\Mia-qkrnew65-1468-4409-a21a-f5b4f000ee4f.qkr $newPath
 		}
 		Default
@@ -66,7 +65,7 @@ function Reset-Test($reset, $showDescription)
 			"Resetting all..."
 			Remove-Files $oldPath, $newPath, .\Old\Output.txt, .\New\Output.txt
 			Copy-Item .\New\Mia.qkr .\New\Mia.qkr.json
-			Copy-Item .\Old\Mia.qkr .\Old\Mia.qkr.json
+			Copy-Item .\Old\Mia.qkr .\Old\Mia.qkr.json 
 		}
 	}
 	

@@ -4,20 +4,11 @@ Fred
 Name: Fred Sanson, Email: fred@gmail.com, Favorite color: Green,
 Id: fredac24-3f25-41e0-84f2-3f34f54d072e,
 Device Id: confred2-7ace-4e26-9e5e-2ac2afc2ead2,
-Creation Date: 2022-06-06T19:03:42, Modified Date: 2022-09-01T19:43:55
+Creation Date: 2022-06-06T19:03:42, Modified Date: 2022-08-31T20:43:00
 Pick a command: t to list tables, a to add a friend, l to list friends,
 u to unfriend a friend, c to chat, or x to exit
 Listening>
 (Sent Hello null command to Fred.)
-(Sent Hello False command to Bruce.)
-U
-Busy>
-Friends:
-0: Bruce
-Whom would you like to unfriend (number, Enter to abort): 
-0
-Bruce has been unfriended.
-Listening>
 A
 Busy>
 What is your friend's handle? 
@@ -28,10 +19,9 @@ A friend request has been sent to Bruce.
 Listening>
 Your (pending) friend Bruce is online.
 You and Bruce are now friends!
-Your friend Bruce is offline.
 L
 Friends:
 Bruce, Bruce Albert, bruce@hotmail.com, Favorite Color: Red,
-   Created: 2022-06-06T19:03:41 Modified: 2022-12-06T23:26:28
+   Created: 2022-06-06T19:03:41 Modified: 2023-02-14T19:19:36 (online)
 X
 Finished.

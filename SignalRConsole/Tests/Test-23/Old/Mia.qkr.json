@@ -1,5 +1,5 @@
 {
-  "Description": "After first merge, has new data to be merged.",
+  "Description": "After first merge, new has new data to be merged into these data, including one friend.",
   "DataVersion": "1.1",
   "MergeIndex": {
     "xxxnew65-1468-4409-a21a-f5b4f000ee4f": 0
@@ -58,9 +58,9 @@
                 "First": 1,
                 "Second": 2
               },
-              "Quizzed": 4,
-              "Correct": 4,
-              "TotalTime": 3041,
+              "Quizzed": 3,
+              "Correct": 3,
+              "TotalTime": 2346,
               "BestTime": 692,
               "MergeQuizzed": [
                 0
@@ -71,19 +71,6 @@
               "MergeTime": [
                 0
               ]
-            },
-            {
-              "Fact": {
-                "First": 1,
-                "Second": 3
-              },
-              "Quizzed": 2,
-              "Correct": 2,
-              "TotalTime": 1397,
-              "BestTime": 670,
-              "MergeQuizzed": null,
-              "MergeCorrect": null,
-              "MergeTime": null
             }
           ]
         },
@@ -95,9 +82,9 @@
                 "First": 2,
                 "Second": 1
               },
-              "Quizzed": 4,
-              "Correct": 4,
-              "TotalTime": 2437,
+              "Quizzed": 3,
+              "Correct": 3,
+              "TotalTime": 1770,
               "BestTime": 542,
               "MergeQuizzed": [
                 0
@@ -114,9 +101,9 @@
                 "First": 2,
                 "Second": 2
               },
-              "Quizzed": 2,
-              "Correct": 2,
-              "TotalTime": 2407,
+              "Quizzed": 1,
+              "Correct": 1,
+              "TotalTime": 1532,
               "BestTime": 532,
               "MergeQuizzed": [
                 0
@@ -127,63 +114,6 @@
               "MergeTime": [
                 0
               ]
-            },
-            {
-              "Fact": {
-                "First": 2,
-                "Second": 3
-              },
-              "Quizzed": 1,
-              "Correct": 1,
-              "TotalTime": 579,
-              "BestTime": 579,
-              "MergeQuizzed": null,
-              "MergeCorrect": null,
-              "MergeTime": null
-            }
-          ]
-        },
-        {
-          "Base": 3,
-          "Cards": [
-            {
-              "Fact": {
-                "First": 3,
-                "Second": 1
-              },
-              "Quizzed": 1,
-              "Correct": 1,
-              "TotalTime": 880,
-              "BestTime": 880,
-              "MergeQuizzed": null,
-              "MergeCorrect": null,
-              "MergeTime": null
-            },
-            {
-              "Fact": {
-                "First": 3,
-                "Second": 2
-              },
-              "Quizzed": 1,
-              "Correct": 1,
-              "TotalTime": 1125,
-              "BestTime": 125,
-              "MergeQuizzed": null,
-              "MergeCorrect": null,
-              "MergeTime": null
-            },
-            {
-              "Fact": {
-                "First": 3,
-                "Second": 3
-              },
-              "Quizzed": 1,
-              "Correct": 1,
-              "TotalTime": 880,
-              "BestTime": 880,
-              "MergeQuizzed": null,
-              "MergeCorrect": null,
-              "MergeTime": null
             }
           ]
         }
@@ -201,5 +131,5 @@
   "Handle": "Mia",
   "Color": "Turquoise",
   "Created": "2022-06-27T23:00:00",
-  "Modified": "2022-07-08T05:10:50"
+  "Modified": "2022-09-07T22:16:51"
 }

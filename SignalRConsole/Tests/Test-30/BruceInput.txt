@@ -3,10 +3,6 @@ Bruce
 C
 0
 >wait-for: You have no tables and can't race.
-go away.
->wait-for: Fred has returned!
-R
->wait-for: You have no tables and can't race.
 Yo.
 >wait-for: Fred said: Bye now!
 goodbye.

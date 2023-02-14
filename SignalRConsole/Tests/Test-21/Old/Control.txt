@@ -4,7 +4,7 @@ Mia
 Name: Mia Albert, Email: mia@albertnet.us, Favorite color: Turquoise,
 Id: mia38308-9a9b-4a6b-9db9-9e9b6238283f,
 Device Id: conmia08-9a9b-4a6b-9db9-9e9b6238283f,
-Creation Date: 2022-06-27T23:00:00, Modified Date: 2022-09-06T22:16:19
+Creation Date: 2022-06-27T23:00:00, Modified Date: 2022-09-02T04:21:28
 Pick a command: t to list tables, a to add a friend, l to list friends,
 u to unfriend a friend, c to chat, or x to exit
 Listening>
@@ -44,13 +44,13 @@ Tables json:
             "TotalTime": 1744,
             "BestTime": 518,
             "MergeQuizzed": [
-              3
+              0
             ],
             "MergeCorrect": [
-              3
+              0
             ],
             "MergeTime": [
-              1744
+              0
             ]
           },
           {
@@ -63,13 +63,13 @@ Tables json:
             "TotalTime": 2346,
             "BestTime": 692,
             "MergeQuizzed": [
-              3
+              0
             ],
             "MergeCorrect": [
-              3
+              0
             ],
             "MergeTime": [
-              2346
+              0
             ]
           }
         ]
@@ -87,13 +87,13 @@ Tables json:
             "TotalTime": 1770,
             "BestTime": 542,
             "MergeQuizzed": [
-              3
+              0
             ],
             "MergeCorrect": [
-              3
+              0
             ],
             "MergeTime": [
-              1770
+              0
             ]
           },
           {
@@ -106,13 +106,13 @@ Tables json:
             "TotalTime": 1532,
             "BestTime": 532,
             "MergeQuizzed": [
-              1
+              0
             ],
             "MergeCorrect": [
-              1
+              0
             ],
             "MergeTime": [
-              1532
+              0
             ]
           }
         ]

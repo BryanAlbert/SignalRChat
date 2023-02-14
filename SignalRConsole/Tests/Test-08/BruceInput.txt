@@ -1,0 +1,9 @@
+Bruce
+# so that we don't crash by exiting too quickly while initializing with the server
+>wait-for: (Sent Hello null command to Bruce.)
+A
+Mom
+jeanmariealbert@hotmail.com
+>wait-for: You and Mom are now friends!
+L
+X

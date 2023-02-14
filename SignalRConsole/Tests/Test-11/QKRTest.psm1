@@ -1,10 +1,8 @@
-$global:test = "Test-11"
-
 function Get-Description($verbose)
 {
-	"`n${test}: Bruce blocked by Fred, adds Fred
+	"`n${test}: Bruce pending friends with Fred, adds Fred
 
-	Bruce blocked by Fred, comes online, adds Fred, gets a message,
+	Bruce pending friendship with Fred, comes online and adds Fred, gets a message,
 	lists and goes offline.`n"
 
 	if ($null -eq $verbose -or $verbose)
@@ -15,8 +13,9 @@ function Get-Description($verbose)
 	ResetQKR  Delete json files from QKR's LocalState folder
 	QKR       Configure for testing QKR
 	
-	To test QKR, run Reset-Test QKR then Connect Internet as Bruce on QKR and add Fred
-	(fred@gmail.com), verify message and close QKR. Check results with Check-Test `$test.`n"
+	To test QKR, run Reset-Test QKR then Connect Internet as Bruce on QKR and add
+	Fred, (fred@gmail.com), verify the status message and close QKR. Check results
+	with Check-Test `$true.`n"
 	}
 }
 

@@ -1,5 +1,3 @@
-$global:test = "Test-05"
-
 function Get-Description($verbose)
 {
 	"`n${test}: Bruce adds Fred and goes offline before Fred accepts

@@ -1,11 +1,9 @@
-$global:test = "Test-12"
-
 function Get-Description($verbose)
 {
-	"`n${test}: Bruce adds Fred, Fred says NO!
+	"`n${test}: Bruce blocked by Fred, adds Fred
 
-	Fred comes online, Bruce comes online, adds Fred, Fred declines,
-	both list and exit.`n"
+	Bruce blocked by Fred, comes online, adds Fred, gets a message,
+	lists and goes offline.`n"
 
 	if ($null -eq $verbose -or $verbose)
 	{
@@ -15,12 +13,8 @@ function Get-Description($verbose)
 	ResetQKR  Delete json files from QKR's LocalState folder
 	QKR       Configure for testing QKR
 	
-	To test QKR, run Reset-Test QKR then run Start-TestFor Fred. Connect Internet as
-	Bruce on QKR, add Fred (fred@gmail.com), check the Status message and pop to Home.
-	
-	Next, Connect Internet as Fred on QKR and run Start-TestFor Bruce in the console.
-	Deny the friend request in QKR, check the Status message, close QKR and verify that
-	Bruce exits. Run Check-Test `$true to validate the test.`n"
+	To test QKR, run Reset-Test QKR then Connect Internet as Bruce on QKR and add Fred
+	(fred@gmail.com), verify message and close QKR. Check results with Check-Test `$test.`n"
 	}
 }
 
@@ -29,39 +23,34 @@ function Reset-Test($reset, $showDescription)
 	"Resetting $test"
 	Push-Location $test
 	$brucePath = Join-Path $global:qkrLocalState Bruce-brucef68-3c37-4aef-b8a6-1649659bbbc4.json
-	$fredPath = Join-Path $global:qkrLocalState Fred-fredac24-3f25-41e0-84f2-3f34f54d072e.json
 	switch ($reset)
 	{
 		"Console"
 		{
 			"Resetting Console..."
-			Remove-Files .\BruceOutput.txt, .\FredOutput.txt
+			Remove-Files .\BruceOutput.txt
 			Copy-Item .\Bruce.qkr .\Bruce.qkr.json
-			Copy-Item .\Fred.qkr .\Fred.qkr.json
 		}
 		"ResetQKR"
 		{
 			"Resetting QKR"
-			Remove-Files $brucePath, $fredPath
+			Remove-Files $brucePath
 		}
 		"QKR"
 		{
 			"Configuring for QKR testing at: $global:qkrLocalState"
-			Remove-Files .\BruceOutput.txt, .\FredOutput.txt, $brucePath, $fredPath
+			Remove-Files .\BruceOutput.txt, $brucePath
 			Copy-Item .\Bruce.qkr .\Bruce.qkr.json
-			Copy-Item .\Fred.qkr .\Fred.qkr.json
 			Copy-Item .\Bruce-brucef68-3c37-4aef-b8a6-1649659bbbc4.qkr $brucePath
-			Copy-Item .\Fred-fredac24-3f25-41e0-84f2-3f34f54d072e.qkr $fredPath
 		}
 		Default
 		{
 			"Resetting all..."
-			Remove-Files .\BruceOutput.txt, .\FredOutput.txt, $brucePath, $fredPath
+			Remove-Files .\BruceOutput.txt, $brucePath
 			Copy-Item .\Bruce.qkr .\Bruce.qkr.json
-			Copy-Item .\Fred.qkr .\Fred.qkr.json 
 		}
 	}
-	
+
 	Pop-Location
 	if ($null -eq $showDescription -or $showDescription) {
 		Get-Description ($reset -eq "ResetQKR" -or $reset -eq "QKR" -or $reset -eq "All" -or $null -eq $reset)
@@ -98,17 +87,16 @@ function Check-Test($checkQkr)
 	Push-Location $test
 	$script:warningCount = 0
 	$script:errorCount = 0
-	Compare-Files .\Bruce.control.qkr .\Bruce.qkr.json 2
-	Compare-Files .\Fred.control.qkr .\Fred.qkr.json 2
 	
 	if ($null -eq $checkQkr -or $checkQkr)
 	{
 		Compare-Files .\Bruce-brucef68-3c37-4aef-b8a6-1649659bbbc4.control.qkr (Join-Path $global:qkrLocalState Bruce-brucef68-3c37-4aef-b8a6-1649659bbbc4.json) 2
-		Compare-Files .\Fred-fredac24-3f25-41e0-84f2-3f34f54d072e.control.qkr (Join-Path $global:qkrLocalState Fred-fredac24-3f25-41e0-84f2-3f34f54d072e.json) 2
 	}
-
-	Compare-Files .\BruceControl.txt .\BruceOutput.txt 1
-	Compare-Files .\FredControl.txt .\FredOutput.txt 1
+	else
+	{
+		Compare-Files .\Bruce.control.qkr .\Bruce.qkr.json 2
+		Compare-Files .\BruceControl.txt .\BruceOutput.txt 1
+	}
 
 	"Warning count: $script:warningCount"
 	"Error count: $script:errorCount"
@@ -124,15 +112,12 @@ function Update-ControlFiles($updateQkr)
 	{
 		"Updating QKR control files for $test from $global:qkrLocalState"
 		Copy-Item (Join-Path $global:qkrLocalState Bruce-brucef68-3c37-4aef-b8a6-1649659bbbc4.json) .\Bruce-brucef68-3c37-4aef-b8a6-1649659bbbc4.control.qkr 
-		Copy-Item (Join-Path $global:qkrLocalState Fred-fredac24-3f25-41e0-84f2-3f34f54d072e.json) .\Fred-fredac24-3f25-41e0-84f2-3f34f54d072e.control.qkr 
 	}
 	else
 	{
 		"Updating control files for $test"
 		Copy-Item .\BruceOutput.txt .\BruceControl.txt
-		Copy-Item .\FredOutput.txt .\FredControl.txt
 		Copy-Item .\Bruce.qkr.json .\Bruce.control.qkr
-		Copy-Item .\Fred.qkr.json .\Fred.control.qkr
 	}
 	
 	Pop-Location

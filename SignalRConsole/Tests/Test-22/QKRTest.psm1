@@ -1,8 +1,6 @@
-$global:test = "Test-22"
-
 function Get-Description($verbose)
 {
-	"`n${test}: After initial merge, merge more data from New
+	"`n${test}: Merging old account with no tables with new account with tables
 	
 	Old Mia online, New Mia comes online, merges, lists, exits, Old merges, lists, exits.`n"
 
@@ -16,8 +14,8 @@ function Get-Description($verbose)
 	New       Configure QKR with New json file
 
 	To test QKR, run Reset-Test New, run Start-TestFor Old then Connect Internet as Mia on
-	QKR. Verify that QKR gets friend Bruce, pop back to Home and verify that Mia is turquoise
-	and that the console exits, then close QKR. Check preliminary results with Check-Test New.
+	QKR. Pop back to Home and verify that Mia is turquoise and that the console exits, then
+	close QKR. Check preliminary results with Check-Test New.
 	
 	Next, run Reset-Test Old, Connect Internet as Mia on QKR then run Start-TestFor New. Pop
 	back to Home and verify that Mia is turquoise and that the console exits, then close QKR.
@@ -30,7 +28,8 @@ function Reset-Test($reset, $showDescription)
 	"Resetting $test"
 	Push-Location $test
 	
-	$oldPath = $newPath = Join-Path $global:qkrLocalState Mia-mia38308-9a9b-4a6b-9db9-9e9b6238283f.json
+	$oldPath = Join-Path $global:qkrLocalState Mia-mia38308-9a9b-4a6b-9db9-9e9b6238283f.json
+	$newPath = Join-Path $global:qkrLocalState Mia-qkrnew65-1468-4409-a21a-f5b4f000ee4f.json
 	
 	switch ($reset)
 	{
@@ -39,7 +38,7 @@ function Reset-Test($reset, $showDescription)
 			"Resetting Console..."
 			Remove-Files .\Old\Output.txt, .\New\Output.txt
 			Copy-Item .\New\Mia.qkr .\New\Mia.qkr.json
-			Copy-Item .\Old\Mia.qkr .\Old\Mia.qkr.json 
+			Copy-Item .\Old\Mia.qkr .\Old\Mia.qkr.json
 		}
 		"ResetQKR"
 		{
@@ -58,7 +57,7 @@ function Reset-Test($reset, $showDescription)
 			"Configuring for testing New on QKR at $global:qkrLocalState"
 			Remove-Files $oldPath, $newPath, .\Old\Output.txt
 			Copy-Item .\Old\Mia.qkr .\Old\Mia.qkr.json
-			Copy-Item .\New\Mia-mia38308-9a9b-4a6b-9db9-9e9b6238283f.qkr $newPath
+			Copy-Item .\New\Mia-qkrnew65-1468-4409-a21a-f5b4f000ee4f.qkr $newPath
 		}
 		Default
 		{
@@ -225,10 +224,10 @@ function Get-FilteredText($file, $merge)
 			if ($_ -match "`"Created`": `".{19}`",") {
 				$_ -replace ".{19}`",$", "<Date>`""
 			}
-			elseif ($_ -match "`"DeviceId`": `"(con|qkr|xxx)(mia|new)[a-f0-9]{2}-[a-f0-9]{4}-[a-fel0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}`"") {
+			elseif ($_ -match "`"DeviceId`": `"(con|qkr)(mia|new)[a-f0-9]{2}-[a-f0-9]{4}-[a-fel0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}`"") {
 				($_ -replace "`"DeviceId`": ", "  " -replace ",", "")
 			}
-			elseif ($_ -match "`"(con|qkr|xxx)(mia|new)[a-f0-9]{2}-[a-f0-9]{4}-[a-fel0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}`": [0-9]") {
+			elseif ($_ -match "`"(con|qkr)(mia|new)[a-f0-9]{2}-[a-f0-9]{4}-[a-fel0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}`": [0-9]") {
 				($_ -replace ": [0-9]", "")
 			}
 			elseif ($_ -match "`"BluetoothDeviceName`": null,") {

@@ -25,15 +25,23 @@ Division: (None)
 You have no tables and can't race.
 Chatting>
 You're the Race Leader!
-Type messages, type 'go away.' to go away,  or 'goodbye.' to leave the chat.
-Go away.
-(You went away)
-Away>
-You are away, hit a key to return... 
-Both Away>
+Type messages, type 'tables.' to open tables, or 'goodbye.' to leave the chat.
+Yo.
+You said: Yo.
+Friend Away>
 Fred is away...
+Tables.
+Fred has these tables:
+Addition: (None)
+Subtraction: (None)
+Multiplication: (None)
+Division: (None)
+You have no tables and can't race.
+Both Away>
+You are away, hit a key to return... 
 R
 Friend Away>
+(You returned)
 Goodbye.
 Pick a command: t to list tables, a to add a friend, l to list friends,
 u to unfriend a friend, c to chat, or x to exit

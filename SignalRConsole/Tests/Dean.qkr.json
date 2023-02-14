@@ -1,0 +1,31 @@
+{
+  "DataVersion": "1.1",
+  "MergeIndex": {},
+  "Friends": [],
+  "Operators": [
+    {
+      "Name": "Addition",
+      "Tables": []
+    },
+    {
+      "Name": "Subtraction",
+      "Tables": []
+    },
+    {
+      "Name": "Multiplication",
+      "Tables": []
+    },
+    {
+      "Name": "Division",
+      "Tables": []
+    }
+  ],
+  "DeviceId": "e099272a-1dbd-495d-bc55-3ddab00a733b",
+  "Id": "e099272a-1dbd-495d-bc55-3ddab00a733b",
+  "Email": "dean@dekoster.net",
+  "Name": "Dean DeKoster",
+  "Handle": "Dean",
+  "Color": "Red",
+  "Created": "2023-01-31T20:32:31",
+  "Modified": "2023-01-31T20:32:31"
+}

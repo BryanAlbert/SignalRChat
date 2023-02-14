@@ -4,19 +4,11 @@ Fred
 Name: Fred Sanson, Email: fred@gmail.com, Favorite color: Green,
 Id: fredac24-3f25-41e0-84f2-3f34f54d072e,
 Device Id: confred2-7ace-4e26-9e5e-2ac2afc2ead2,
-Creation Date: 2022-06-06T19:03:42, Modified Date: 2022-08-31T18:06:33
+Creation Date: 2022-06-06T19:03:42, Modified Date: 2022-08-31T00:29:31
 Pick a command: t to list tables, a to add a friend, l to list friends,
 u to unfriend a friend, c to chat, or x to exit
 Listening>
 (Sent Hello null command to Fred.)
-A
-Busy>
-What is your friend's handle? 
-Bruce
-What is your friend's email? 
-bruce@hotmail.com
-A friend request has been sent to Bruce.
-Listening>
 A
 Busy>
 What is your friend's handle? 
@@ -27,15 +19,10 @@ A friend request has been sent to Mom.
 Listening>
 Your (pending) friend Mom is online.
 You and Mom are now friends!
-Your (pending) friend Bruce is online.
-You and Bruce are now friends!
-Your friend Bruce is offline.
 L
 Friends:
-Bruce, Bruce Albert, bruce@hotmail.com, Favorite Color: Red,
-   Created: 2022-06-06T19:03:41 Modified: 2022-12-17T01:12:00
 Mom, Jean Albert, jeanmariealbert@hotmail.com, Favorite Color: Maroon,
-   Created: 2022-06-06T19:03:43 Modified: 2022-12-17T01:11:44 (online)
+   Created: 2022-06-06T19:03:43 Modified: 2022-12-17T00:31:43 (online)
 X
 Finished.
 Initializing server and connecting to URL: https://localhost:5001/chathub
@@ -44,19 +31,11 @@ Fred
 Name: Fred Sanson, Email: fred@gmail.com, Favorite color: Green,
 Id: fredac24-3f25-41e0-84f2-3f34f54d072e,
 Device Id: confred2-7ace-4e26-9e5e-2ac2afc2ead2,
-Creation Date: 2022-06-06T19:03:42, Modified Date: 2022-08-31T18:06:33
+Creation Date: 2022-06-06T19:03:42, Modified Date: 2022-08-31T00:29:31
 Pick a command: t to list tables, a to add a friend, l to list friends,
 u to unfriend a friend, c to chat, or x to exit
 Listening>
 (Sent Hello null command to Fred.)
-A
-Busy>
-What is your friend's handle? 
-Bruce
-What is your friend's email? 
-bruce@hotmail.com
-A friend request has been sent to Bruce.
-Listening>
 A
 Busy>
 What is your friend's handle? 
@@ -67,14 +46,9 @@ A friend request has been sent to Mom.
 Listening>
 Your (pending) friend Mom is online.
 You and Mom are now friends!
-Your (pending) friend Bruce is online.
-You and Bruce are now friends!
-Your friend Bruce is offline.
 L
 Friends:
-Bruce, Bruce Albert, bruce@hotmail.com, Favorite Color: Red,
-   Created: 2022-06-06T19:03:41 Modified: 2022-12-17T01:14:34
 Mom, Jean Albert, jeanmariealbert@hotmail.com, Favorite Color: Maroon,
-   Created: 2022-06-06T19:03:43 Modified: 2022-12-17T01:14:22 (online)
+   Created: 2022-06-06T19:03:43 Modified: 2022-12-17T00:33:01 (online)
 X
 Finished.

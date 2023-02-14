@@ -1,5 +1,7 @@
 Fred
->wait-for: Bruce said: Yo.
-Go away.
+>wait-for: Bruce is away...
+Tables.
+R
+Goodbye.
 >wait-for: Your friend Bruce is offline.
 X

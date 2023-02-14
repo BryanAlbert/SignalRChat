@@ -7,23 +7,9 @@
   "Handle": "Bruce",
   "Color": "Red",
   "Created": "2022-06-06T19:03:41",
-  "Modified": "2022-09-01T19:09:44",
+  "Modified": "2022-09-01T17:37:17",
   "MergeIndex": {},
-  "Friends": [
-    {
-      "Id": "fredac24-3f25-41e0-84f2-3f34f54d072e",
-      "DeviceId": "confred2-7ace-4e26-9e5e-2ac2afc2ead2",
-      "Email": "fred@gmail.com",
-      "Name": "Fred Sanson",
-      "Handle": "Fred",
-      "Color": "Green",
-      "Created": "2022-06-06T19:03:42",
-      "Modified": "2022-09-01T19:09:40",
-      "Blocked": false,
-      "BluetoothId": null,
-      "BluetoothDeviceName": null
-    }
-  ],
+  "Friends": [],
   "Operators": [
     {
       "Name": "Addition",

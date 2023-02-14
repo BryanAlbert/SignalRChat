@@ -1,3 +1,4 @@
-test-harness Blocked, Bruce adds Fred (blocked), unfriends, adds (blocked), fred unfriends, adds
-start FredInput.txt FredOutput.txt Fred
-start BruceInput.txt BruceOutput.txt Bruce
+test-harness Bruce adds Fred, offline, Fred online, add Bruce, Bruce online
+start-wait BruceInput1.txt BruceOutput.txt Bruce
+start-wait-for: "A friend request has been sent to Bruce." FredInput.txt FredOutput.txt Fred
+start BruceInput2.txt BruceOutput.txt Bruce

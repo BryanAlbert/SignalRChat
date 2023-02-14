@@ -1,0 +1,6 @@
+Bruce
+>wait-for: Accept friend request from Fred, email address fred@gmail.com? [y/n]
+Y
+>wait-for: Your friend Fred is offline.
+L
+X

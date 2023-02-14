@@ -1,14 +1,9 @@
-$global:test = "Test-08"
-
 function Get-Description($verbose)
 {
-	"`n${test}: Bruce adds Fred and Mom and goes offline, Fred comes on and adds Bruce
-	and Mom, Bruce comes online, Mom comes online
-	
-	Bruce comes online, adds Fred and Mom, goes offline, Fred comes online and adds Bruce
-	and Mom, Bruce and Mom come online, everyone accepts, Bruce lists and goes offline,
-	Fred lists and goes offline, Mom lists and goes offline. Uses BruceInput1.txt and
-	BruceInput2.txt.`n"
+	"`n${test}: Bruce and Fred befriend Mom, Mom comes online
+
+	Bruce and Fred online, Bruce and Fred befriend Mom, Mom comes online, accepts,
+	Bruce and Fred list, go offline, Mom lists, goes offline.`n"
 
 	if ($null -eq $verbose -or $verbose)
 	{
@@ -18,19 +13,15 @@ function Get-Description($verbose)
 	ResetQKR  Delete json files from QKR's LocalState folder
 	QKR       Configure for testing QKR
 	
-
-	To test QKR, run Reset-Test QKR then run Start-TestFor Bruce 1 in one console and wait
-	for it to finish. Run Start-TestFor Fred in another console, Connect Internet as Mom
-	on QKR and accept the friend request, verify friendship then run Start-TestFor Bruce 2 in
-	the first console. Accept the friend request in QKR, verify friendship, verify that Bruce
-	and Fred have exited, pop to Home and exit QKR. Test intermediate output with
-	Check-QKRTest 1.
+	To test QKR, run run Reset-Test QKR then run Start-TestFor Bruce in one console
+	and Start-TestFor Fred in another. Connect Internet as Mom on QKR, accept requests,
+	verify friendships and pop to Home. Verify that Bruce and Fred have exited. Test
+	intermediate output with Check-QKRTest 1.
 	
-	Next, Connect Internet as Bruce on QKR and add Mom (jeanmariealbert@hotmail.com) and Fred
-	(fred@gmail.com) then pop back to Home. Run Start-TestFor Fred in one console and
-	Start-TestFor Mom in the other, then Connect Internet as Bruce again in QKR. Accpet the
-	friend request, verify friendship, pop back to Home and close QKR. Verify that Mom and
-	Fred have exited and run Check-QKRTest 2 to validate the test.`n"
+	Next run Start-TestFor Fred in one console, Connect Internet as Bruce on QKR and add
+	Mom (jeanmariealbert@hotmail.com). Run Start-TestFor Mom in the other console and
+	verify friendship on QKR. Pop to Home and exit, verify that Fred and Mom have exited.
+	Run Check-QKRTest 2 to validate the test.`n"
 	}
 }
 
@@ -111,13 +102,15 @@ function Check-Test
 	Push-Location $test
 	$script:warningCount = 0
 	$script:errorCount = 0
+
+	# set SyncWindow for Mom files since Bruce and Fred are added in random order
 	Compare-Files .\Bruce.control.qkr .\Bruce.qkr.json 2
 	Compare-Files .\Fred.control.qkr .\Fred.qkr.json 2
-	Compare-Files .\Mom.control.qkr .\Mom.qkr.json 2
+	Compare-Files .\Mom.control.qkr .\Mom.qkr.json 2 7
 	Compare-Files .\BruceControl.txt .\BruceOutput.txt 1
 	Compare-Files .\FredControl.txt .\FredOutput.txt 1
-	Compare-Files .\MomControl.txt .\MomOutput.txt 1
-
+	Compare-Files .\MomControl.txt .\MomOutput.txt 1 7
+	
 	"Warning count: $script:warningCount"
 	"Error count: $script:errorCount"
 	$global:totalWarningCount += $script:warningCount
@@ -142,14 +135,14 @@ function Check-QKRTest($stage)
 	switch ($stage)
 	{
 		1 {
-			Compare-Files .\Mom-mom0c866-8cb0-4a10-ad96-dfe5f9ebd98e.control.qkr (Join-Path $global:qkrLocalState Mom-mom0c866-8cb0-4a10-ad96-dfe5f9ebd98e.json) 2
+			Compare-Files .\Mom-mom0c866-8cb0-4a10-ad96-dfe5f9ebd98e.control.qkr (Join-Path $global:qkrLocalState Mom-mom0c866-8cb0-4a10-ad96-dfe5f9ebd98e.json) 2 7
 			Compare-Files .\BruceControl.txt .\BruceOutput.txt 1
 			Compare-Files .\FredControl.txt .\FredOutput.txt 1
 			Copy-Item .\Fred.qkr .\Fred.qkr.json
 		}
 		2 {
 			Compare-Files .\Bruce-brucef68-3c37-4aef-b8a6-1649659bbbc4.control.qkr (Join-Path $global:qkrLocalState Bruce-brucef68-3c37-4aef-b8a6-1649659bbbc4.json) 2
-			Compare-Files .\Mom-mom0c866-8cb0-4a10-ad96-dfe5f9ebd98e.control.qkr (Join-Path $global:qkrLocalState Mom-mom0c866-8cb0-4a10-ad96-dfe5f9ebd98e.json) 2
+			Compare-Files .\Mom-mom0c866-8cb0-4a10-ad96-dfe5f9ebd98e.control.qkr (Join-Path $global:qkrLocalState Mom-mom0c866-8cb0-4a10-ad96-dfe5f9ebd98e.json) 2 7
 			Compare-Files .\BruceControl2.txt .\BruceOutput.txt 1
 			Compare-Files .\FredControl2.txt .\FredOutput.txt 1
 			Compare-Files .\MomControl.txt .\MomOutput.txt 1
@@ -192,17 +185,17 @@ function Update-ControlFiles($updateQkr)
 	Pop-Location
 }
 
-function Compare-Files($control, $file, $errorLevel, $merge)
+function Compare-Files($control, $file, $errorLevel, $syncWindow, $merge)
 {
 	"Comparing: $control with $file"
 	$controlText = Get-FilteredText $control $merge
 	$fileText = Get-FilteredText $file $merge
 	if ($null -eq $syncWindow)
 	{
-	if ($file -match "\.json$") {
-		$syncWindow = 0
-	} else {
-		$syncWindow = [int32]::MaxValue
+		if ($file -match "\.json$") {
+			$syncWindow = 0
+		} else {
+			$syncWindow = [int32]::MaxValue
 		}
 	}
 

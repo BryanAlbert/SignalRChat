@@ -1,8 +1,9 @@
 Fred
->wait-for: Bruce is away...
-go away.
-R
+>wait-for: You have no tables.
 >wait-for: Bruce said: Yo.
+Tables.
+R
+>wait-for: You have no tables.
 Bye now!
 >wait-for: Your friend Bruce is offline.
 X

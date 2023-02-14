@@ -1,4 +1,5 @@
-test-harness Bruce, Fred, and Mom online, Bruce and Fred befriend Mom
-start MomInput.txt MomOutput.txt Mom
-start BruceInput.txt BruceOutput.txt Bruce
-start FredInput.txt FredOutput.txt Fred
+test-harness Bruce adds offline Fred, goes offline, Fred comes online, Bruce comes online
+start-wait BruceInput1.txt BruceOutput.txt Bruce
+start-wait FredInput1.txt FredOutput.txt Fred
+start BruceInput2.txt BruceOutput.txt Bruce
+start FredInput2.txt FredOutput.txt Fred

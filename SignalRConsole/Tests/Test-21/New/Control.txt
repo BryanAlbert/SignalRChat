@@ -1,14 +1,14 @@
 Initializing server and connecting to URL: https://localhost:5001/chathub
 What is your handle (nickname)? 
 Mia
-Name: Mia Albert, Email: mia@albertnet.us, Favorite color: Turquoise,
+Name: Mia Albert, Email: mia@albertnet.us, Favorite color: Yellow,
 Id: connew65-1468-4409-a21a-f5b4f000ee4f,
 Device Id: connew65-1468-4409-a21a-f5b4f000ee4f,
-Creation Date: 2022-07-08T03:43:05, Modified Date: 2022-09-06T22:16:46
+Creation Date: 2022-07-08T03:43:05, Modified Date: 2022-09-02T15:53:59
 Pick a command: t to list tables, a to add a friend, l to list friends,
 u to unfriend a friend, c to chat, or x to exit
-(Sent Hello null command to Mia.)
 Listening>
+(Sent Hello null command to Mia.)
 Mia is online on device conmia08-9a9b-4a6b-9db9-9e9b6238283f, sending merge data...
 Merging data from Mia, Id mia38308-9a9b-4a6b-9db9-9e9b6238283f, on device conmia08-9a9b-4a6b-9db9-9e9b6238283f...
 Merged data from Mia on device conmia08-9a9b-4a6b-9db9-9e9b6238283f.
@@ -43,13 +43,13 @@ Tables json:
             "TotalTime": 1744,
             "BestTime": 518,
             "MergeQuizzed": [
-              0
+              3
             ],
             "MergeCorrect": [
-              0
+              3
             ],
             "MergeTime": [
-              0
+              1744
             ]
           },
           {
@@ -62,13 +62,13 @@ Tables json:
             "TotalTime": 2346,
             "BestTime": 692,
             "MergeQuizzed": [
-              0
+              3
             ],
             "MergeCorrect": [
-              0
+              3
             ],
             "MergeTime": [
-              0
+              2346
             ]
           }
         ]
@@ -86,13 +86,13 @@ Tables json:
             "TotalTime": 1770,
             "BestTime": 542,
             "MergeQuizzed": [
-              0
+              3
             ],
             "MergeCorrect": [
-              0
+              3
             ],
             "MergeTime": [
-              0
+              1770
             ]
           },
           {
@@ -105,13 +105,13 @@ Tables json:
             "TotalTime": 1532,
             "BestTime": 532,
             "MergeQuizzed": [
-              0
+              1
             ],
             "MergeCorrect": [
-              0
+              1
             ],
             "MergeTime": [
-              0
+              1532
             ]
           }
         ]

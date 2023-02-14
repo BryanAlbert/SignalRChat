@@ -1,11 +1,11 @@
-$global:test = "Test-06"
-
 function Get-Description($verbose)
 {
-	"`n${test}: Bruce, Fred, and Mom online, Bruce and Fred befriend Mom
-
-	Mom, Bruce, and Fred online, Bruce and Fred befriend Mom, Mom accepts both,
-	Bruce and Fred list, go offline, Mom lists and goes offline.`n"
+	"`n${test}: Bruce adds Fred, goes offline, Fred comes online, adds Bruce, Bruce comes
+	online, Fred accepts
+	
+	Bruce online, adds Fred, lists, goes offline, Fred comes online, adds Bruce, Bruce
+	comes online, Fred accepts, Bruce lists, goes offline, Fred lists, goes offline. Uses
+	BruceInput1.txt, BruceInput2.txt, FredInput1.txt, and FredInput2.txt`n"
 
 	if ($null -eq $verbose -or $verbose)
 	{
@@ -14,16 +14,17 @@ function Get-Description($verbose)
 	Console   Reset only Console json files
 	ResetQKR  Delete json files from QKR's LocalState folder
 	QKR       Configure for testing QKR
+
+	To test QKR, run Reset-Test QKR then run Start-TestFor Bruce 1. When it finishes,
+	Connect Internet as Fred on QKR, add Bruce (bruce@hotmail.com), and pop to Home.
+	Run Start-TestFor Bruce 2, Connect with Internet on QKR, accept friend request,
+	verify new friend Bruce, verify Bruce has exited, pop to Home and exit QKR.
 	
-	To test QKR, run Reset-Test QKR then Connect Internet as Mom on QKR, run
-	Start-TestFor Bruce in one console and Start-TestFor Fred in another. Accept
-	friend requests, verify friendships and that Bruce and Fred exit, then pop to
-	Home page. Test intermediate output with Check-QKRTest 1. 
-	
-	Next run Start-TestFor Mom in one console, Connect Internet as Bruce on QKR,
-	add Mom (jeanmariealbert@hotmail.com) and verify friendship. Run Start-TestFor
-	Fred in the other console. Pop to Home, verify that Mom and Fred have exited
-	and exit QKR. Run Check-QKRTest 2 to validate the test.`n"
+	Next Connect Internet as Bruce on QKR, add Fred (fred@gmail.com) then pop to Home.
+	Run Start-TestFor Fred 1, when that finishes, Connect Internet as Bruce again, run
+	Start-TestFor Fred 2, verify that new friend Fred is online then pop to Home, verify
+	that Fred exits and close QKR, verity that Fred has exited. Check results with
+	Check-Test `$true.`n"
 	}
 }
 
@@ -32,39 +33,36 @@ function Reset-Test($reset, $showDescription)
 	"Resetting $test"
 	Push-Location $test
 	$brucePath = Join-Path $global:qkrLocalState Bruce-brucef68-3c37-4aef-b8a6-1649659bbbc4.json
-	$momPath = Join-Path $global:qkrLocalState Mom-mom0c866-8cb0-4a10-ad96-dfe5f9ebd98e.json
+	$fredPath = Join-Path $global:qkrLocalState Fred-fredac24-3f25-41e0-84f2-3f34f54d072e.json
 	switch ($reset)
 	{
 		"Console"
 		{
 			"Resetting Console..."
-			Remove-Files .\BruceOutput.txt, .\FredOutput.txt, .\MomOutput.txt
+			Remove-Files .\BruceOutput.txt, .\FredOutput.txt
 			Copy-Item .\Bruce.qkr .\Bruce.qkr.json
 			Copy-Item .\Fred.qkr .\Fred.qkr.json
-			Copy-Item .\Mom.qkr .\Mom.qkr.json
 		}
 		"ResetQKR"
 		{
 			"Resetting QKR"
-			Remove-Files $brucePath, $momPath
+			Remove-Files $brucePath, $fredPath
 		}
 		"QKR"
 		{
 			"Configuring for QKR testing at: $global:qkrLocalState"
-			Remove-Files .\BruceOutput.txt, .\FredOutput.txt, .\MomOutput.txt, $brucePath, $momPath
+			Remove-Files .\BruceOutput.txt, .\FredOutput.txt, $brucePath, $fredPath
 			Copy-Item .\Bruce.qkr .\Bruce.qkr.json
 			Copy-Item .\Fred.qkr .\Fred.qkr.json
-			Copy-Item .\Mom.qkr .\Mom.qkr.json
 			Copy-Item .\Bruce-brucef68-3c37-4aef-b8a6-1649659bbbc4.qkr $brucePath
-			Copy-Item .\Mom-mom0c866-8cb0-4a10-ad96-dfe5f9ebd98e.qkr $momPath
+			Copy-Item .\Fred-fredac24-3f25-41e0-84f2-3f34f54d072e.qkr $fredPath
 		}
 		Default
 		{
 			"Resetting all..."
-			Remove-Files .\BruceOutput.txt, .\FredOutput.txt, .\MomOutput.txt, $brucePath, $momPath
+			Remove-Files .\BruceOutput.txt, .\FredOutput.txt, $brucePath, $fredPath
 			Copy-Item .\Bruce.qkr .\Bruce.qkr.json
-			Copy-Item .\Fred.qkr .\Fred.qkr.json
-			Copy-Item .\Mom.qkr .\Mom.qkr.json
+			Copy-Item .\Fred.qkr .\Fred.qkr.json 
 		}
 	}
 
@@ -99,60 +97,27 @@ function Run-Test
 	Check-Test $false
 }
 
-function Check-Test
+function Check-Test($checkQkr)
 {
 	Push-Location $test
 	$script:warningCount = 0
 	$script:errorCount = 0
 	Compare-Files .\Bruce.control.qkr .\Bruce.qkr.json 2
 	Compare-Files .\Fred.control.qkr .\Fred.qkr.json 2
-	Compare-Files .\Mom.control.qkr .\Mom.qkr.json 2
+	
+	if ($null -eq $checkQkr -or $checkQkr)
+	{
+		Compare-Files .\Bruce-brucef68-3c37-4aef-b8a6-1649659bbbc4.control.qkr (Join-Path $global:qkrLocalState Bruce-brucef68-3c37-4aef-b8a6-1649659bbbc4.json) 2
+		Compare-Files .\Fred-fredac24-3f25-41e0-84f2-3f34f54d072e.control.qkr (Join-Path $global:qkrLocalState Fred-fredac24-3f25-41e0-84f2-3f34f54d072e.json) 2
+	}
+
 	Compare-Files .\BruceControl.txt .\BruceOutput.txt 1
 	Compare-Files .\FredControl.txt .\FredOutput.txt 1
-	Compare-Files .\MomControl.txt .\MomOutput.txt 1
 
 	"Warning count: $script:warningCount"
 	"Error count: $script:errorCount"
 	$global:totalWarningCount += $script:warningCount
 	$global:totalErrorCount += $script:errorCount
-	Pop-Location
-}
-
-# Checks intermediate state before json files are overwritten, to be run with 1
-# after two console apps run Bruce and Fred and QKR runs Mom. Run with 2 after
-# two console apps run Fred and Mom and QKR runs Bruce. 
-function Check-QKRTest($stage)
-{
-	Push-Location $test
-	
-	$script:warningCount = 0
-	$script:errorCount = 0
-	$tempWarningList = $global:warningList
-	$tempErrorList = $global:errorList
-	Compare-Files .\Bruce.control.qkr .\Bruce.qkr.json 2
-	Compare-Files .\Fred.control.qkr .\Fred.qkr.json 2
-
-	switch ($stage)
-	{
-		1 {
-			Compare-Files .\Mom-mom0c866-8cb0-4a10-ad96-dfe5f9ebd98e.control.qkr (Join-Path $global:qkrLocalState Mom-mom0c866-8cb0-4a10-ad96-dfe5f9ebd98e.json) 2
-			Compare-Files .\BruceControl.txt .\BruceOutput.txt 1
-			Compare-Files .\FredControl.txt .\FredOutput.txt 1
-			Copy-Item .\Fred.qkr .\Fred.qkr.json
-		}
-		2 {
-			Compare-Files .\Bruce-brucef68-3c37-4aef-b8a6-1649659bbbc4.control.qkr (Join-Path $global:qkrLocalState Bruce-brucef68-3c37-4aef-b8a6-1649659bbbc4.json) 2
-			Compare-Files .\Mom-mom0c866-8cb0-4a10-ad96-dfe5f9ebd98e.control.qkr (Join-Path $global:qkrLocalState Mom-mom0c866-8cb0-4a10-ad96-dfe5f9ebd98e.json) 2
-			Compare-Files .\BruceControl2.txt .\BruceOutput.txt 1
-			Compare-Files .\FredControl2.txt .\FredOutput.txt 1
-			Compare-Files .\MomControl.txt .\MomOutput.txt 1
-		}
-	}
-
-	"Warning count: $script:warningCount"
-	"Error count: $script:errorCount"
-	$global:warningList = $tempWarningList
-	$global:errorList = $tempErrorList
 	Pop-Location
 }
 
@@ -162,26 +127,18 @@ function Update-ControlFiles($updateQkr)
 	if ($updateQkr -eq $true)
 	{
 		"Updating QKR control files for $test from $global:qkrLocalState"
-		Copy-Item .\Bruce.qkr.json .\Bruce.control.qkr
-		Copy-Item .\Fred.qkr.json .\Fred.control.qkr
-		Copy-Item .\Mom.qkr.json .\Mom.control.qkr
 		Copy-Item (Join-Path $global:qkrLocalState Bruce-brucef68-3c37-4aef-b8a6-1649659bbbc4.json) .\Bruce-brucef68-3c37-4aef-b8a6-1649659bbbc4.control.qkr 
-		Copy-Item (Join-Path $global:qkrLocalState Mom-mom0c866-8cb0-4a10-ad96-dfe5f9ebd98e.json) .\Mom-mom0c866-8cb0-4a10-ad96-dfe5f9ebd98e.control.qkr 
-		Copy-Item .\MomOutput.txt .\MomControl.txt
-		Copy-Item .\BruceOutput.txt .\BruceControl2.txt
-		Copy-Item .\FredOutput.txt .\FredControl2.txt
+		Copy-Item (Join-Path $global:qkrLocalState Fred-fredac24-3f25-41e0-84f2-3f34f54d072e.json) .\Fred-fredac24-3f25-41e0-84f2-3f34f54d072e.control.qkr 
 	}
 	else
 	{
 		"Updating control files for $test"
-		Copy-Item .\Bruce.qkr.json .\Bruce.control.qkr
-		Copy-Item .\Fred.qkr.json .\Fred.control.qkr
-		Copy-Item .\Mom.qkr.json .\Mom.control.qkr
 		Copy-Item .\BruceOutput.txt .\BruceControl.txt
 		Copy-Item .\FredOutput.txt .\FredControl.txt
-		Copy-Item .\MomOutput.txt .\MomControl.txt
+		Copy-Item .\Bruce.qkr.json .\Bruce.control.qkr
+		Copy-Item .\Fred.qkr.json .\Fred.control.qkr
 	}
-	
+
 	Pop-Location
 }
 

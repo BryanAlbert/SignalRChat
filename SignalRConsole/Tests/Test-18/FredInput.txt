@@ -1,11 +1,8 @@
 Fred
-# wait for Bruce to try and friend us
->wait-for: (Sent Hello False command to Bruce.)
-U
-0
+>wait-for: (Sent Hello null command to Fred.)
 A
 Bruce
 bruce@hotmail.com
->wait-for: Your friend Bruce is offline.
+>wait-for: You and Bruce are now friends!
 L
 X

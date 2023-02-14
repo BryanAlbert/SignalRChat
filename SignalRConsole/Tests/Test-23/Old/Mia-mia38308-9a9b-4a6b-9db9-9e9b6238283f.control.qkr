@@ -7,7 +7,7 @@
   "Handle": "Mia",
   "Color": "Turquoise",
   "Created": "2022-06-27T23:00:00",
-  "Modified": "2022-09-08T16:29:38",
+  "Modified": "2022-09-08T00:18:24",
   "MergeIndex": {
     "xxxnew65-1468-4409-a21a-f5b4f000ee4f": 0
   },
@@ -70,13 +70,13 @@
               "TotalTime": 3041,
               "BestTime": 692,
               "MergeQuizzed": [
-                0
+                1
               ],
               "MergeCorrect": [
-                0
+                1
               ],
               "MergeTime": [
-                0
+                695
               ]
             },
             {
@@ -89,13 +89,13 @@
               "TotalTime": 1397,
               "BestTime": 670,
               "MergeQuizzed": [
-                0
+                2
               ],
               "MergeCorrect": [
-                0
+                2
               ],
               "MergeTime": [
-                0
+                1397
               ]
             }
           ]
@@ -113,13 +113,13 @@
               "TotalTime": 2437,
               "BestTime": 542,
               "MergeQuizzed": [
-                0
+                1
               ],
               "MergeCorrect": [
-                0
+                1
               ],
               "MergeTime": [
-                0
+                667
               ]
             },
             {
@@ -132,13 +132,13 @@
               "TotalTime": 2407,
               "BestTime": 532,
               "MergeQuizzed": [
-                0
+                1
               ],
               "MergeCorrect": [
-                0
+                1
               ],
               "MergeTime": [
-                0
+                875
               ]
             },
             {
@@ -151,13 +151,13 @@
               "TotalTime": 579,
               "BestTime": 579,
               "MergeQuizzed": [
-                0
+                1
               ],
               "MergeCorrect": [
-                0
+                1
               ],
               "MergeTime": [
-                0
+                579
               ]
             }
           ]
@@ -175,13 +175,13 @@
               "TotalTime": 880,
               "BestTime": 880,
               "MergeQuizzed": [
-                0
+                1
               ],
               "MergeCorrect": [
-                0
+                1
               ],
               "MergeTime": [
-                0
+                880
               ]
             },
             {
@@ -194,13 +194,13 @@
               "TotalTime": 1125,
               "BestTime": 125,
               "MergeQuizzed": [
-                0
+                1
               ],
               "MergeCorrect": [
-                0
+                1
               ],
               "MergeTime": [
-                0
+                1125
               ]
             },
             {
@@ -213,13 +213,13 @@
               "TotalTime": 880,
               "BestTime": 880,
               "MergeQuizzed": [
-                0
+                1
               ],
               "MergeCorrect": [
-                0
+                1
               ],
               "MergeTime": [
-                0
+                880
               ]
             }
           ]

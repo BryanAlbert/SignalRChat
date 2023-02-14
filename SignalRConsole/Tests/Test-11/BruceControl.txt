@@ -4,7 +4,7 @@ Bruce
 Name: Bruce Albert, Email: bruce@hotmail.com, Favorite color: Red,
 Id: brucef68-3c37-4aef-b8a6-1649659bbbc4,
 Device Id: conbruce-7ace-4e26-9e5e-2ac2afc2ead2,
-Creation Date: 2022-06-06T19:03:41, Modified Date: 2022-08-31T20:16:14
+Creation Date: 2022-06-06T19:03:41, Modified Date: 2022-08-31T19:59:12
 Pick a command: t to list tables, a to add a friend, l to list friends,
 u to unfriend a friend, c to chat, or x to exit
 Listening>
@@ -12,12 +12,12 @@ A
 Busy>
 What is your friend's handle? 
 Fred
-You and Fred are blocked. Both you and Fred must unfriend before you can become friends.
+You already asked Fred to be your friend and we're waiting for a response.
 Listening>
 L
 Friends:
 Fred, Fred Sanson, fred@gmail.com, Favorite Color: Green,
-   Created: 2022-06-06T19:03:42 Modified: 2022-06-06T19:03:42 (blocked)
+   Created: 2022-06-06T19:03:42 Modified: 2022-06-06T19:03:42 (pending)
 (Sent Hello null command to Bruce.)
 X
 Finished.

@@ -1,5 +1,5 @@
 {
-  "Description": "New device with data, before old device is merged.",
+  "Description": "New device with no data, before being merged with existing device.",
   "DataVersion": "1.1",
   "Id": "qkrnew65-1468-4409-a21a-f5b4f000ee4f",
   "DeviceId": "qkrnew65-1468-4409-a21a-f5b4f000ee4f",
@@ -22,70 +22,7 @@
     },
     {
       "Name": "Multiplication",
-      "Tables": [
-        {
-          "Base": 1,
-          "Cards": [
-            {
-              "Fact": {
-                "First": 1,
-                "Second": 1
-              },
-              "Quizzed": 3,
-              "Correct": 3,
-              "TotalTime": 1744,
-              "BestTime": 518,
-              "MergeQuizzed": null,
-              "MergeCorrect": null,
-              "MergeTime": null
-            },
-            {
-              "Fact": {
-                "First": 1,
-                "Second": 2
-              },
-              "Quizzed": 3,
-              "Correct": 3,
-              "TotalTime": 2346,
-              "BestTime": 692,
-              "MergeQuizzed": null,
-              "MergeCorrect": null,
-              "MergeTime": null
-            }
-          ]
-        },
-        {
-          "Base": 2,
-          "Cards": [
-            {
-              "Fact": {
-                "First": 2,
-                "Second": 1
-              },
-              "Quizzed": 3,
-              "Correct": 3,
-              "TotalTime": 1770,
-              "BestTime": 542,
-              "MergeQuizzed": null,
-              "MergeCorrect": null,
-              "MergeTime": null
-            },
-            {
-              "Fact": {
-                "First": 2,
-                "Second": 2
-              },
-              "Quizzed": 1,
-              "Correct": 1,
-              "TotalTime": 1532,
-              "BestTime": 532,
-              "MergeQuizzed": null,
-              "MergeCorrect": null,
-              "MergeTime": null
-            }
-          ]
-        }
-      ]
+      "Tables": []
     },
     {
       "Name": "Division",

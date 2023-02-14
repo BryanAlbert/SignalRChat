@@ -43,13 +43,13 @@
               "TotalTime": 1744,
               "BestTime": 518,
               "MergeQuizzed": [
-                0
+                3
               ],
               "MergeCorrect": [
-                0
+                3
               ],
               "MergeTime": [
-                0
+                1744
               ]
             },
             {
@@ -62,13 +62,13 @@
               "TotalTime": 2346,
               "BestTime": 692,
               "MergeQuizzed": [
-                0
+                3
               ],
               "MergeCorrect": [
-                0
+                3
               ],
               "MergeTime": [
-                0
+                2346
               ]
             }
           ]
@@ -86,13 +86,13 @@
               "TotalTime": 1770,
               "BestTime": 542,
               "MergeQuizzed": [
-                0
+                3
               ],
               "MergeCorrect": [
-                0
+                3
               ],
               "MergeTime": [
-                0
+                1770
               ]
             },
             {
@@ -105,13 +105,13 @@
               "TotalTime": 1532,
               "BestTime": 532,
               "MergeQuizzed": [
-                0
+                1
               ],
               "MergeCorrect": [
-                0
+                1
               ],
               "MergeTime": [
-                0
+                1532
               ]
             }
           ]
@@ -128,7 +128,7 @@
   "Email": "mia@albertnet.us",
   "Name": "Mia Albert",
   "Handle": "Mia",
-  "Color": "Turquoise",
+  "Color": "Yellow",
   "Created": "2022-07-08T03:43:05",
-  "Modified": "2022-12-06T23:26:49"
+  "Modified": "2022-12-06T23:26:40"
 }

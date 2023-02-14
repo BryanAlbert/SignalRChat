@@ -1,3 +1,4 @@
-test-harness Merging old account with tables to empty new account
-start-wait-for: "(Sent Hello null command to Mia.)" Old Input.txt Output.txt Old
-start New Input.txt Output.txt New
+test-harness Friends Bruce and Fred update metadata
+start-wait FredInput1.txt FredOutput.txt Fred
+start-wait-for-regex: "^OLD Fred," BruceInput.txt BruceOutput.txt Bruce
+start FredInput2.txt FredOutput.txt Fred

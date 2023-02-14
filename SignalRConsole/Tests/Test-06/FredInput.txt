@@ -1,7 +1,0 @@
-Fred
-A
-Mom
-jeanmariealbert@hotmail.com
->wait-for: You and Mom are now friends!
-L
-X

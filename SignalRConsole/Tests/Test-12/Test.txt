@@ -1,3 +1,2 @@
-test-harness Bruce adds Fred, Fred says NO!
-start FredInput.txt FredOutput.txt Fred
+test-harness Already blocked
 start BruceInput.txt BruceOutput.txt Bruce

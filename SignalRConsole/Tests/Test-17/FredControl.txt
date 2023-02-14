@@ -8,20 +8,31 @@ Creation Date: 2022-06-06T19:03:42, Modified Date: 2022-08-31T20:43:00
 Pick a command: t to list tables, a to add a friend, l to list friends,
 u to unfriend a friend, c to chat, or x to exit
 Listening>
-A
 (Sent Hello null command to Fred.)
+(Sent Hello null command to Bruce.)
 Busy>
-What is your friend's handle? 
-Bruce
-What is your friend's email? 
-bruce@hotmail.com
-A friend request has been sent to Bruce.
+Accept friend request from Bruce, email address bruce@hotmail.com? [y/n] 
+Your (pending) friend Bruce is offline.
+Y
 Listening>
-Your (pending) friend Bruce is online.
 You and Bruce are now friends!
+Bruce has unfriended you.
 L
-Friends:
-Bruce, Bruce Albert, bruce@hotmail.com, Favorite Color: Red,
-   Created: 2022-06-06T19:03:41 Modified: 2022-12-17T01:40:04 (online)
+You have no friends.
+X
+Finished.
+Initializing server and connecting to URL: https://localhost:5001/chathub
+What is your handle (nickname)? 
+Fred
+Name: Fred Sanson, Email: fred@gmail.com, Favorite color: Green,
+Id: fredac24-3f25-41e0-84f2-3f34f54d072e,
+Device Id: confred2-7ace-4e26-9e5e-2ac2afc2ead2,
+Creation Date: 2022-06-06T19:03:42, Modified Date: 2022-12-06T23:26:18
+Pick a command: t to list tables, a to add a friend, l to list friends,
+u to unfriend a friend, c to chat, or x to exit
+Listening>
+(Sent Hello null command to Fred.)
+L
+You have no friends.
 X
 Finished.

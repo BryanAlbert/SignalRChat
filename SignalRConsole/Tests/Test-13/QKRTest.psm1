@@ -1,11 +1,9 @@
-$global:test = "Test-13"
-
 function Get-Description($verbose)
 {
-	"`n${test}: Bruce and Fred online, Bruce unfriends Fred
+	"`n${test}: Bruce adds Fred, Fred says NO!
 
-	Friends Bruce and are Fred online, Bruce unfriends Fred, lists and goes offline,
-	Fred lists and goes offline.`n"
+	Fred comes online, Bruce comes online, adds Fred, Fred declines,
+	both list and exit.`n"
 
 	if ($null -eq $verbose -or $verbose)
 	{
@@ -15,12 +13,12 @@ function Get-Description($verbose)
 	ResetQKR  Delete json files from QKR's LocalState folder
 	QKR       Configure for testing QKR
 	
-	To test QKR, run Reset-Test QKR then Start-TestFor Bruce and Connect Internet as
-	Fred on QKR. Verify status and close QKR. Run Check-Test `$true to validate the
-	test.
+	To test QKR, run Reset-Test QKR then run Start-TestFor Fred. Connect Internet as
+	Bruce on QKR, add Fred (fred@gmail.com), check the Status message and pop to Home.
 	
-	Note that this test can't be run with QKR as Bruce since QKR requires the friend
-	to be offline before he can be selected and the Remove button tapped.`n"
+	Next, Connect Internet as Fred on QKR and run Start-TestFor Bruce in the console.
+	Deny the friend request in QKR, check the Status message, close QKR and verify that
+	Bruce exits. Run Check-Test `$true to validate the test.`n"
 	}
 }
 
@@ -28,6 +26,7 @@ function Reset-Test($reset, $showDescription)
 {
 	"Resetting $test"
 	Push-Location $test
+	$brucePath = Join-Path $global:qkrLocalState Bruce-brucef68-3c37-4aef-b8a6-1649659bbbc4.json
 	$fredPath = Join-Path $global:qkrLocalState Fred-fredac24-3f25-41e0-84f2-3f34f54d072e.json
 	switch ($reset)
 	{
@@ -41,25 +40,26 @@ function Reset-Test($reset, $showDescription)
 		"ResetQKR"
 		{
 			"Resetting QKR"
-			Remove-Files $fredPath
+			Remove-Files $brucePath, $fredPath
 		}
 		"QKR"
 		{
 			"Configuring for QKR testing at: $global:qkrLocalState"
-			Remove-Files .\BruceOutput.txt, .\FredOutput.txt, $fredPath
+			Remove-Files .\BruceOutput.txt, .\FredOutput.txt, $brucePath, $fredPath
 			Copy-Item .\Bruce.qkr .\Bruce.qkr.json
 			Copy-Item .\Fred.qkr .\Fred.qkr.json
-			Copy-Item .\Fred-fredac24-3f25-41e0-84f2-3f34f54d072e.qkr (Join-Path $global:qkrLocalState Fred-fredac24-3f25-41e0-84f2-3f34f54d072e.json)
+			Copy-Item .\Bruce-brucef68-3c37-4aef-b8a6-1649659bbbc4.qkr $brucePath
+			Copy-Item .\Fred-fredac24-3f25-41e0-84f2-3f34f54d072e.qkr $fredPath
 		}
 		Default
 		{
 			"Resetting all..."
-			Remove-Files .\BruceOutput.txt, .\FredOutput.txt, $fredPath
+			Remove-Files .\BruceOutput.txt, .\FredOutput.txt, $brucePath, $fredPath
 			Copy-Item .\Bruce.qkr .\Bruce.qkr.json
 			Copy-Item .\Fred.qkr .\Fred.qkr.json 
 		}
 	}
-
+	
 	Pop-Location
 	if ($null -eq $showDescription -or $showDescription) {
 		Get-Description ($reset -eq "ResetQKR" -or $reset -eq "QKR" -or $reset -eq "All" -or $null -eq $reset)
@@ -97,18 +97,16 @@ function Check-Test($checkQkr)
 	$script:warningCount = 0
 	$script:errorCount = 0
 	Compare-Files .\Bruce.control.qkr .\Bruce.qkr.json 2
+	Compare-Files .\Fred.control.qkr .\Fred.qkr.json 2
 	
 	if ($null -eq $checkQkr -or $checkQkr)
 	{
+		Compare-Files .\Bruce-brucef68-3c37-4aef-b8a6-1649659bbbc4.control.qkr (Join-Path $global:qkrLocalState Bruce-brucef68-3c37-4aef-b8a6-1649659bbbc4.json) 2
 		Compare-Files .\Fred-fredac24-3f25-41e0-84f2-3f34f54d072e.control.qkr (Join-Path $global:qkrLocalState Fred-fredac24-3f25-41e0-84f2-3f34f54d072e.json) 2
-		Compare-Files .\BruceControl.txt .\BruceOutput.txt 1
 	}
-	else
-	{
-		Compare-Files .\Fred.control.qkr .\Fred.qkr.json 2
-		Compare-Files .\BruceControl.txt .\BruceOutput.txt 1
-		Compare-Files .\FredControl.txt .\FredOutput.txt 1
-	}
+
+	Compare-Files .\BruceControl.txt .\BruceOutput.txt 1
+	Compare-Files .\FredControl.txt .\FredOutput.txt 1
 
 	"Warning count: $script:warningCount"
 	"Error count: $script:errorCount"
@@ -122,7 +120,8 @@ function Update-ControlFiles($updateQkr)
 	Push-Location $test
 	if ($updateQkr -eq $true)
 	{
-		"Updating QKR control file for $test from $global:qkrLocalState"
+		"Updating QKR control files for $test from $global:qkrLocalState"
+		Copy-Item (Join-Path $global:qkrLocalState Bruce-brucef68-3c37-4aef-b8a6-1649659bbbc4.json) .\Bruce-brucef68-3c37-4aef-b8a6-1649659bbbc4.control.qkr 
 		Copy-Item (Join-Path $global:qkrLocalState Fred-fredac24-3f25-41e0-84f2-3f34f54d072e.json) .\Fred-fredac24-3f25-41e0-84f2-3f34f54d072e.control.qkr 
 	}
 	else

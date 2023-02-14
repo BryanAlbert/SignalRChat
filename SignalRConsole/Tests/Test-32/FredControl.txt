@@ -17,17 +17,23 @@ Multiplication: (None)
 Division: (None)
 You have no tables.
 Chatting>
-Type messages, type 'go away.' to go away, or 'goodbye.' to leave the chat.
-Friend Away>
-Bruce is away...
-go away.
-(You went away)
-Both Away>
+Type messages, type 'tables.' to open tables, or 'goodbye.' to leave the chat.
+Tables.
+Bruce has these tables:
+Addition: (None)
+Subtraction: (None)
+Multiplication: (None)
+Division: (None)
+You have no tables.
+Away>
 You are away, hit a key to return... 
+Both Away>
+Bruce is away...
 Bruce has returned!
 Away>
 R
 Chatting>
+(You returned)
 Bruce has these tables:
 Addition: (None)
 Subtraction: (None)

@@ -1,13 +1,9 @@
-$global:test = "Test-16"
-
 function Get-Description($verbose)
 {
-	"`n${test}: Bruce friends Fred, Fred online, Bruce unfriends and goes offline, Fred
-	answers Y
+	"`n${test}: Bruce online, unfriends Fred, offline, Fred online, Bruce online
 
-	Bruce comes online, befriends Fred, Fred comes online, Bruce unfriends, lists,
-	goes offline, Fred answers Y, lists, goes offline, Fred comes online, Bruce
-	comes online, lists and goes offline, Fred lists and goes offline.`n"
+	Bruce comes online, unfriends Fred, goes offline, Fred comes online, Bruce
+	comes online, both list and go offline.`n"
 
 	if ($null -eq $verbose -or $verbose)
 	{
@@ -17,17 +13,14 @@ function Get-Description($verbose)
 	ResetQKR  Delete json files from QKR's LocalState folder
 	QKR       Configure for testing QKR
 	
-	To test QKR, run Reset-Test QKR then run Start-TestFor Bruce 1, Connect Internet
-	as Fred on QKR, when Bruce finishes, accept the friend request, verify that Fred
-	has unfriended Bruce and exited, then pop back to Home. Connect as Fred again then
-	run Start-TestFor Bruce 2, verify no friends, that Bruce has exited and pop back
-	to Home.
+	To test QKR, run Reset-Test QKR then run Start-TestFor Bruce 1 and wait for it
+	to finish. Connect Internet as Fred on QKR, run Start-TestFor Bruce 2, verify
+	the Status message and pop back to Home, verify that Fred exits.
 
-	Next, Connect Internet as Bruce on QKR, add Fred (fred@gmail.com), then run
-	Start-TestFor Fred 1. Unfriend Fred, verify Status message, verify Fred exits,
-	then pop back to Home. Connect as Bruce again, run Start-TestFor Fred 2, verify
-	no friends and that Fred exits, then close QKR. Run Check-Test `$true to validate
-	the test.`n"
+	Next, Connect Internet as Bruce on QKR, unfriend Fred, verify the Status message
+	and pop back to Home. Run Start-TestFor Fred. Connect on QKR again, verify that
+	Fred is not a friend, verify that Fred exits and close QKR. Run Check-Test `$true
+	to validate the test.`n"
 	}
 }
 
@@ -113,7 +106,7 @@ function Check-Test($checkQkr)
 		Compare-Files .\Bruce-brucef68-3c37-4aef-b8a6-1649659bbbc4.control.qkr (Join-Path $global:qkrLocalState Bruce-brucef68-3c37-4aef-b8a6-1649659bbbc4.json) 2
 		Compare-Files .\Fred-fredac24-3f25-41e0-84f2-3f34f54d072e.control.qkr (Join-Path $global:qkrLocalState Fred-fredac24-3f25-41e0-84f2-3f34f54d072e.json) 2
 	}
-	
+
 	Compare-Files .\BruceControl.txt .\BruceOutput.txt 1
 	Compare-Files .\FredControl.txt .\FredOutput.txt 1
 
@@ -141,7 +134,7 @@ function Update-ControlFiles($updateQkr)
 		Copy-Item .\Bruce.qkr.json .\Bruce.control.qkr
 		Copy-Item .\Fred.qkr.json .\Fred.control.qkr
 	}
-	
+
 	Pop-Location
 }
 

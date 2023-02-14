@@ -1,11 +1,11 @@
-$global:test = "Test-19"
-
 function Get-Description($verbose)
 {
-	"`n${test}: Friends Bruce and Fred update metadata
-
-	Fred online, Bruce online, adds Fred, Fred accepts, Bruce lists and goes offline,
-	Fred lists and goes offline.`n"
+	"`n${test}: Blocked, Bruce adds Fred (blocked), unfriends, adds (blocked),
+	fred unfriends, adds
+	
+	Bruce and Fred blocked, Fred comes online, Bruce comes online, adds Fred and gets
+	message, unfriends Fred, adds Fred and gets message, Fred unfriends, adds Bruce,
+	Bruce accepts lists, goes offline, Fred lists, goes offline.`n"
 
 	if ($null -eq $verbose -or $verbose)
 	{
@@ -15,14 +15,14 @@ function Get-Description($verbose)
 	ResetQKR  Delete json files from QKR's LocalState folder
 	QKR       Configure for testing QKR
 	
-	To test QKR, run Reset-Test QKR, Connect Internet as Fred on QKR, then run
-	Start-TestFor Bruce. Verify that the color, Name and Handle are updated, verify
-	that Bruce has exited and pop to Home.
+	To test QKR, run Reset-Test QKR, Connect Internet as Fred on QKR and run Start-TestFor
+	Bruce. When Bruce is waiting, unfriend Bruce in QKR, add Bruce (bruce@hotmail.com),
+	verify Status message, verify that Bruce has exited, then pop to Home.
 	
-	Next run Start-TestFor Fred 1 and, when it has exited, Connect Internet as Bruce
-	on QKR. Run Start-TestFor Fred 2, verify color, name and Handle are updated, pop
-	to Home and verify that Fred has exited, close QKR. Run Check-Test `$true to
-	validate the test.`n" 
+	Next, run Start-TestFor Fred, Connect Internet as Bruce on QKR, add Fred (fred@gmail.com)
+	and note Status message. Unfriend Fred then Add Fred again, noting status message. Accept
+	friend request. Verify friendship, pop to Home and verify that Fred exits then close QKR.
+	Run Check-Test `$true to validate the test.`n"
 	}
 }
 
@@ -136,7 +136,7 @@ function Update-ControlFiles($updateQkr)
 		Copy-Item .\Bruce.qkr.json .\Bruce.control.qkr
 		Copy-Item .\Fred.qkr.json .\Fred.control.qkr
 	}
-
+	
 	Pop-Location
 }
 

@@ -1,7 +1,0 @@
-Fred
-A
-Bruce
-bruce@hotmail.com
->wait-for: You and Bruce are now friends!
-L
-X

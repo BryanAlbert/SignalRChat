@@ -6,19 +6,6 @@
       "Blocked": false,
       "BluetoothId": null,
       "BluetoothDeviceName": null,
-      "DeviceId": "confred2-7ace-4e26-9e5e-2ac2afc2ead2",
-      "Id": "fredac24-3f25-41e0-84f2-3f34f54d072e",
-      "Email": "fred@gmail.com",
-      "Name": "Fred Sanson",
-      "Handle": "Fred",
-      "Color": "Green",
-      "Created": "2022-06-06T19:03:42",
-      "Modified": "2022-12-17T00:33:01"
-    },
-    {
-      "Blocked": false,
-      "BluetoothId": null,
-      "BluetoothDeviceName": null,
       "DeviceId": "qkrbruce-7ace-4e26-9e5e-2ac2afc2ead2",
       "Id": "brucef68-3c37-4aef-b8a6-1649659bbbc4",
       "Email": "bruce@hotmail.com",
@@ -26,7 +13,20 @@
       "Handle": "Bruce",
       "Color": "Red",
       "Created": "2022-06-06T19:03:41",
-      "Modified": "2022-12-17T00:33:01"
+      "Modified": "2022-12-17T00:23:08"
+    },
+    {
+      "Blocked": false,
+      "BluetoothId": null,
+      "BluetoothDeviceName": null,
+      "DeviceId": "confred2-7ace-4e26-9e5e-2ac2afc2ead2",
+      "Id": "fredac24-3f25-41e0-84f2-3f34f54d072e",
+      "Email": "fred@gmail.com",
+      "Name": "Fred Sanson",
+      "Handle": "Fred",
+      "Color": "Green",
+      "Created": "2022-06-06T19:03:42",
+      "Modified": "2022-12-17T00:23:24"
     }
   ],
   "Operators": [
@@ -54,5 +54,5 @@
   "Handle": "Mom",
   "Color": "Maroon",
   "Created": "2022-06-06T19:03:43",
-  "Modified": "2022-12-17T00:33:01"
+  "Modified": "2022-12-17T00:23:24"
 }

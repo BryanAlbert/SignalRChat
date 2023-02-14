@@ -1,0 +1,11 @@
+Fred
+# wait for Bruce to try and friend us
+>wait-for: (Sent Hello False command to Bruce.)
+U
+0
+A
+Bruce
+bruce@hotmail.com
+>wait-for: Your friend Bruce is offline.
+L
+X

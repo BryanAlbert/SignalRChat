@@ -1,7 +1,6 @@
 Bruce
 A
 Fred
-fred@gmail.com
->wait-for: You and Fred are not friends!
 L
+>wait-for: (Sent Hello null command to Bruce.)
 X

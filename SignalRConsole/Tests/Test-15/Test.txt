@@ -1,4 +1,3 @@
-test-harness Bruce online, unfriends Fred, offline, Fred online, Bruce online
-start-wait BruceInput1.txt BruceOutput.txt Bruce
+test-harness Bruce online, unfriend Fred, Fred online
+start-wait-for: "Fred has been unfriended." BruceInput.txt BruceOutput.txt Bruce
 start FredInput.txt FredOutput.txt Fred
-start BruceInput2.txt BruceOutput.txt Bruce

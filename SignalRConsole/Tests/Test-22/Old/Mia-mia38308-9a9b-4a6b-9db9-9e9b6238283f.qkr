@@ -1,17 +1,15 @@
 {
-  "Description": "After first merge, new has new data to be merged into these data, including one friend.",
+  "Description": "Existing device with no data, before new device is merged.",
   "DataVersion": "1.1",
   "Id": "mia38308-9a9b-4a6b-9db9-9e9b6238283f",
-  "DeviceId": "xxxmia08-9a9b-4a6b-9db9-9e9b6238283f",
+  "DeviceId": "qkrmia08-9a9b-4a6b-9db9-9e9b6238283f",
   "Email": "mia@albertnet.us",
   "Name": "Mia Albert",
   "Handle": "Mia",
   "Color": "Turquoise",
   "Created": "2022-06-27T23:00:00",
-  "Modified": "2022-07-08T05:10:50",
-  "MergeIndex": {
-    "xxxnew65-1468-4409-a21a-f5b4f000ee4f": 0
-  },
+  "Modified": "2022-09-02T04:21:28",
+  "MergeIndex": {},
   "Friends": [
     {
       "Id": "brucef68-3c37-4aef-b8a6-1649659bbbc4",
@@ -38,94 +36,7 @@
     },
     {
       "Name": "Multiplication",
-      "Tables": [
-        {
-          "Base": 1,
-          "Cards": [
-            {
-              "Fact": {
-                "First": 1,
-                "Second": 1
-              },
-              "Quizzed": 3,
-              "Correct": 3,
-              "TotalTime": 1744,
-              "BestTime": 518,
-              "MergeQuizzed": [
-                0
-              ],
-              "MergeCorrect": [
-                0
-              ],
-              "MergeTime": [
-                0
-              ]
-            },
-            {
-              "Fact": {
-                "First": 1,
-                "Second": 2
-              },
-              "Quizzed": 3,
-              "Correct": 3,
-              "TotalTime": 2346,
-              "BestTime": 692,
-              "MergeQuizzed": [
-                0
-              ],
-              "MergeCorrect": [
-                0
-              ],
-              "MergeTime": [
-                0
-              ]
-            }
-          ]
-        },
-        {
-          "Base": 2,
-          "Cards": [
-            {
-              "Fact": {
-                "First": 2,
-                "Second": 1
-              },
-              "Quizzed": 3,
-              "Correct": 3,
-              "TotalTime": 1770,
-              "BestTime": 542,
-              "MergeQuizzed": [
-                0
-              ],
-              "MergeCorrect": [
-                0
-              ],
-              "MergeTime": [
-                0
-              ]
-            },
-            {
-              "Fact": {
-                "First": 2,
-                "Second": 2
-              },
-              "Quizzed": 1,
-              "Correct": 1,
-              "TotalTime": 1532,
-              "BestTime": 532,
-              "MergeQuizzed": [
-                0
-              ],
-              "MergeCorrect": [
-                0
-              ],
-              "MergeTime": [
-                0
-              ]
-            }
-          ]
-        }
-      ]
+      "Tables": []
     },
     {
       "Name": "Division",

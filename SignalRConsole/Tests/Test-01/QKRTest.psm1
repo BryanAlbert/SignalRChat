@@ -1,5 +1,3 @@
-$global:test = "Test-01"
-
 function Get-Description($verbose)
 {
 	"`n${test}: Friends listing friends

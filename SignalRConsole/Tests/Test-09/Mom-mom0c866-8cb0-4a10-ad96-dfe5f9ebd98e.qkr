@@ -1,0 +1,31 @@
+{
+  "DataVersion": "1.1",
+  "Id": "mom0c866-8cb0-4a10-ad96-dfe5f9ebd98e",
+  "DeviceId": "qkrmomd2-7ace-4e26-9e5e-2ac2afc2ead2",
+  "Email": "jeanmariealbert@hotmail.com",
+  "Name": "Jean Albert",
+  "Handle": "Mom",
+  "Color": "Maroon",
+  "Created": "2022-06-06T19:03:43",
+  "Modified": "2022-08-31T18:12:58",
+  "MergeIndex": {},
+  "Friends": [],
+  "Operators": [
+    {
+      "Name": "Addition",
+      "Tables": []
+    },
+    {
+      "Name": "Subtraction",
+      "Tables": []
+    },
+    {
+      "Name": "Multiplication",
+      "Tables": []
+    },
+    {
+      "Name": "Division",
+      "Tables": []
+    }
+  ]
+}

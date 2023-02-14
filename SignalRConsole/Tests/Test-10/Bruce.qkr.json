@@ -3,7 +3,7 @@
   "MergeIndex": {},
   "Friends": [
     {
-      "Blocked": null,
+      "Blocked": false,
       "BluetoothId": null,
       "BluetoothDeviceName": null,
       "DeviceId": "confred2-7ace-4e26-9e5e-2ac2afc2ead2",
@@ -41,5 +41,5 @@
   "Handle": "Bruce",
   "Color": "Red",
   "Created": "2022-06-06T19:03:41",
-  "Modified": "2022-08-31T19:59:12"
+  "Modified": "2022-08-31T19:41:59"
 }

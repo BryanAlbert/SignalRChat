@@ -1,5 +1,12 @@
 Bruce
-L
->wait-for: Your friend Fred is online.
+A
+Fred
+U
+0
+A
+Fred
+fred@gmail.com
+>wait-for: Accept friend request from Fred, email address fred@gmail.com? [y/n]
+Y
 L
 X

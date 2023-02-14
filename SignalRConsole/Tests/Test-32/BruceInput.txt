@@ -2,11 +2,10 @@ Bruce
 >wait-for: Your friend Fred is online.
 C
 0
->wait-for: You have no tables and can't race.
-go away.
 >wait-for: Fred is away...
+Tables.
 R
->wait-for: You have no tables and can't race.
+>wait-for: Fred has returned!
 Yo.
 >wait-for: Fred said: Bye now!
 goodbye.

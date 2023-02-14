@@ -1,7 +1,5 @@
 Fred
 >wait-for: Bruce is away...
-Go away.
-R
 Goodbye.
 >wait-for: Your friend Bruce is offline.
 X

@@ -1,11 +1,9 @@
-$global:test = "Test-15"
-
 function Get-Description($verbose)
 {
-	"`n${test}: Bruce online, unfriends Fred, offline, Fred online, Bruce online
+	"`n${test}: Bruce online, unfriend Fred, Fred online
 
-	Bruce comes online, unfriends Fred, goes offline, Fred comes online, Bruce
-	comes online, both list and go offline.`n"
+	Bruce and Fred are friends, Bruce comes online, unfriends Fred, Fred comes online,
+	both list and go offline.`n"
 
 	if ($null -eq $verbose -or $verbose)
 	{
@@ -15,14 +13,13 @@ function Get-Description($verbose)
 	ResetQKR  Delete json files from QKR's LocalState folder
 	QKR       Configure for testing QKR
 	
-	To test QKR, run Reset-Test QKR then run Start-TestFor Bruce 1 and wait for it
-	to finish. Connect Internet as Fred on QKR, run Start-TestFor Bruce 2, verify
-	the Status message and pop back to Home, verify that Fred exits.
-
-	Next, Connect Internet as Bruce on QKR, unfriend Fred, verify the Status message
-	and pop back to Home. Run Start-TestFor Fred. Connect on QKR again, verify that
-	Fred is not a friend, verify that Fred exits and close QKR. Run Check-Test `$true
-	to validate the test.`n"
+	To test QKR, run Reset-Test QKR, run Start-TestFor Bruce and wait for the unfriended
+	message, then Connect Internet as Fred on QKR. Verify the Status message and pop
+	back to Home.
+	
+	Next, Connect Internet as Bruce on QKR and unfriend Fred. Run Start-TestFor Fred.
+	Verify the Status message in QKR and close QKR. Run Check-Test `$true to validate
+	the test.`n"
 	}
 }
 

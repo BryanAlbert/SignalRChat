@@ -1,11 +1,9 @@
-$global:test = "Test-10"
-
 function Get-Description($verbose)
 {
-	"`n${test}: Bruce pending friends with Fred, adds Fred
+	"`n${test}: Bruce friends with Fred, adds Fred
 
-	Bruce pending friendship with Fred, comes online and adds Fred, gets a message,
-	lists and goes offline.`n"
+	Bruce, friends with Fred, comes online and adds Fred, gets a message, lists
+	and goes offline.`n"
 
 	if ($null -eq $verbose -or $verbose)
 	{
@@ -14,10 +12,10 @@ function Get-Description($verbose)
 	Console   Reset only Console json files
 	ResetQKR  Delete json files from QKR's LocalState folder
 	QKR       Configure for testing QKR
-	
-	To test QKR, run Reset-Test QKR then Connect Internet as Bruce on QKR and add
-	Fred, (fred@gmail.com), verify the status message and close QKR. Check results
-	with Check-Test `$true.`n"
+
+	To test QKR, run Reset-test QKR then Connect Internet as Bruce on QKR and
+	add Fred (fred@gmail.com), verify the Status message and exit QKR. Check
+	results with Check-Test `$true.`n"
 	}
 }
 
@@ -122,7 +120,7 @@ function Update-ControlFiles($updateQkr)
 		Copy-Item .\BruceOutput.txt .\BruceControl.txt
 		Copy-Item .\Bruce.qkr.json .\Bruce.control.qkr
 	}
-	
+
 	Pop-Location
 }
 

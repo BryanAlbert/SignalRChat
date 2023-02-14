@@ -7,7 +7,7 @@
   "Handle": "Bruce",
   "Color": "Red",
   "Created": "2022-06-06T19:03:41",
-  "Modified": "2022-06-30T18:40:12",
+  "Modified": "2022-06-06T19:03:41",
   "MergeIndex": {},
   "Friends": [
     {
@@ -19,7 +19,7 @@
       "Color": "Green",
       "Created": "2022-06-06T19:03:42",
       "Modified": "2022-06-06T19:03:42",
-      "Blocked": true,
+      "Blocked": null,
       "BluetoothId": null,
       "BluetoothDeviceName": null
     }

@@ -1,6 +1,7 @@
 Bruce
->wait-for: Your friend Fred is online.
-U
-0
+A
+Fred
+fred@gmail.com
+>wait-for: You and Fred are not friends!
 L
 X

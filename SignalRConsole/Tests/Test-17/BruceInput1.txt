@@ -1,6 +1,11 @@
 Bruce
+# so that we don't crash by exiting too quickly while initializing with the server
+>wait-for: (Sent Hello null command to Bruce.)
 A
 Fred
 fred@gmail.com
+>wait-for: Your (pending) friend Fred is online.
+U
+0
 L
 X

@@ -1,10 +1,8 @@
-$global:test = "Test-24"
-
 function Get-Description($verbose)
 {
-	"`n${test}: After second merge, merge more changes from Old and New devices
+	"`n${test}: After initial merge, merge more data from Old
 	
-	Old Mia online, New Mia comes online, merges, lists, exits, Old merges, lists, exits.`n"
+	Old Mia online, New Mia comes online, merges, lists, exits, Old merges, lists, exits.	`n"
 
 	if ($null -eq $verbose -or $verbose)
 	{
@@ -16,13 +14,12 @@ function Get-Description($verbose)
 	New       Configure QKR with New json file
 
 	To test QKR, run Reset-Test New, run Start-TestFor Old then Connect Internet as Mia on
-	QKR. Pop back to Home, verify that the console exits and close QKR. Check preliminary
-	results with Check-Test New.
+	QKR. Pop back to Home and verify that Mia is turquoise and that the console exits, then
+	close QKR. Check preliminary results with Check-Test New.
 	
-	Next, run Reset-Test Old, launch QKR and log in as Mia, noting that her color is turquoise,
-	Connect Internet as Mia and note that she has no friends, then run Start-TestFor New. Note
-	that Mia gets a new friend Bruce then pop back to Home and verify that Mia's color is
-	yellow. Close QKR and verify that the console has exited. Check results with Check-Test Old.`n"
+	Next, run Reset-Test Old, Connect Internet as Mia on QKR then run Start-TestFor New. Pop
+	back to Home and verify that Mia is turquoise and that the console exits, then close QKR.
+	Check results with Check-Test Old.`n"
 	}
 }
 

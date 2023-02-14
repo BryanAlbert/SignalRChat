@@ -1,2 +1,2 @@
-test-harness Already blocked
+test-harness Already pending
 start BruceInput.txt BruceOutput.txt Bruce

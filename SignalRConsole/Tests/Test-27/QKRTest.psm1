@@ -1,12 +1,10 @@
-$global:test = "Test-27"
-
 function Get-Description($verbose)
 {
-	"`n${test}: Mia online, Mia on second device with new data comes online, merges, Mia on
-	third device with new data comes online, merges
+	"`n${test}: Mia online, new Mia on second device comes online, merges, new Mia on third device
+	comes online, merges
 
-	Mia with Test-26 results online on First, Mia on a Second device with new data and a 
-	friend comes online and merges with First, Mia on Third device with new data comes
+	Mia with data online on First, Mia on a Second device with different data comes online
+	and merges with First, Mia on Third device with different data yet and a friend comes
 	online and merges with First and Second asynchronously.`n"
 
 	if ($null -eq $verbose -or $verbose)
@@ -18,16 +16,17 @@ function Get-Description($verbose)
 	First     Configure QKR with Old json file
 	Second    Configure QKR with New json file
 
-	To test QKR, run Reset-Test First and Connect Internet as Mia on QKR, noting that Mia
-	is friendless. Run Start-TestFor Second in one console and Start-TestFor Third in
-	another. Verify that QKR gains friend Bruce, pop back to Home and close QKR, noting
-	that both consoles exit. Check preliminary results with Check-Test First.
+	To test QKR, run Reset-Test First and launch QKR, log in as Mia and note that her color
+	is Yellow. Connect Internet as Mia and note that Mia is friendless. Run Start-TestFor
+	Second in one console and Start-TestFor Third in another. Verify that QKR gains friend
+	Bruce, pop back to Home, verify that Mia is turquoise and that the consoles exit, then 
+	close QKR. Check preliminary results with Check-Test First.
 	
 	Next, run Reset-Test Second, run Start-TestFor First in one console, launch QKR and
-	log in as Mia, noting that her color is turquoise. Connect Internet as Mia. Run
-	Start-TestFor Third in a second console. Verify that QKR gains friend Bruce, pop back
-	to Home and verify that Mia is yellow and that both consoles exit, then close QKR.
-	Check results with Check-Test Second.`n"
+	Connect Internet as Mia. Note that Mia is friendless and run Start-TestFor Third in 
+	another console. Verify that QKR gains friend Bruce, pop back to Home and verify that
+	Mia is turquoise then close QKR, verifying that both consoles exit. Check results with
+	Check-Test Second.`n"
 	}
 }
 
@@ -37,7 +36,7 @@ function Reset-Test($reset, $showDescription)
 	Push-Location $test
 	
 	$firstPath = Join-Path $global:qkrLocalState Mia-mia38308-9a9b-4a6b-9db9-9e9b6238283f.json
-	$secondPath = Join-Path $global:qkrLocalState Mia-mia38308-9a9b-4a6b-9db9-9e9b6238283f.json
+	$secondPath = Join-Path $global:qkrLocalState Mia-second65-1468-4409-a21a-f5b4f000ee4f.json
 	
 	switch ($reset)
 	{
@@ -68,7 +67,7 @@ function Reset-Test($reset, $showDescription)
 			Remove-Files $firstPath, $secondPath, .\First\Output.txt, .\Second\Output.txt, .\Third\Output.txt
 			Copy-Item .\First\Mia.qkr .\First\Mia.qkr.json
 			Copy-Item .\Third\Mia.qkr .\Third\Mia.qkr.json
-			Copy-Item .\Second\Mia-mia38308-9a9b-4a6b-9db9-9e9b6238283f.qkr $secondPath
+			Copy-Item .\Second\Mia-second65-1468-4409-a21a-f5b4f000ee4f.qkr $secondPath
 		}
 		Default
 		{
@@ -157,8 +156,8 @@ function Check-Test($stage)
 			Compare-Files .\Third\Control.txt .\Third\Output.txt 1 2
 			$mergeTest = "-checkmerge $test Mia"
 		}
-	}
-
+	}	
+	
 	Pop-Location
 	"Calling SignalRConsole with: $mergeTest"
 	dotnet.exe .\SignalRConsole.dll $mergeTest.Split()
@@ -187,7 +186,7 @@ function Update-ControlFiles($stage)
 			Copy-Item (Join-Path $global:qkrLocalState Mia-mia38308-9a9b-4a6b-9db9-9e9b6238283f.json) .\Second\Mia-mia38308-9a9b-4a6b-9db9-9e9b6238283f.control.qkr 
 		}
 		Default
-		{	
+		{
 			"Updating control files for $test"
 			Copy-Item .\First\Output.txt .\First\Control.txt
 			Copy-Item .\Second\Output.txt .\Second\Control.txt

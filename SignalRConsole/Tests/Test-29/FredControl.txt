@@ -7,8 +7,8 @@ Device Id: confred2-7ace-4e26-9e5e-2ac2afc2ead2,
 Creation Date: 2022-06-06T19:03:42, Modified Date: 2022-08-30T19:10:25
 Pick a command: t to list tables, a to add a friend, l to list friends,
 u to unfriend a friend, c to chat, or x to exit
-(Sent Hello null command to Fred.)
 Listening>
+(Sent Hello null command to Fred.)
 Your friend Bruce is online.
 Bruce has these tables:
 Addition: (None)
@@ -17,20 +17,18 @@ Multiplication: (None)
 Division: (None)
 You have no tables.
 Chatting>
-Type messages, type 'go away.' to go away, or 'goodbye.' to leave the chat.
-Bruce said: Yo.
-go away.
-(You went away)
-Away>
-You are away, hit a key to return... 
-R
-Chatting>
+Type messages, type 'tables.' to open tables, or 'goodbye.' to leave the chat.
+Friend Away>
+Bruce is away...
+Bruce has returned!
 Bruce has these tables:
 Addition: (None)
 Subtraction: (None)
 Multiplication: (None)
 Division: (None)
 You have no tables.
+Chatting>
+Bruce said: So long.
 Bye now!
 You said: Bye now!
 Pick a command: t to list tables, a to add a friend, l to list friends,

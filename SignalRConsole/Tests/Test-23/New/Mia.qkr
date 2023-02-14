@@ -1,5 +1,5 @@
 {
-  "Description": "After first merge.",
+  "Description": "After first merge, new has new data to be merged.",
   "DataVersion": "1.1",
   "MergeIndex": {
     "xxxmia08-9a9b-4a6b-9db9-9e9b6238283f": 0
@@ -44,9 +44,9 @@
                 "First": 1,
                 "Second": 2
               },
-              "Quizzed": 3,
-              "Correct": 3,
-              "TotalTime": 2346,
+              "Quizzed": 4,
+              "Correct": 4,
+              "TotalTime": 3041,
               "BestTime": 692,
               "MergeQuizzed": [
                 3
@@ -57,6 +57,19 @@
               "MergeTime": [
                 2346
               ]
+            },
+            {
+              "Fact": {
+                "First": 1,
+                "Second": 3
+              },
+              "Quizzed": 2,
+              "Correct": 2,
+              "TotalTime": 1397,
+              "BestTime": 670,
+              "MergeQuizzed": null,
+              "MergeCorrect": null,
+              "MergeTime": null
             }
           ]
         },
@@ -68,9 +81,9 @@
                 "First": 2,
                 "Second": 1
               },
-              "Quizzed": 3,
-              "Correct": 3,
-              "TotalTime": 1770,
+              "Quizzed": 4,
+              "Correct": 4,
+              "TotalTime": 2437,
               "BestTime": 542,
               "MergeQuizzed": [
                 3
@@ -87,9 +100,9 @@
                 "First": 2,
                 "Second": 2
               },
-              "Quizzed": 1,
-              "Correct": 1,
-              "TotalTime": 1532,
+              "Quizzed": 2,
+              "Correct": 2,
+              "TotalTime": 2407,
               "BestTime": 532,
               "MergeQuizzed": [
                 1
@@ -100,6 +113,63 @@
               "MergeTime": [
                 1532
               ]
+            },
+            {
+              "Fact": {
+                "First": 2,
+                "Second": 3
+              },
+              "Quizzed": 1,
+              "Correct": 1,
+              "TotalTime": 579,
+              "BestTime": 579,
+              "MergeQuizzed": null,
+              "MergeCorrect": null,
+              "MergeTime": null
+            }
+          ]
+        },
+        {
+          "Base": 3,
+          "Cards": [
+            {
+              "Fact": {
+                "First": 3,
+                "Second": 1
+              },
+              "Quizzed": 1,
+              "Correct": 1,
+              "TotalTime": 880,
+              "BestTime": 880,
+              "MergeQuizzed": null,
+              "MergeCorrect": null,
+              "MergeTime": null
+            },
+            {
+              "Fact": {
+                "First": 3,
+                "Second": 2
+              },
+              "Quizzed": 1,
+              "Correct": 1,
+              "TotalTime": 1125,
+              "BestTime": 125,
+              "MergeQuizzed": null,
+              "MergeCorrect": null,
+              "MergeTime": null
+            },
+            {
+              "Fact": {
+                "First": 3,
+                "Second": 3
+              },
+              "Quizzed": 1,
+              "Correct": 1,
+              "TotalTime": 880,
+              "BestTime": 880,
+              "MergeQuizzed": null,
+              "MergeCorrect": null,
+              "MergeTime": null
             }
           ]
         }
@@ -117,5 +187,5 @@
   "Handle": "Mia",
   "Color": "Turquoise",
   "Created": "2022-07-06T23:11:31",
-  "Modified": "2022-07-08T00:10:38"
+  "Modified": "2022-09-07T22:17:12"
 }

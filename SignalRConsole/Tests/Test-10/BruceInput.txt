@@ -1,6 +1,7 @@
 Bruce
+# so that we don't crash by exiting too quickly while initializing with the server
+>wait-for: (Sent Hello null command to Bruce.)
 A
 Fred
 L
->wait-for: (Sent Hello null command to Bruce.)
 X

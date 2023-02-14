@@ -1,0 +1,7 @@
+Fred
+>wait-for: (Sent Hello null command to Fred.)
+A
+Bruce
+bruce@hotmail.com
+L
+X

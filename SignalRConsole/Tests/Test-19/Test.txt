@@ -1,4 +1,3 @@
-test-harness Friends Bruce and Fred update metadata
-start-wait FredInput1.txt FredOutput.txt Fred
-start-wait-for-regex: "^OLD Fred," BruceInput.txt BruceOutput.txt Bruce
-start FredInput2.txt FredOutput.txt Fred
+test-harness Blocked, Bruce adds Fred (blocked), unfriends, adds (blocked), fred unfriends, adds
+start FredInput.txt FredOutput.txt Fred
+start BruceInput.txt BruceOutput.txt Bruce

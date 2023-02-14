@@ -1029,7 +1029,7 @@ namespace SignalRConsole
 				if (IsRaceLeader)
 				{
 					WriteLine($"You're the Race Leader!");
-					WriteLine($"Type messages, type '{c_tablesCommand}' to go open tables," +
+					WriteLine($"Type messages, type '{c_tablesCommand}' to open tables," +
 						$"{(HaveIntersection ? $" '{c_raceCommand}' to race," : "")}" +
 						$" or '{c_leaveChatCommand}' to leave the chat.");
 				}

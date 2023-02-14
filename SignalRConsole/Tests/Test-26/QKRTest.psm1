@@ -1,13 +1,8 @@
-$global:test = "Test-26"
-
 function Get-Description($verbose)
 {
-	"`n${test}: Mia online, new Mia on second device comes online, merges, new Mia on third device
-	comes online, merges
-
-	Mia with data online on First, Mia on a Second device with different data comes online
-	and merges with First, Mia on Third device with different data yet and a friend comes
-	online and merges with First and Second asynchronously.`n"
+	"`n${test}: Old device with Addition tables merged with new deivce with Addition tables
+	
+	Old Mia online, New Mia comes online, merges, lists, exits, Old merges, lists, exits.`n"
 
 	if ($null -eq $verbose -or $verbose)
 	{
@@ -15,20 +10,16 @@ function Get-Description($verbose)
 	<none>    Reset everything
 	Console   Reset only Console json files
 	ResetQKR  Delete json files from QKR's LocalState folder
-	First     Configure QKR with Old json file
-	Second    Configure QKR with New json file
+	Old       Configure QKR with Old json file
+	New       Configure QKR with New json file
 
-	To test QKR, run Reset-Test First and launch QKR, log in as Mia and note that her color
-	is Yellow. Connect Internet as Mia and note that Mia is friendless. Run Start-TestFor
-	Second in one console and Start-TestFor Third in another. Verify that QKR gains friend
-	Bruce, pop back to Home, verify that Mia is turquoise and that the consoles exit, then 
-	close QKR. Check preliminary results with Check-Test First.
+	To test QKR, run Reset-Test New, run Start-TestFor Old then Connect Internet as Mia on
+	QKR. Pop back to Home and verify that Mia is yellow and that the console exits, then
+	close QKR. Check preliminary results with Check-Test New.
 	
-	Next, run Reset-Test Second, run Start-TestFor First in one console, launch QKR and
-	Connect Internet as Mia. Note that Mia is friendless and run Start-TestFor Third in 
-	another console. Verify that QKR gains friend Bruce, pop back to Home and verify that
-	Mia is turquoise then close QKR, verifying that both consoles exit. Check results with
-	Check-Test Second.`n"
+	Next, run Reset-Test Old, launch QKR and note that Mia is turquoise, Connect Internet
+	as Mia on QKR then run Start-TestFor New. Pop back to Home and verify that Mia is
+	yellow and that the console exits, then close QKR. Check results with Check-Test Old.`n"
 	}
 }
 
@@ -37,53 +28,49 @@ function Reset-Test($reset, $showDescription)
 	"Resetting $test"
 	Push-Location $test
 	
-	$firstPath = Join-Path $global:qkrLocalState Mia-mia38308-9a9b-4a6b-9db9-9e9b6238283f.json
-	$secondPath = Join-Path $global:qkrLocalState Mia-second65-1468-4409-a21a-f5b4f000ee4f.json
+	$oldPath = Join-Path $global:qkrLocalState Mia-mia38308-9a9b-4a6b-9db9-9e9b6238283f.json
+	$newPath = Join-Path $global:qkrLocalState Mia-qkrnew65-1468-4409-a21a-f5b4f000ee4f.json
 	
 	switch ($reset)
 	{
 		"Console"
 		{
 			"Resetting Console..."
-			Remove-Files .\First\Output.txt, .\Second\Output.txt, .\Third\Output.txt
-			Copy-Item .\First\Mia.qkr .\First\Mia.qkr.json
-			Copy-Item .\Second\Mia.qkr .\Second\Mia.qkr.json
-			Copy-Item .\Third\Mia.qkr .\Third\Mia.qkr.json
+			Remove-Files .\Old\Output.txt, .\New\Output.txt
+			Copy-Item .\New\Mia.qkr .\New\Mia.qkr.json
+			Copy-Item .\Old\Mia.qkr .\Old\Mia.qkr.json
 		}
 		"ResetQKR"
 		{
 			"Resetting QKR"
-			Remove-Files $firstPath, $secondPath
+			Remove-Files $oldPath, $newPath
 		}
-		"First"
+		"Old"
 		{
-			"Configuring for testing First on QKR at $global:qkrLocalState"
-			Remove-Files $firstPath, $secondPath, .\First\Output.txt, .\Second\Output.txt, .\Third\Output.txt
-			Copy-Item .\Second\Mia.qkr .\Second\Mia.qkr.json
-			Copy-Item .\Third\Mia.qkr .\Third\Mia.qkr.json
-			Copy-Item .\First\Mia-mia38308-9a9b-4a6b-9db9-9e9b6238283f.qkr $firstPath
+			"Configuring for testing Old on QKR at $global:qkrLocalState"
+			Remove-Files $oldPath, $newPath, .\New\Output.txt
+			Copy-Item .\New\Mia.qkr .\New\Mia.qkr.json
+			Copy-Item .\Old\Mia-mia38308-9a9b-4a6b-9db9-9e9b6238283f.qkr $oldPath
 		}
-		"Second"
+		"New"
 		{
-			"Configuring for testing Second on QKR at $global:qkrLocalState"
-			Remove-Files $firstPath, $secondPath, .\First\Output.txt, .\Second\Output.txt, .\Third\Output.txt
-			Copy-Item .\First\Mia.qkr .\First\Mia.qkr.json
-			Copy-Item .\Third\Mia.qkr .\Third\Mia.qkr.json
-			Copy-Item .\Second\Mia-second65-1468-4409-a21a-f5b4f000ee4f.qkr $secondPath
+			"Configuring for testing New on QKR at $global:qkrLocalState"
+			Remove-Files $oldPath, $newPath, .\Old\Output.txt
+			Copy-Item .\Old\Mia.qkr .\Old\Mia.qkr.json
+			Copy-Item .\New\Mia-qkrnew65-1468-4409-a21a-f5b4f000ee4f.qkr $newPath
 		}
 		Default
 		{
 			"Resetting all..."
-			Remove-Files $firstPath, $secondPath, .\First\Output.txt, .\Second\Output.txt, .\Third\Output.txt
-			Copy-Item .\First\Mia.qkr .\First\Mia.qkr.json
-			Copy-Item .\Second\Mia.qkr .\Second\Mia.qkr.json
-			Copy-Item .\Third\Mia.qkr .\Third\Mia.qkr.json
+			Remove-Files $oldPath, $newPath, .\Old\Output.txt, .\New\Output.txt
+			Copy-Item .\New\Mia.qkr .\New\Mia.qkr.json
+			Copy-Item .\Old\Mia.qkr .\Old\Mia.qkr.json
 		}
 	}
 	
 	Pop-Location
 	if ($null -eq $showDescription -or $showDescription) {
-		Get-Description ($reset -eq "ResetQKR" -or $reset -eq "First" -or $reset -eq "Second" -or $reset -eq "All" -or $null -eq $reset)
+		Get-Description ($reset -eq "ResetQKR" -or $reset -eq "Old" -or $reset -eq "New" -or $reset -eq "All" -or $null -eq $reset)
 	}
 }
 
@@ -121,41 +108,29 @@ function Check-Test($stage)
 	
 	switch ($stage)
 	{
-		First
+		Old
 		{
-			Compare-Files .\First\Mia-mia38308-9a9b-4a6b-9db9-9e9b6238283f.control.qkr $qkrPath 1 1
-			Compare-Files .\Second\Mia.control.qkr .\Second\Mia.qkr.json 1 1
-			Compare-Files .\Third\Mia.control.qkr .\Third\Mia.qkr.json 1 1
-			Compare-Files $qkrPath .\Second\Mia.qkr.json 2 100 $true
-			Compare-Files .\Second\Mia.qkr.json .\Third\Mia.qkr.json 2 100 $true
-			Compare-Files $qkrPath .\Third\Mia.qkr.json 2 100 $true
-			Compare-Files .\Second\Control.txt .\Second\Output.txt 1 2
-			Compare-Files .\Third\Control.txt .\Third\Output.txt 1 2
-			$mergeTest = "-checkmerge -qkr First $global:qkrLocalState $test Mia"
+			Compare-Files .\Old\Mia-mia38308-9a9b-4a6b-9db9-9e9b6238283f.control.qkr $qkrPath 1 1
+			Compare-Files .\New\Mia.control.qkr .\New\Mia.qkr.json 1 1
+			Compare-Files $qkrPath .\New\Mia.qkr.json 2 100 $true
+			Compare-Files .\New\Control.txt .\New\Output.txt 1 2
+			$mergeTest = "-checkmerge -qkr Old $global:qkrLocalState $test Mia"
 		}
-		Second
+		New
 		{
-			Compare-Files .\First\Mia.control.qkr .\First\Mia.qkr.json 1 1
-			Compare-Files .\Second\Mia-mia38308-9a9b-4a6b-9db9-9e9b6238283f.control.qkr $qkrPath 1 1
-			Compare-Files .\Third\Mia.control.qkr .\Third\Mia.qkr.json 1 1
-			Compare-Files .\First\Mia.qkr.json $qkrPath 2 100 $true
-			Compare-Files $qkrPath .\Third\Mia.qkr.json 2 100 $true
-			Compare-Files .\First\Mia.qkr.json .\Third\Mia.qkr.json 2 100 $true
-			Compare-Files .\First\Control.txt .\First\Output.txt 1 2
-			Compare-Files .\Third\Control.txt .\Third\Output.txt 1 2
-			$mergeTest = "-checkmerge -qkr Second $global:qkrLocalState $test Mia"
+			Compare-Files .\Old\Mia.control.qkr .\Old\Mia.qkr.json 1 1
+			Compare-Files .\New\Mia-mia38308-9a9b-4a6b-9db9-9e9b6238283f.control.qkr $qkrPath 1 1
+			Compare-Files .\Old\Mia.qkr.json $qkrPath 2 100 $true
+			Compare-Files .\Old\Control.txt .\Old\Output.txt 1 2
+			$mergeTest = "-checkmerge -qkr New $global:qkrLocalState $test Mia"
 		}
 		Default
 		{
-			Compare-Files .\First\Mia.control.qkr .\First\Mia.qkr.json 1 1
-			Compare-Files .\Second\Mia.control.qkr .\Second\Mia.qkr.json 1 1
-			Compare-Files .\Third\Mia.control.qkr .\Third\Mia.qkr.json 1 1
-			Compare-Files .\First\Mia.qkr.json .\Second\Mia.qkr.json 2 100 $true
-			Compare-Files .\Second\Mia.qkr.json .\Third\Mia.qkr.json 2 100 $true
-			Compare-Files .\First\Mia.qkr.json .\Third\Mia.qkr.json 2 100 $true
-			Compare-Files .\First\Control.txt .\First\Output.txt 1 2
-			Compare-Files .\Second\Control.txt .\Second\Output.txt 1 2
-			Compare-Files .\Third\Control.txt .\Third\Output.txt 1 2
+			Compare-Files .\Old\Mia.control.qkr .\Old\Mia.qkr.json 1 1
+			Compare-Files .\New\Mia.control.qkr .\New\Mia.qkr.json 1 1
+			Compare-Files .\Old\Mia.qkr.json .\New\Mia.qkr.json 2 100 $true
+			Compare-Files .\Old\Control.txt .\Old\Output.txt 1 2
+			Compare-Files .\New\Control.txt .\New\Output.txt 1 2
 			$mergeTest = "-checkmerge $test Mia"
 		}
 	}	
@@ -165,7 +140,7 @@ function Check-Test($stage)
 	dotnet.exe .\SignalRConsole.dll $mergeTest.Split()
 	if ($LASTEXITCODE -lt 0) {
 		$script:errorCount++
-	}	
+	}
 
 	"`nWarning count: $script:warningCount"
 	"Error count: $script:errorCount"
@@ -177,25 +152,23 @@ function Update-ControlFiles($stage)
 {
 	Push-Location $test
 	switch ($stage) {
-		First
+		Old
 		{
 			"Updating QKR control files for $test from $global:qkrLocalState"
-			Copy-Item (Join-Path $global:qkrLocalState Mia-mia38308-9a9b-4a6b-9db9-9e9b6238283f.json) .\First\Mia-mia38308-9a9b-4a6b-9db9-9e9b6238283f.control.qkr 
+			Copy-Item (Join-Path $global:qkrLocalState Mia-mia38308-9a9b-4a6b-9db9-9e9b6238283f.json) .\Old\Mia-mia38308-9a9b-4a6b-9db9-9e9b6238283f.control.qkr 
 		}
-		Second
+		New
 		{
 			"Updating QKR control files for $test from $global:qkrLocalState"
-			Copy-Item (Join-Path $global:qkrLocalState Mia-mia38308-9a9b-4a6b-9db9-9e9b6238283f.json) .\Second\Mia-mia38308-9a9b-4a6b-9db9-9e9b6238283f.control.qkr 
+			Copy-Item (Join-Path $global:qkrLocalState Mia-mia38308-9a9b-4a6b-9db9-9e9b6238283f.json) .\New\Mia-mia38308-9a9b-4a6b-9db9-9e9b6238283f.control.qkr 
 		}
 		Default
 		{
 			"Updating control files for $test"
-			Copy-Item .\First\Output.txt .\First\Control.txt
-			Copy-Item .\Second\Output.txt .\Second\Control.txt
-			Copy-Item .\Third\Output.txt .\Third\Control.txt
-			Copy-Item .\First\Mia.qkr.json .\First\Mia.control.qkr
-			Copy-Item .\Second\Mia.qkr.json .\Second\Mia.control.qkr
-			Copy-Item .\Third\Mia.qkr.json .\Third\Mia.control.qkr
+			Copy-Item .\Old\Output.txt .\Old\Control.txt
+			Copy-Item .\New\Output.txt .\New\Control.txt
+			Copy-Item .\Old\Mia.qkr.json .\Old\Mia.control.qkr
+			Copy-Item .\New\Mia.qkr.json .\New\Mia.control.qkr
 		}
 	}
 
@@ -254,20 +227,8 @@ function Get-FilteredText($file, $merge)
 			elseif ($_ -match "`"DeviceId`": `"(con|qkr)(mia|new)[a-f0-9]{2}-[a-f0-9]{4}-[a-fel0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}`"") {
 				($_ -replace "`"DeviceId`": ", "  " -replace ",", "")
 			}
-			elseif ($_ -match "`"DeviceId`": `"(first|third)[a-f0-9]{3}-[a-f0-9]{4}-[a-fel0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}`"") {
-				($_ -replace "`"DeviceId`": ", "  " -replace ",", "")
-			}
-			elseif ($_ -match "`"DeviceId`": `"second[a-f0-9]{2}-[a-f0-9]{4}-[a-fel0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}`"") {
-				($_ -replace "`"DeviceId`": ", "  " -replace ",", "")
-			}
 			elseif ($_ -match "`"(con|qkr)(mia|new)[a-f0-9]{2}-[a-f0-9]{4}-[a-fel0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}`": [0-9]") {
 				($_ -replace ": [0-9]", "")
-			}
-			elseif ($_ -match "`"(first|third)[a-f0-9]{3}-[a-f0-9]{4}-[a-fel0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}`": [0-9],?") {
-				($_ -replace ": [0-9],?", "")
-			}
-			elseif ($_ -match "`"second[a-f0-9]{2}-[a-f0-9]{4}-[a-fel0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}`": [0-9],?") {
-				($_ -replace ": [0-9],?", "")
 			}
 			elseif ($_ -match "`"BluetoothDeviceName`": null,") {
 				$_ -replace ",", ""
@@ -281,22 +242,6 @@ function Get-FilteredText($file, $merge)
 		}
 		elseif ($_ -match "(con|qkr).{5}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}") {
 			$_ -replace "(con|qkr)", "xxx"
-		}
-		elseif ($_ -match "^Merging data from.+, Id mia[a-f0-9]{5}-[a-f0-9]{4}-[a-fel0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}, on device") {
-			# remove Id printed when processing the old device's merge so that it matches a the Id printed when processing a new device's
-			# merge, which happens if First and Second are merged before Second and Third, for example (and Second has the original Id)  
-			$_ -replace ", Id mia[a-f0-9]{5}-[a-f0-9]{4}-[a-fel0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12},", ""
-		}
-		elseif ($_ -match "`"(first|third)[a-f0-9]{3}-[a-f0-9]{4}-[a-fel0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}`": [0-9],?") {
-			($_ -replace ": [0-9],?", ": #")
-		}
-		elseif ($_ -match "`"second[a-f0-9]{2}-[a-f0-9]{4}-[a-fel0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}`": [0-9],?") {
-			($_ -replace ": [0-9],?", ": #")
-		}
-		elseif ($_ -match "[a-f0-9]{5}-[a-f0-9]{4}-[a-fel0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12},") {
-		}
-		elseif ($_ -match "^\s*[0-9]+,$") {
-			$_ -replace ",$", ""
 		}
 		else {
 			$_

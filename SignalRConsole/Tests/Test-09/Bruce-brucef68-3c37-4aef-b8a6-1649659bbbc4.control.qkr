@@ -7,9 +7,22 @@
   "Handle": "Bruce",
   "Color": "Red",
   "Created": "2022-06-06T19:03:41",
-  "Modified": "2022-06-30T18:40:12",
+  "Modified": "2022-12-17T01:14:34",
   "MergeIndex": {},
   "Friends": [
+    {
+      "Id": "mom0c866-8cb0-4a10-ad96-dfe5f9ebd98e",
+      "DeviceId": "conmomd2-7ace-4e26-9e5e-2ac2afc2ead2",
+      "Email": "jeanmariealbert@hotmail.com",
+      "Name": "Jean Albert",
+      "Handle": "Mom",
+      "Color": "Maroon",
+      "Created": "2022-06-06T19:03:43",
+      "Modified": "2022-12-17T01:14:27",
+      "Blocked": false,
+      "BluetoothId": null,
+      "BluetoothDeviceName": null
+    },
     {
       "Id": "fredac24-3f25-41e0-84f2-3f34f54d072e",
       "DeviceId": "confred2-7ace-4e26-9e5e-2ac2afc2ead2",
@@ -18,7 +31,7 @@
       "Handle": "Fred",
       "Color": "Green",
       "Created": "2022-06-06T19:03:42",
-      "Modified": "2022-06-06T19:03:42",
+      "Modified": "2022-12-17T01:14:27",
       "Blocked": false,
       "BluetoothId": null,
       "BluetoothDeviceName": null

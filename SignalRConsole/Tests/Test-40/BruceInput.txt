@@ -1,0 +1,11 @@
+Bruce
+>wait-for: Listening>
+>wait-for: Your friend Fred is online.
+C
+0
+>wait-for: Type messages, type 'tables.' to open tables, or 'goodbye.' to leave the chat.
+Yo.
+>wait-for: Fred is away...
+Tables.
+>wait-for: Your friend Fred is offline.
+X

@@ -1,0 +1,7 @@
+Fred
+>wait-for: Bruce said: Yo.
+Tables.
+>wait-for: Bruce is away...
+R
+Goodbye.
+X

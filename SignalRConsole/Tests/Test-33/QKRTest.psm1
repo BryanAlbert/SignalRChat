@@ -1,11 +1,9 @@
-$global:test = "Test-33"
-
 function Get-Description($verbose)
 {
-	"`n${test}: Follower goes away, leader goes away, follower returns, leader returns
+	"`n${test}: Leader goes away, follower goes away, leader returns, follower returns
 	
-	Bruce online, Fred online, Bruce initiates chat, Fred goes away, Bruce goes
-	away, Fred comes back, Bruce comes back, Bruce leaves the chat, exits, Fred exits.`n"
+	Bruce online, Fred online, Bruce initiates chat and goes away, Fred goes away,
+	Bruce comes back, Fred comes back, Bruce leaves the chat, exits, Fred exits.`n"
 
 	if ($null -eq $verbose -or $verbose)
 	{
@@ -15,16 +13,17 @@ function Get-Description($verbose)
 	ResetQKR  Delete json files from QKR's LocalState folder
 	QKR       Configure for testing QKR
 	
-	To test QKR, run Reset-Test QKR then run Start-TestFor Bruce, Connect Internet
-	as Fred on QKR, and tap Tables. When Bruce is away (Both Away in the Console)
-	pop back to Internet Connect. When Bruce says, 'Yo.' respond with 'Bye now!',
-	verify that Bruce disconnects and exits, then pop to Home.
+	To test QKR, run Reset-Test QKR, run Start-TestFor Bruce, then Connect with Internet
+	as Fred on QKR. When Bruce is away, tap Tables and wait for Bruce to return in the
+	Console (Both Away status changes to Friend Away), the pop back to Internet Connect.
+	When Bruce sends 'Yo.', respond with 'Bye now!', verify that Bruce disconnects and
+	exits and pop back to Home.
 		
-	Next Connect Internet as Bruce on QKR, run Start-TestFor Fred and connect with
-	Fred on QKR. When Fred is away, tap Tables, then whend Fred returns (status
-	changes from Both Away to Friend Away) pop back to Home. Send the message 'Yo.'
-	to Fred, when he responds with 'Bye now!' Disconnect, pop to Home, verify that
-	Fred exits and close QKR. Test results with Check-Test `$true.`n"
+	Next Connect Internet as Bruce on QKR, run Start-TestFor Fred, and connect with Fred
+	on QKR. Tap Tables and wait for Fred to go away in the Console (status is Both Away),
+	then pop back to Internet Connect. Send the message, 'Yo.', when Fred sends 'Bye now!'
+	disconnect, pop back to Home and close QKR, verifying that Fred exits. Test results
+	with Check-Test `$true.`n"
 	}
 }
 

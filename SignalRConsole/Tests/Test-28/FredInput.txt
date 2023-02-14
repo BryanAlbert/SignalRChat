@@ -1,5 +1,0 @@
-Fred
->wait-for: Bruce said: So long.
-Bye now!
->wait-for: Your friend Bruce is offline.
-X

@@ -1,0 +1,7 @@
+Fred
+>wait-for: (Sent Hello null command to Fred.)
+>wait-for: Accept friend request from Bruce, email address bruce@hotmail.com? [y/n]
+Y
+>wait-for: Your friend Bruce is offline.
+L
+X
