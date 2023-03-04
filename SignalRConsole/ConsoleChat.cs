@@ -992,6 +992,11 @@ namespace SignalRConsole
 					WriteLogLine("None of your friends is online.");
 					return;
 				}
+
+				if (!m_online.Any(x => x.Blocked == false))
+				{
+					WriteLogLine("All of your online friends are either pending or blocked.");
+				}
 			}
 			finally
 			{
